@@ -33,15 +33,15 @@ pub fn instantiate(
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
         ExecuteMsg::BuyIn { value } => try_buy_in(deps, info.sender, value),
-        ExecuteMsg::PlaceBet { value } => try_place_bet(),
+        ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value),
     }
 }
 
 #[entry_point]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::ViewChipCount => query_chip_count(),
-        QueryMsg::ViewHand => query_hand(),
+        QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
         QueryMsg::ViewTable => query_table(),
     }
 }

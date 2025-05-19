@@ -31,7 +31,7 @@ schemars = { version = "0.8" }
 serde = { version = "1.0" }
 thiserror = { version = "2.0" }
 cosmwasm-schema = "2.2"
-secret-toolkit = { version = "0.10" }
+secret-toolkit = { version = "0.10", features = ["permit"] }
 cw-storage-plus = { version = "2.0", default-features = false }
 
 # Uncomment these for some common extra tools
