@@ -1,9 +1,7 @@
-use schemars::JsonSchema;
 use secret_toolkit::storage::{AppendStore, Item, Keymap};
 use serde::{Deserialize, Serialize};
 
-use cosmwasm_std::{Addr, CanonicalAddr, Storage};
-use cosmwasm_storage::{singleton, singleton_read, ReadonlySingleton, Singleton};
+use cosmwasm_std::CanonicalAddr;
 
 pub static GAME: Item<Game> = Item::new(b"game");
 pub static PLAYERS: Keymap<CanonicalAddr, Player> = Keymap::new(b"players");

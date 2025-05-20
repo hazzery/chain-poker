@@ -1,7 +1,7 @@
-use cosmwasm_std::{Binary, Deps, Env, StdError, StdResult};
+use cosmwasm_std::{to_binary, Binary, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
-use crate::state::{Player, PLAYERS};
+use crate::state::{Card, Player, PLAYERS, TABLE};
 
 pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
     let account = secret_toolkit::permit::validate(
@@ -14,13 +14,23 @@ pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
 
     let sender = deps.api.addr_canonicalize(&account)?;
 
-    let Some(player): Option<Player> = PLAYERS.get(deps.storage, sender) else {
+    let Some(player): Option<Player> = PLAYERS.get(deps.storage, &sender) else {
         return Err(StdError::generic_err("You are not bought in!"));
     };
 
-    return player.hand;
+    to_binary(&player.hand)
 }
 
-pub fn query_table() -> StdResult<Binary> {}
+pub fn query_table(deps: Deps) -> StdResult<Binary> {
+    let cards: Vec<Card> = TABLE
+        .iter(deps.storage)?
+        .filter(|card| card.is_ok())
+        .map(|card| card.unwrap())
+        .collect();
 
-pub fn query_chip_count() -> StdResult<Binary> {}
+    to_binary(&cards)
+}
+
+pub fn query_chip_count() -> StdResult<Binary> {
+    to_binary("")
+}

@@ -1,10 +1,7 @@
 mod execute;
 mod query;
 
-use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
-    Storage,
-};
+use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use execute::{try_buy_in, try_place_bet};
 use query::{query_chip_count, query_hand, query_table};
 
@@ -42,6 +39,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::ViewChipCount => query_chip_count(),
         QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
-        QueryMsg::ViewTable => query_table(),
+        QueryMsg::ViewTable => query_table(deps),
     }
 }
