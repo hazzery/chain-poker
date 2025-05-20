@@ -21,5 +21,5 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     ViewHand { permit: Permit },
     ViewTable,
-    ViewChipCount,
+    ViewChipCount { permit: Permit },
 }

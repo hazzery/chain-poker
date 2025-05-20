@@ -31,6 +31,20 @@ pub fn query_table(deps: Deps) -> StdResult<Binary> {
     to_binary(&cards)
 }
 
-pub fn query_chip_count() -> StdResult<Binary> {
-    to_binary("")
+pub fn query_chip_count(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
+    let account = secret_toolkit::permit::validate(
+        deps,
+        "revoked_permits",
+        &permit,
+        env.contract.address.to_string(),
+        None,
+    )?;
+
+    let sender = deps.api.addr_canonicalize(&account)?;
+
+    let Some(player): Option<Player> = PLAYERS.get(deps.storage, &sender) else {
+        return Err(StdError::generic_err("You are not bought in!"));
+    };
+
+    to_binary(&player.chip_count)
 }

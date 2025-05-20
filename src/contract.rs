@@ -37,7 +37,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
 #[entry_point]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ViewChipCount => query_chip_count(),
+        QueryMsg::ViewChipCount { permit } => query_chip_count(deps, env, permit),
         QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
         QueryMsg::ViewTable => query_table(deps),
     }
