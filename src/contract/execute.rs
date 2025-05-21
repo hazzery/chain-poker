@@ -29,11 +29,11 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
 }
 
 pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Response> {
-    let sender = deps.api.addr_canonicalize(sender.as_str())?;
-
     if IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has already started"));
     }
+
+    let sender = deps.api.addr_canonicalize(sender.as_str())?;
 
     if PLAYERS.get(deps.storage, &sender).is_some() {
         return Err(StdError::generic_err("You have already bought in!"));
