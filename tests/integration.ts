@@ -45,14 +45,22 @@ async function initializeContract(
     console.log(
       `Failed to get code id: ${JSON.stringify(uploadReceipt.rawLog)}`,
     );
-    throw new Error(`Failed to upload contract`);
+    throw new Error("Failed to upload contract");
   }
 
-  const codeIdKv = uploadReceipt.jsonLog![0].events[0].attributes.find(
+  if (uploadReceipt.jsonLog === undefined) {
+    throw new Error("Upload receipt JSON log was not present");
+  }
+
+  const codeIdKv = uploadReceipt.jsonLog?.[0].events[0].attributes.find(
     (a) => a.key === "code_id",
   );
 
-  const codeId = Number(codeIdKv!.value);
+  if (codeIdKv === undefined) {
+    throw new Error("Failed to find code_id");
+  }
+
+  const codeId = Number(codeIdKv.value);
   console.log("Contract codeId: ", codeId);
 
   const contractCodeHash = (
@@ -60,7 +68,7 @@ async function initializeContract(
   ).code_hash;
 
   if (contractCodeHash === undefined) {
-    throw new Error(`Failed to get code hash`);
+    throw new Error("Failed to get code hash");
   }
 
   console.log(`Contract hash: ${contractCodeHash}`);
@@ -84,9 +92,13 @@ async function initializeContract(
     );
   }
 
-  const contractAddress = contract.arrayLog!.find(
+  const contractAddress = contract.arrayLog?.find(
     (log) => log.type === "message" && log.key === "contract_address",
-  )!.value;
+  )?.value;
+
+  if (contractAddress === undefined) {
+    throw new Error("Failed to find contract address");
+  }
 
   console.log(`Contract address: ${contractAddress}`);
 
@@ -113,14 +125,14 @@ async function getScrtBalance(userCli: SecretNetworkClient): Promise<string> {
 
 async function fillUpFromFaucet(
   client: SecretNetworkClient,
-  targetBalance: Number,
+  targetBalance: number,
 ): Promise<void> {
   let balance = await getScrtBalance(client);
   while (Number(balance) < targetBalance) {
     try {
       await getFromFaucet(client.address);
-    } catch (e) {
-      console.error(`failed to get tokens from faucet: ${e}`);
+    } catch (error) {
+      console.error(`failed to get tokens from faucet: ${error}`);
     }
     balance = await getScrtBalance(client);
   }
@@ -152,7 +164,8 @@ async function initializeAndUploadContract(): Promise<
 }
 
 async function test_gas_limits() {
-  // There is no accurate way to measue gas limits but it is actually very recommended to make sure that the gas that is used by a specific tx makes sense
+  // There is no accurate way to measue gas limits but it is actually highly recommended
+  // to make sure that the gas that is used by a specific tx makes sense
 }
 
 async function runTestFunction(
