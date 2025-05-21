@@ -23,9 +23,9 @@ pub fn instantiate(
         min_buy_in_bb: msg.min_buy_in_bb,
     };
     GAME.save(deps.storage, &game)?;
-    REVEALED_CARDS.save(deps.storage, &0);
-    IS_STARTED.save(deps.storage, &false);
-    POT.save(deps.storage, &0);
+    REVEALED_CARDS.save(deps.storage, &0)?;
+    IS_STARTED.save(deps.storage, &false)?;
+    POT.save(deps.storage, &0)?;
 
     Ok(Response::default())
 }
