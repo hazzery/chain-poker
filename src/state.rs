@@ -6,6 +6,7 @@ use cosmwasm_std::CanonicalAddr;
 pub static GAME: Item<Game> = Item::new(b"game");
 pub static PLAYERS: Keymap<CanonicalAddr, Player> = Keymap::new(b"players");
 pub static TABLE: AppendStore<Card> = AppendStore::new(b"table");
+pub static REVEALED_CARDS: Item<u8> = Item::new(b"num_revealed");
 pub static POT: Item<u128> = Item::new(b"pot");
 pub static IS_STARTED: Item<bool> = Item::new(b"started");
 

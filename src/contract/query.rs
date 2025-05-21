@@ -1,7 +1,7 @@
 use cosmwasm_std::{to_binary, Binary, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
-use crate::state::{Card, Player, PLAYERS, TABLE};
+use crate::state::{Card, Player, PLAYERS, REVEALED_CARDS, TABLE};
 
 pub fn query_player(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
     let account = secret_toolkit::permit::validate(
@@ -22,8 +22,10 @@ pub fn query_player(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
 }
 
 pub fn query_table(deps: Deps) -> StdResult<Binary> {
+    let number_of_visiable_cards = REVEALED_CARDS.load(deps.storage)?;
     let cards: Vec<Card> = TABLE
         .iter(deps.storage)?
+        .take(number_of_visiable_cards)
         .filter(|card| card.is_ok())
         .map(|card| card.unwrap())
         .collect();
