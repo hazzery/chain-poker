@@ -29,6 +29,8 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
         TABLE.push(deps.storage, &next_card())?;
     }
 
+    IS_STARTED.save(deps.storage, &true);
+
     Ok(Response::default())
 }
 
