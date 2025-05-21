@@ -7,7 +7,7 @@ use query::{query_player, query_table};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{Game, GAME},
+    state::{Game, GAME, IS_STARTED, POT, REVEALED_CARDS},
 };
 
 #[entry_point]
@@ -23,6 +23,10 @@ pub fn instantiate(
         min_buy_in_bb: msg.min_buy_in_bb,
     };
     GAME.save(deps.storage, &game)?;
+    REVEALED_CARDS.save(deps.storage, &0);
+    IS_STARTED.save(deps.storage, &false);
+    POT.save(deps.storage, &0);
+
     Ok(Response::default())
 }
 
