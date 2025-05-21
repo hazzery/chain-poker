@@ -77,7 +77,11 @@ async function initializeContract(
     {
       sender: client.address,
       code_id: codeId,
-      init_msg: { count: 4 }, // Initialize our counter to start from 4. This message will trigger our Init function
+      init_msg: {
+        big_blind: 100_000, // 0.1 SCRT big blind
+        max_buy_in_bb: 100, // 10 SCRT max buy in
+        min_buy_in_bb: 50, // 5 SCRT min buy in
+      }, // This message will trigger our Init function
       code_hash: contractCodeHash,
       label: "My contract" + Math.ceil(Math.random() * 10000), // The label should be unique for every contract, add random string in order to maintain uniqueness
     },
