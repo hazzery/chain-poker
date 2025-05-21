@@ -2,8 +2,8 @@ mod execute;
 mod query;
 
 use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
-use execute::{try_buy_in, try_place_bet};
-use query::{query_chip_count, query_hand, query_table};
+use execute::{try_buy_in, try_place_bet, try_start_game};
+use query::{query_player, query_table};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
@@ -14,7 +14,7 @@ use crate::{
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    info: MessageInfo,
+    _info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let game = Game {
@@ -22,14 +22,20 @@ pub fn instantiate(
         max_buy_in_bb: msg.max_buy_in_bb,
         min_buy_in_bb: msg.min_buy_in_bb,
     };
-    GAME.save(deps.storage, &game);
+    GAME.save(deps.storage, &game)?;
     Ok(Response::default())
 }
 
 #[entry_point]
-pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
+pub fn execute(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    msg: ExecuteMsg,
+) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::BuyIn { value } => try_buy_in(deps, info.sender, value),
+        ExecuteMsg::StartGame => try_start_game(deps),
+        ExecuteMsg::BuyIn => try_buy_in(deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value),
     }
 }
@@ -37,8 +43,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
 #[entry_point]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ViewChipCount { permit } => query_chip_count(deps, env, permit),
-        QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
+        QueryMsg::ViewPlayer { permit } => query_player(deps, env, permit),
         QueryMsg::ViewTable => query_table(deps),
     }
 }

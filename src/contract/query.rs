@@ -3,7 +3,7 @@ use secret_toolkit::permit::Permit;
 
 use crate::state::{Card, Player, PLAYERS, TABLE};
 
-pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
+pub fn query_player(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
     let account = secret_toolkit::permit::validate(
         deps,
         "revoked_permits",
@@ -18,7 +18,7 @@ pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
         return Err(StdError::generic_err("You are not bought in!"));
     };
 
-    to_binary(&player.hand)
+    to_binary(&player)
 }
 
 pub fn query_table(deps: Deps) -> StdResult<Binary> {
@@ -29,22 +29,4 @@ pub fn query_table(deps: Deps) -> StdResult<Binary> {
         .collect();
 
     to_binary(&cards)
-}
-
-pub fn query_chip_count(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
-    let account = secret_toolkit::permit::validate(
-        deps,
-        "revoked_permits",
-        &permit,
-        env.contract.address.to_string(),
-        None,
-    )?;
-
-    let sender = deps.api.addr_canonicalize(&account)?;
-
-    let Some(player): Option<Player> = PLAYERS.get(deps.storage, &sender) else {
-        return Err(StdError::generic_err("You are not bought in!"));
-    };
-
-    to_binary(&player.chip_count)
 }
