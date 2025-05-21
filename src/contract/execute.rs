@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, DepsMut, Response, StdError, StdResult};
+use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult};
 
 use crate::state::{next_card, Player, IS_STARTED, PLAYERS, POT, TABLE};
 
@@ -7,19 +7,25 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
         return Err(StdError::generic_err("The game has already started"));
     }
 
-    PLAYERS
+    let adresses: Vec<CanonicalAddr> = PLAYERS
         .iter_keys(deps.storage)?
         .filter(|key| key.is_ok())
         .map(|key| key.unwrap())
-        .for_each(|key| {
-            let player = PLAYERS.get(deps.storage, &key)?;
-            player.hand = Some((next_card(), next_card()));
-            PLAYERS.insert(deps.storage, &key, &player)?;
-        });
+        .collect();
+
+    for address in adresses {
+        let Some(mut player) = PLAYERS.get(deps.storage, &address) else {
+            unreachable!()
+        };
+        player.hand = Some((next_card(), next_card()));
+        PLAYERS.insert(deps.storage, &address, &player)?;
+    }
 
     for _ in 0..5 {
-        TABLE.push(deps.storage, &next_card());
+        TABLE.push(deps.storage, &next_card())?;
     }
+
+    Ok(Response::default())
 }
 
 pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Response> {
@@ -71,7 +77,7 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
     player.chip_count -= value;
     PLAYERS.insert(deps.storage, &sender, &player)?;
 
-    POT.update(deps.storage, |pot| pot += value)?;
+    POT.update(deps.storage, |pot| Ok(pot + value))?;
 
     Ok(Response::default())
 }
