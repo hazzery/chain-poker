@@ -7,6 +7,10 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
         return Err(StdError::generic_err("The game has already started"));
     }
 
+    if PLAYERS.get_len(deps.storage)? < 2 {
+        return Err(StdError::generic_err("Insufficient number of players"));
+    }
+
     let adresses: Vec<CanonicalAddr> = PLAYERS
         .iter_keys(deps.storage)?
         .filter(|key| key.is_ok())
