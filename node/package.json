@@ -12,6 +12,8 @@
   "license": "ISC",
   "dependencies": {
     "dotenv": "^16.5",
-    "secretjs": "^1.15"
+    "node-ts": "^8.0.4",
+    "secretjs": "^1.15",
+    "typescript-result": "^3.1.1"
   }
 }
