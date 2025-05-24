@@ -3,7 +3,7 @@ import * as fs from "fs";
 import dotenv from "dotenv";
 import { Result } from "typescript-result";
 
-async function upload_contract(
+async function uploadContract(
   wallet: Wallet,
   secretjs: SecretNetworkClient,
   contractWasm: Buffer,
@@ -41,7 +41,7 @@ async function upload_contract(
   return Result.ok([codeId, contractCodeHash]);
 }
 
-async function instantiate_contract(
+async function instantiateContract(
   codeId: string,
   contractCodeHash: string,
   wallet: Wallet,
@@ -80,7 +80,7 @@ async function main(): Promise<void> {
 
   const wallet = new Wallet(process.env.MNEMONIC);
 
-  const contract_wasm = fs.readFileSync("../contract.wasm.gz");
+  const contractWasm = fs.readFileSync("../contract.wasm.gz");
 
   const secretjs = new SecretNetworkClient({
     chainId: "pulsar-3",
@@ -90,9 +90,9 @@ async function main(): Promise<void> {
   });
 
   const contractAddress = await Result.fromAsync(
-    upload_contract(wallet, secretjs, contract_wasm),
+    uploadContract(wallet, secretjs, contractWasm),
   ).map((codeIdAndHash) =>
-    instantiate_contract(...codeIdAndHash, wallet, secretjs),
+    instantiateContract(...codeIdAndHash, wallet, secretjs),
   );
 
   if (contractAddress.isError()) {
