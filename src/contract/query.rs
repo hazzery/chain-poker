@@ -26,8 +26,7 @@ pub fn query_table(deps: Deps) -> StdResult<Binary> {
     let cards: Vec<Card> = TABLE
         .iter(deps.storage)?
         .take(number_of_visiable_cards as usize)
-        .filter(|card| card.is_ok())
-        .map(|card| card.unwrap())
+        .flatten()
         .collect();
 
     to_binary(&cards)

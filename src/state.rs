@@ -56,8 +56,8 @@ pub struct Game {
 }
 
 pub fn next_card() -> Card {
-    return Card {
+    Card {
         value: Value::Queen,
         suit: Suit::Hearts,
-    };
+    }
 }

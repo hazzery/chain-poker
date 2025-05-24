@@ -11,11 +11,7 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
-    let adresses: Vec<CanonicalAddr> = PLAYERS
-        .iter_keys(deps.storage)?
-        .filter(|key| key.is_ok())
-        .map(|key| key.unwrap())
-        .collect();
+    let adresses: Vec<CanonicalAddr> = PLAYERS.iter_keys(deps.storage)?.flatten().collect();
 
     for address in adresses {
         let Some(mut player) = PLAYERS.get(deps.storage, &address) else {
