@@ -6,7 +6,7 @@ import { Result } from "typescript-result";
 async function upload_contract(
   wallet: Wallet,
   secretjs: SecretNetworkClient,
-  contractWasm: Buffer<ArrayBufferLike>,
+  contractWasm: Buffer,
 ): Promise<Result<[string, string], string>> {
   console.log("Starting deployment…");
 
