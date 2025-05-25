@@ -1,28 +1,41 @@
-import { SecretNetworkClient, Wallet } from "secretjs";
 import * as fs from "fs";
-import dotenv from "dotenv";
+import { SecretNetworkClient, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
+import { writeUploadData } from "./io";
+import instantiateClient from "./client";
+
+/**
+ * Upload the provided Web Assembly code to the network configured inside of the
+ * `networkClient` client.
+ *
+ * @param gasLimit - The maximum amount of gas (uSCRT) the execution of this
+ *    message is allowed to consume before failing.
+ * @param wallet - A wallet initialised with a private key.
+ * @param networkClient - A Secret Network client, initialised with `wallet`.
+ * @param contractWasm - A buffer containing the contract's compiled binary Web
+ *    Assembly code
+ *
+ * @returns A result containing an array of the code ID and the contract code
+ *    hash if sucessfull, otherwise a string error message.
+ */
 async function uploadContract(
+  gasLimit: number,
   wallet: Wallet,
-  secretjs: SecretNetworkClient,
+  networkClient: SecretNetworkClient,
   contractWasm: Buffer,
 ): Promise<Result<[string, string], string>> {
-  console.log("Starting deployment…");
-
-  let tx = await secretjs.tx.compute.storeCode(
+  const transaction = await networkClient.tx.compute.storeCode(
     {
       sender: wallet.address,
       wasm_byte_code: contractWasm,
       source: "",
       builder: "",
     },
-    {
-      gasLimit: 4_000_000,
-    },
+    { gasLimit },
   );
 
-  const codeId: string | undefined = tx.arrayLog?.find(
+  const codeId = transaction.arrayLog?.find(
     (log) => log.type === "message" && log.key === "code_id",
   )?.value;
 
@@ -30,8 +43,8 @@ async function uploadContract(
     return Result.error("Unable to find Code ID");
   }
 
-  const contractCodeHash: string | undefined = (
-    await secretjs.query.compute.codeHashByCodeId({ code_id: codeId })
+  const contractCodeHash = (
+    await networkClient.query.compute.codeHashByCodeId({ code_id: codeId })
   ).code_hash;
 
   if (contractCodeHash === undefined) {
@@ -41,66 +54,25 @@ async function uploadContract(
   return Result.ok([codeId, contractCodeHash]);
 }
 
-async function instantiateContract(
-  codeId: string,
-  contractCodeHash: string,
-  wallet: Wallet,
-  secretjs: SecretNetworkClient,
-): Promise<Result<string, string>> {
-  console.log("Instantiating contract…");
-
-  let tx = await secretjs.tx.compute.instantiateContract(
-    {
-      code_id: codeId,
-      sender: wallet.address,
-      code_hash: contractCodeHash,
-      init_msg: {},
-      label: "example " + Math.ceil(Math.random() * 10000),
-      admin: wallet.address,
-    },
-    {
-      gasLimit: 400_000,
-    },
-  );
-
-  // Find the contract_address in the logs
-  const contractAddress = tx.arrayLog?.find(
-    (log) => log.type === "message" && log.key === "contract_address",
-  )?.value;
-
-  if (contractAddress === undefined) {
-    return Result.error("Unable to find contract address");
-  }
-
-  return Result.ok(contractAddress);
-}
-
-async function main(): Promise<void> {
-  dotenv.config();
-
-  const wallet = new Wallet(process.env.MNEMONIC);
+/**
+ * Upload the compiled contract's binary Web Assembly code to the network.
+ *
+ * @returns A result of nothing if execution is sucessfull, otherwise a string
+ * error message.
+ */
+async function main(): Promise<Result<void, string>> {
+  const clientResult = instantiateClient();
+  if (!clientResult.isOk()) return clientResult.map(() => {});
+  const [networkClient, wallet] = clientResult.value;
 
   const contractWasm = fs.readFileSync("../contract.wasm.gz");
+  const gasLimit = 4_000_000;
 
-  const secretjs = new SecretNetworkClient({
-    chainId: "pulsar-3",
-    url: "https://pulsar.lcd.secretnodes.com",
-    wallet: wallet,
-    walletAddress: wallet.address,
-  });
-
-  const contractAddress = await Result.fromAsync(
-    uploadContract(wallet, secretjs, contractWasm),
-  ).map((codeIdAndHash) =>
-    instantiateContract(...codeIdAndHash, wallet, secretjs),
-  );
-
-  if (contractAddress.isError()) {
-    console.error(contractAddress.error);
-    return;
-  }
-
-  console.log(contractAddress.value);
+  return await Result.fromAsync(
+    uploadContract(gasLimit, wallet, networkClient, contractWasm),
+  ).map(writeUploadData);
 }
 
-await main();
+await Result.fromAsync(main()).mapError(console.error);
+
+export default uploadContract;
