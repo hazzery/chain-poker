@@ -6,7 +6,7 @@ import instantiateClient from "./client";
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
- * initialisation message.
+ * instantiationation message.
  *
  * @param instantiationMessage - The message to instantiate the contract with.
  * @param gasLimit - The maximum amount of gas (uSCRT) the execution of this
@@ -67,12 +67,16 @@ async function main(): Promise<Result<void, string>> {
   if (!uploadDataResult.isOk()) return uploadDataResult.map(() => {});
   const { codeId, contractCodeHash } = uploadDataResult.value;
 
-  const initialisationMessage = {};
+  const instantiationMessage = {
+    big_blind: 1_000_000,
+    max_buy_in_bb: 100,
+    min_buy_in_bb: 50,
+  };
   const gasLimit = 400_000;
 
   return await Result.fromAsync(
     instantiateContract(
-      initialisationMessage,
+      instantiationMessage,
       gasLimit,
       codeId,
       contractCodeHash,
