@@ -41,7 +41,7 @@ async function writeUploadData([codeId, contractCodeHash]: [
  * @param uploadData - Absolutely any value, typically the output of a json
  *    parse.
  *
- * @returns `true` if the value has both the "codeId" and "codeContractHash"
+ * @returns `true` if the value has both the "codeId" and "contractCodeHash"
  *    string properties, `false` otherwise.
  */
 function isValidUploadData(uploadData: unknown): uploadData is UploadData {
@@ -49,8 +49,8 @@ function isValidUploadData(uploadData: unknown): uploadData is UploadData {
     uploadData instanceof Object &&
     "codeId" in uploadData &&
     typeof uploadData.codeId === "string" &&
-    "codeContractHash" in uploadData &&
-    typeof uploadData.codeContractHash === "string"
+    "contractCodeHash" in uploadData &&
+    typeof uploadData.contractCodeHash === "string"
   );
 }
 
@@ -65,7 +65,7 @@ function isValidUploadData(uploadData: unknown): uploadData is UploadData {
 function castJsonUploadData(uploadData: unknown): Result<UploadData, string> {
   if (!isValidUploadData(uploadData)) {
     return Result.error(
-      "Invalid upload data, must contain both codeId and codeContractHash properties",
+      "Invalid upload data, must contain both codeId and contractCodeHash properties",
     );
   }
 
@@ -137,8 +137,8 @@ function isValidInstantiationData(
 ): instantiateData is InstantiateData {
   return (
     instantiateData instanceof Object &&
-    "codeContractHash" in instantiateData &&
-    typeof instantiateData.codeContractHash === "string" &&
+    "contractCodeHash" in instantiateData &&
+    typeof instantiateData.contractCodeHash === "string" &&
     "contractAddress" in instantiateData &&
     typeof instantiateData.contractAddress === "string"
   );
@@ -157,7 +157,7 @@ function castJsonInstantiateData(
 ): Result<InstantiateData, string> {
   if (!isValidInstantiationData(instantiateData)) {
     return Result.error(
-      "Invalid instantiation data, must contain both codeContractHash and contractAddress properties",
+      "Invalid instantiation data, must contain both contractCodeHash and contractAddress properties",
     );
   }
 
