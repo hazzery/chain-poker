@@ -1,8 +1,14 @@
-import { SecretNetworkClient, Wallet } from "secretjs";
+import dotenv from "dotenv";
+import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import { readUploadData, writeInstantiaionData } from "./io";
-import instantiateClient from "./client";
+import { initialiseNetworkClient, Network } from "./client";
+import {
+  InstantiateData,
+  readUploadData,
+  UploadData,
+  writeInstantiaionData,
+} from "./io";
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
@@ -11,9 +17,10 @@ import instantiateClient from "./client";
  * @param instantiationMessage - The message to instantiate the contract with.
  * @param gasLimit - The maximum amount of gas (uSCRT) the execution of this
  *    message is allowed to consume before failing.
- * @param codeId - The uploaded contract Web Assembly code's unique identifier.
- * @param contractCodeHash - The hash of the contract's compiled binary Web
- *    Assembly, to verify we're querying the correct contract.
+ * @param uploadData - An object containing both the codeId: the uploaded
+ *    contract's unique identifier; and contractCodeHash: the hash of the
+ *    contract's compiled binary Web Assembly, to verify we're querying
+ *    the correct contract.
  * @param wallet - A wallet initialised with a private key.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  *
@@ -23,22 +30,27 @@ import instantiateClient from "./client";
 async function instantiateContract(
   instantiationMessage: object,
   gasLimit: number,
-  codeId: string,
-  contractCodeHash: string,
+  uploadData: UploadData,
   wallet: Wallet,
   networkClient: SecretNetworkClient,
-): Promise<Result<string, string>> {
+): Promise<Result<InstantiateData, string>> {
   const transaction = await networkClient.tx.compute.instantiateContract(
     {
-      code_id: codeId,
+      code_id: uploadData.codeId,
       sender: wallet.address,
-      code_hash: contractCodeHash,
+      code_hash: uploadData.contractCodeHash,
       init_msg: instantiationMessage,
       label: `Init ${Math.ceil(Math.random() * 10000)}`,
       admin: wallet.address,
     },
     { gasLimit },
   );
+
+  if (transaction.code !== TxResultCode.Success) {
+    return Result.error(
+      `Failed to instantiate the contract with the following error ${transaction.code}`,
+    );
+  }
 
   // Find the contract_address in the logs
   const contractAddress = transaction.arrayLog?.find(
@@ -49,7 +61,10 @@ async function instantiateContract(
     return Result.error("Unable to find contract address");
   }
 
-  return Result.ok(contractAddress);
+  return Result.ok({
+    contractCodeHash: uploadData.contractCodeHash,
+    contractAddress,
+  });
 }
 
 /**
@@ -59,13 +74,16 @@ async function instantiateContract(
  *    error message.
  */
 async function main(): Promise<Result<void, string>> {
-  const clientResult = instantiateClient();
-  if (!clientResult.isOk()) return clientResult.map(() => {});
-  const [networkClient, wallet] = clientResult.value;
+  dotenv.config();
 
-  const uploadDataResult = await Result.fromAsync(readUploadData());
-  if (!uploadDataResult.isOk()) return uploadDataResult.map(() => {});
-  const { codeId, contractCodeHash } = uploadDataResult.value;
+  if (process.env.MNEMONIC === undefined) {
+    return Result.error("Wallet mnemonic was not found in environment");
+  }
+
+  const [networkClient, wallet] = initialiseNetworkClient(
+    Network.Testnet,
+    process.env.MNEMONIC,
+  );
 
   const instantiationMessage = {
     big_blind: 1_000_000,
@@ -74,18 +92,17 @@ async function main(): Promise<Result<void, string>> {
   };
   const gasLimit = 400_000;
 
-  return await Result.fromAsync(
-    instantiateContract(
-      instantiationMessage,
-      gasLimit,
-      codeId,
-      contractCodeHash,
-      wallet,
-      networkClient,
-    ),
-  ).map((contractAddress) =>
-    writeInstantiaionData(contractCodeHash, contractAddress),
-  );
+  return await Result.fromAsync(readUploadData())
+    .map((uploadData) =>
+      instantiateContract(
+        instantiationMessage,
+        gasLimit,
+        uploadData,
+        wallet,
+        networkClient,
+      ),
+    )
+    .map(writeInstantiaionData);
 }
 
 await Result.fromAsync(main()).mapError(console.error);

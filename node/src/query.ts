@@ -1,15 +1,18 @@
+import dotenv from "dotenv";
 import { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
-import instantiateClient from "./client";
-import { readInstantiateData } from "./io";
+
+import { initialiseNetworkClient, Network } from "./client";
+import { InstantiateData, readInstantiateData } from "./io";
 
 /**
  * Query the specified contract and return the result.
  *
  * @param query - The query to send to the contract, as an object.
- * @param contractAddress - The address of the contract on the network.
- * @param contractCodeHash - The hash of the contract's compiled binary Web
- *    Assembly, to verify we're querying the correct contract.
+ * @param instantiateData - An object containing both contractAddress: the
+ *    address of the contract on the network and contractCodeHash: the hash of
+ *    the contract's compiled binary Web Assembly, to verify we're querying the
+ *    correct contract.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  *
  * @returns A result containing the query response if successful, otherwiese a
@@ -17,14 +20,13 @@ import { readInstantiateData } from "./io";
  */
 async function queryContract(
   query: object,
-  contractAddress: string,
-  contractCodeHash: string,
+  instantiateData: InstantiateData,
   networkClient: SecretNetworkClient,
 ): Promise<Result<object, string>> {
   const queryResponse: object | string =
     await networkClient.query.compute.queryContract({
-      contract_address: contractAddress,
-      code_hash: contractCodeHash,
+      contract_address: instantiateData.contractAddress,
+      code_hash: instantiateData.contractCodeHash,
       query,
     });
 
@@ -45,21 +47,22 @@ async function queryContract(
  * error message.
  */
 async function main(): Promise<Result<void, string>> {
-  const clientResult = instantiateClient();
-  if (!clientResult.isOk()) return clientResult.map(() => {});
-  const [networkClient] = clientResult.value;
+  dotenv.config();
 
-  const instantiateDataResult = await Result.fromAsync(readInstantiateData());
-  if (!instantiateDataResult.isOk()) return instantiateDataResult.map(() => {});
-  const { contractCodeHash, contractAddress } = instantiateDataResult.value;
+  if (process.env.MNEMONIC === undefined) {
+    return Result.error("Wallet mnemonic was not found in environment");
+  }
+  const [networkClient] = initialiseNetworkClient(Network.Testnet);
 
   const query = {};
 
-  return await Result.fromAsync(
-    queryContract(query, contractAddress, contractCodeHash, networkClient),
-  ).map(console.log);
+  return await Result.fromAsync(readInstantiateData())
+    .map((instantiateData) =>
+      queryContract(query, instantiateData, networkClient),
+    )
+    .map(console.log);
 }
 
-await Result.fromAsync(main()).mapError(console.error);
+await Result.fromAsync(main()).onFailure(console.error);
 
 export default queryContract;

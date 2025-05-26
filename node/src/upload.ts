@@ -1,9 +1,10 @@
 import * as fs from "fs";
-import { SecretNetworkClient, Wallet } from "secretjs";
+import dotenv from "dotenv";
+import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import { writeUploadData } from "./io";
-import instantiateClient from "./client";
+import { initialiseNetworkClient, Network } from "./client";
+import { UploadData, writeUploadData } from "./io";
 
 /**
  * Upload the provided Web Assembly code to the network configured inside of the
@@ -16,15 +17,15 @@ import instantiateClient from "./client";
  * @param contractWasm - A buffer containing the contract's compiled binary Web
  *    Assembly code
  *
- * @returns A result containing an array of the code ID and the contract code
- *    hash if sucessfull, otherwise a string error message.
+ * @returns A result containing an object with the code ID and the contract
+ *    code hash if sucessfull, otherwise a string error message.
  */
 async function uploadContract(
   gasLimit: number,
   wallet: Wallet,
   networkClient: SecretNetworkClient,
   contractWasm: Buffer,
-): Promise<Result<[string, string], string>> {
+): Promise<Result<UploadData, string>> {
   const transaction = await networkClient.tx.compute.storeCode(
     {
       sender: wallet.address,
@@ -34,6 +35,10 @@ async function uploadContract(
     },
     { gasLimit },
   );
+
+  if (transaction.code !== TxResultCode.Success) {
+    return Result.error(`Failed to upload contract! code: ${transaction.code}`);
+  }
 
   const codeId = transaction.arrayLog?.find(
     (log) => log.type === "message" && log.key === "code_id",
@@ -51,7 +56,7 @@ async function uploadContract(
     return Result.error("Unable to compute contract code hash");
   }
 
-  return Result.ok([codeId, contractCodeHash]);
+  return Result.ok({ codeId, contractCodeHash });
 }
 
 /**
@@ -61,9 +66,16 @@ async function uploadContract(
  * error message.
  */
 async function main(): Promise<Result<void, string>> {
-  const clientResult = instantiateClient();
-  if (!clientResult.isOk()) return clientResult.map(() => {});
-  const [networkClient, wallet] = clientResult.value;
+  dotenv.config();
+
+  if (process.env.MNEMONIC === undefined) {
+    return Result.error("Wallet mnemonic was not found in environment");
+  }
+
+  const [networkClient, wallet] = initialiseNetworkClient(
+    Network.Testnet,
+    process.env.MNEMONIC,
+  );
 
   const contractWasm = fs.readFileSync("../contract.wasm.gz");
   const gasLimit = 4_000_000;

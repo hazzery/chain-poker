@@ -15,7 +15,8 @@
     "dotenv": "^16.5",
     "glob": "^11.0.2",
     "secretjs": "^1.15",
-    "typescript-result": "^3.1.1"
+    "typescript-result": "^3.1.1",
+    "node-fetch": "^3.3.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.27.0",

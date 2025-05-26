@@ -16,18 +16,18 @@ interface InstantiateData {
  * Write the code ID and contract code hash to the filesystem for future script
  * executions to read them.
  *
- * @param codeId - The uploaded contract Web Assembly code's unique identifier.
- * @param contractCodeHash - The hash of the contract's compiled binary Web
- *    Assembly, to verify we're querying the correct contract.
+ * @param uploadData - An object with both codeId: the uploaded contract's
+ *    unique identifier and contractCodeHash: the hash of the contract's
+ *    compiled binary Web Assembly, to verify we're querying the correct
+ *    contract.
  *
  * @returns A result of nothing if writing was successful, otherwise a string error message.
  */
-async function writeUploadData([codeId, contractCodeHash]: [
-  string,
-  string,
-]): Promise<Result<void, string>> {
+async function writeUploadData(
+  uploadData: UploadData,
+): Promise<Result<void, string>> {
   const timestamp = new Date().toISOString();
-  const json = JSON.stringify({ codeId, contractCodeHash });
+  const json = JSON.stringify(uploadData);
 
   return await Result.fromAsyncCatching(
     fs.promises.writeFile(`upload-${timestamp}.json`, json),
@@ -104,18 +104,18 @@ async function readUploadData(): Promise<Result<UploadData, string>> {
  * Write the code ID and contract code hash to the filesystem for future script
  * executions to read them.
  *
- * @param contractCodeHash - The hash of the contract's compiled binary Web
- *    Assembly, to verify we're querying the correct contract.
- * @param contractAddress - The network address of the contract instantiation.
+ * @param instantiateData - An object containing both contractCodeHash: the
+ *    hash of the contract's compiled binary Web Assembly, to verify we're
+ *    querying the correct contract and contractAddress: the network address
+ *    of the contract instantiation.
  *
  * @returns A result of nothing if writing was successful, otherwise a string error message.
  */
 async function writeInstantiaionData(
-  contractCodeHash: string,
-  contractAddress: string,
+  instantiateData: InstantiateData,
 ): Promise<Result<void, string>> {
   const timestamp = new Date().toISOString();
-  const json = JSON.stringify({ contractCodeHash, contractAddress });
+  const json = JSON.stringify(instantiateData);
 
   return await Result.fromAsyncCatching(
     fs.promises.writeFile(`instantiation-${timestamp}.json`, json),
@@ -193,8 +193,10 @@ async function readInstantiateData(): Promise<Result<InstantiateData, string>> {
 }
 
 export {
-  writeUploadData,
+  readInstantiateData,
   readUploadData,
   writeInstantiaionData,
-  readInstantiateData,
+  writeUploadData,
+  type InstantiateData,
+  type UploadData,
 };
