@@ -1,12 +1,12 @@
-import { Wallet, SecretNetworkClient } from "secretjs";
 import fs from "fs";
-import assert from "assert";
+import fetch from "node-fetch";
+import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 
 // Returns a client with which we can interact with secret network
-async function initializeClient(
+function initializeClient(
   endpoint: string,
   chainId: string,
-): Promise<SecretNetworkClient> {
+): SecretNetworkClient {
   const wallet = new Wallet(); // Use default constructor of wallet to generate random mnemonic.
   const accAddress = wallet.address;
   const client = new SecretNetworkClient({
@@ -41,7 +41,7 @@ async function initializeContract(
     },
   );
 
-  if (uploadReceipt.code !== 0) {
+  if (uploadReceipt.code !== TxResultCode.Success) {
     console.log(
       `Failed to get code id: ${JSON.stringify(uploadReceipt.rawLog)}`,
     );
@@ -52,7 +52,7 @@ async function initializeContract(
     throw new Error("Upload receipt JSON log was not present");
   }
 
-  const codeIdKv = uploadReceipt.jsonLog?.[0].events[0].attributes.find(
+  const codeIdKv = uploadReceipt.jsonLog[0].events[0].attributes.find(
     (a) => a.key === "code_id",
   );
 
@@ -83,14 +83,15 @@ async function initializeContract(
         min_buy_in_bb: 50, // 5 SCRT min buy in
       }, // This message will trigger our Init function
       code_hash: contractCodeHash,
-      label: "My contract" + Math.ceil(Math.random() * 10000), // The label should be unique for every contract, add random string in order to maintain uniqueness
+      // The label should be unique for every contract, add random string in order to maintain uniqueness
+      label: `My contract  ${Math.ceil(Math.random() * 10000)}`,
     },
     {
       gasLimit: 1000000,
     },
   );
 
-  if (contract.code !== 0) {
+  if (contract.code !== TxResultCode.Success) {
     throw new Error(
       `Failed to instantiate the contract with the following error ${contract.rawLog}`,
     );
@@ -115,12 +116,12 @@ async function getFromFaucet(address: string): Promise<void> {
 }
 
 async function getScrtBalance(userCli: SecretNetworkClient): Promise<string> {
-  let balanceResponse = await userCli.query.bank.balance({
+  const balanceResponse = await userCli.query.bank.balance({
     address: userCli.address,
     denom: "uscrt",
   });
 
-  if (balanceResponse?.balance?.amount === undefined) {
+  if (balanceResponse.balance?.amount === undefined) {
     throw new Error(`Failed to get balance for address: ${userCli.address}`);
   }
 
@@ -147,10 +148,10 @@ async function fillUpFromFaucet(
 async function initializeAndUploadContract(): Promise<
   [SecretNetworkClient, string, string]
 > {
-  let endpoint = "http://localhost:1317";
-  let chainId = "secretdev-1";
+  const endpoint = "http://localhost:1317";
+  const chainId = "secretdev-1";
 
-  const client = await initializeClient(endpoint, chainId);
+  const client = initializeClient(endpoint, chainId);
 
   await fillUpFromFaucet(client, 100_000_000);
 
@@ -159,20 +160,15 @@ async function initializeAndUploadContract(): Promise<
     "contract.wasm",
   );
 
-  var clientInfo: [SecretNetworkClient, string, string] = [
-    client,
-    contractHash,
-    contractAddress,
-  ];
-  return clientInfo;
+  return [client, contractHash, contractAddress];
 }
 
-async function test_gas_limits() {
+function test_gas_limits(): void {
   // There is no accurate way to measue gas limits but it is actually highly recommended
   // to make sure that the gas that is used by a specific tx makes sense
 }
 
-async function runTestFunction(
+function runTestFunction(
   tester: (
     client: SecretNetworkClient,
     contractHash: string,
@@ -191,7 +187,7 @@ async function executeAllTests(): Promise<void> {
   const [client, contractHash, contractAddress] =
     await initializeAndUploadContract();
 
-  await runTestFunction(test_gas_limits, client, contractHash, contractAddress);
+  runTestFunction(test_gas_limits, client, contractHash, contractAddress);
 }
 
-executeAllTests();
+await executeAllTests();
