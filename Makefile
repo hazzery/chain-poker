@@ -5,7 +5,7 @@ OPTIMISED_WASM_DIR := ./contract/optimized-wasm
 test:
 	cargo unit-test
 
-# This does not work on Apple Silicon Macs
+# This does not work on Apple Silicon Macs, use build-docker instead
 build:
 	cd contract; RUSTFLAGS='-C link-arg=-s' cargo build --release --target wasm32-unknown-unknown
 	mkdir -p $(OPTIMISED_WASM_DIR)
@@ -19,7 +19,7 @@ build-docker:
 		mr7uca/wasm-contract-optimizer:0.0.12
 
 schema:
-	cargo run --example schema
+	cd contract; cargo run --example schema
 
 # Run local development chain with four funded accounts (named a, b, c, and d)
 start-server: # CTRL+C to stop
