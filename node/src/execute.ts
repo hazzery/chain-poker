@@ -1,4 +1,9 @@
-import { SecretNetworkClient, TxResponse, Wallet } from "secretjs";
+import {
+  SecretNetworkClient,
+  TxResponse,
+  TxResultCode,
+  Wallet,
+} from "secretjs";
 import { Result } from "typescript-result";
 import { initialiseNetworkClient, Network } from "./client";
 import { InstantiateData, readInstantiateData } from "./io";
@@ -26,7 +31,7 @@ async function tryExecute(
   wallet: Wallet,
   networkClient: SecretNetworkClient,
 ): Promise<Result<TxResponse, string>> {
-  const transactionResponse = await networkClient.tx.compute.executeContract(
+  const transaction = await networkClient.tx.compute.executeContract(
     {
       sender: wallet.address,
       contract_address: instantiateData.contractAddress,
@@ -36,7 +41,13 @@ async function tryExecute(
     { gasLimit },
   );
 
-  return Result.ok(transactionResponse);
+  if (transaction.code !== TxResultCode.Success) {
+    return Result.error(
+      `Failed to execute the transaction: Status code ${TxResultCode[transaction.code]}`,
+    );
+  }
+
+  return Result.ok(transaction);
 }
 
 /**

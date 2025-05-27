@@ -48,7 +48,7 @@ async function instantiateContract(
 
   if (transaction.code !== TxResultCode.Success) {
     return Result.error(
-      `Failed to instantiate the contract with the following error ${transaction.code}`,
+      `Failed to instantiate the contract. Status code: ${TxResultCode[transaction.code]}`,
     );
   }
 

@@ -37,7 +37,9 @@ async function uploadContract(
   );
 
   if (transaction.code !== TxResultCode.Success) {
-    return Result.error(`Failed to upload contract! code: ${transaction.code}`);
+    return Result.error(
+      `Failed to upload the contract. Status code: ${TxResultCode[transaction.code]}`,
+    );
   }
 
   const codeId = transaction.arrayLog?.find(
