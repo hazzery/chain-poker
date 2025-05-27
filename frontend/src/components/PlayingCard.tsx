@@ -29,7 +29,7 @@ export const enum Rank {
   King = "K",
 }
 
-interface PlayingCardProps {
+export interface PlayingCardProps {
   suit: Suit;
   rank: Rank;
 }
@@ -51,11 +51,13 @@ export default function PlayingCard({ suit, rank }: PlayingCardProps) {
   return (
     <Card
       sx={{
-        width: 200,
-        height: 300,
+        width: 100,
+        height: 150,
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+        borderRadius: "4.5%",
+        backgroundColor: "gray",
       }}
     >
       <Typography
