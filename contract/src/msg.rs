@@ -1,3 +1,4 @@
+use cosmwasm_std::Uint128;
 use schemars::JsonSchema;
 use secret_toolkit::permit::Permit;
 use serde::{Deserialize, Serialize};
@@ -14,7 +15,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     StartGame,
     BuyIn,
-    PlaceBet { value: u128 },
+    PlaceBet { value: Uint128 },
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

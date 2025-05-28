@@ -40,7 +40,7 @@ pub fn execute(
     match msg {
         ExecuteMsg::StartGame => try_start_game(deps),
         ExecuteMsg::BuyIn => try_buy_in(deps, info.sender, info.funds),
-        ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value),
+        ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
     }
 }
 
