@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "upload": "npx tsx upload.ts",
+    "upload-instantiate": "npx tsx uploadAndInstantiate.ts",
     "instantiate": "npx tsx instantiate.ts"
   },
   "keywords": [],
