@@ -5,7 +5,7 @@ use cosmwasm_std::CanonicalAddr;
 use secret_toolkit::storage::{AppendStore, Item, Keymap};
 use serde::{Deserialize, Serialize};
 
-use rank::Value;
+use rank::Rank;
 use suit::Suit;
 
 pub static GAME: Item<Game> = Item::new(b"game");
@@ -18,7 +18,7 @@ pub static IS_STARTED: Item<bool> = Item::new(b"started");
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Card {
     pub suit: Suit,
-    pub value: Value,
+    pub value: Rank,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]
@@ -36,7 +36,7 @@ pub struct Game {
 
 pub fn next_card() -> Card {
     Card {
-        value: Value::Queen,
+        value: Rank::Queen,
         suit: Suit::Hearts,
     }
 }
