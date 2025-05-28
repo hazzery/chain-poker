@@ -79,7 +79,9 @@ async function main(): Promise<Result<void, string>> {
     process.env.MNEMONIC,
   );
 
-  const contractWasm = fs.readFileSync("../contract.wasm.gz");
+  const contractWasm = fs.readFileSync(
+    "../contract/optimized-wasm/chain_poker.wasm.gz",
+  );
   const gasLimit = 4_000_000;
 
   return await Result.fromAsync(
