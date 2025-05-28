@@ -1,6 +1,6 @@
 import * as fs from "fs";
 import { SecretNetworkClient } from "secretjs";
-import { AsyncResult, Result } from "typescript-result";
+import { Result } from "typescript-result";
 
 import { initialiseNetworkClient, Network } from "../src/client";
 import instantiateContract from "../src/instantiate";
@@ -14,7 +14,7 @@ interface ContractClient {
 }
 
 async function initializeAndUploadContract(): Promise<
-  Result<ContractClient, string>
+  Result<ContractClient, Error>
 > {
   const [networkClient, wallet] = initialiseNetworkClient(Network.Localnet);
 
@@ -35,7 +35,6 @@ async function initializeAndUploadContract(): Promise<
     .map((contractWasm) =>
       uploadContract(gasLimit, wallet, networkClient, contractWasm),
     )
-    .mapError(String)
     .map((uploadData) =>
       instantiateContract(
         instantiationMessage,
@@ -62,7 +61,7 @@ function runTestFunction(
   console.log(`[SUCCESS] ${tester.name}`);
 }
 
-function executeAllTests(): AsyncResult<void, string> {
+async function executeAllTests(): Promise<Result<void, Error>> {
   return Result.fromAsync(initializeAndUploadContract())
     .onSuccess((contractClient) => {
       runTestFunction(test_gas_limits, contractClient);
@@ -76,4 +75,4 @@ function executeAllTests(): AsyncResult<void, string> {
     .map(() => {});
 }
 
-await executeAllTests().onFailure(console.error);
+await Result.fromAsync(executeAllTests()).onFailure(console.error);

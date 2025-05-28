@@ -1,10 +1,8 @@
 import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import {
-  InstantiateData,
-  UploadData,
-} from "./io";
+import { InstantiateData, UploadData } from "./io";
+import { Err } from "./utils";
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
@@ -21,7 +19,7 @@ import {
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  *
  * @returns A result containing the new address of the instantiated contract if
- *    successfull, otherwise a string error message.
+ *    successfull, otherwise an error.
  */
 async function instantiateContract(
   instantiationMessage: object,
@@ -29,7 +27,7 @@ async function instantiateContract(
   uploadData: UploadData,
   wallet: Wallet,
   networkClient: SecretNetworkClient,
-): Promise<Result<InstantiateData, string>> {
+): Promise<Result<InstantiateData, Error>> {
   const transaction = await networkClient.tx.compute.instantiateContract(
     {
       code_id: uploadData.codeId,
@@ -43,7 +41,7 @@ async function instantiateContract(
   );
 
   if (transaction.code !== TxResultCode.Success) {
-    return Result.error(
+    return Err(
       `Failed to instantiate the contract. Status code: ${TxResultCode[transaction.code]}`,
     );
   }
@@ -54,7 +52,7 @@ async function instantiateContract(
   )?.value;
 
   if (contractAddress === undefined) {
-    return Result.error("Unable to find contract address");
+    return Err("Unable to find contract address");
   }
 
   return Result.ok({

@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import { Result } from "typescript-result";
+import { Err } from "./utils";
 
 interface UploadData {
   codeId: string;
@@ -21,17 +22,17 @@ interface InstantiateData {
  *    compiled binary Web Assembly, to verify we're querying the correct
  *    contract.
  *
- * @returns A result of nothing if writing was successful, otherwise a string error message.
+ * @returns A result of nothing if writing was successful, otherwise an error.
  */
 async function writeUploadData(
   uploadData: UploadData,
-): Promise<Result<void, string>> {
+): Promise<Result<void, Error>> {
   const timestamp = new Date().toISOString();
   const json = JSON.stringify(uploadData);
 
   return await Result.fromAsyncCatching(
     fs.promises.writeFile(`upload-${timestamp}.json`, json),
-  ).mapError(String);
+  );
 }
 
 /**
@@ -60,11 +61,11 @@ function isValidUploadData(uploadData: unknown): uploadData is UploadData {
  * @param uploadData - The output of a json parse.
  *
  * @returns A result containing `uploadData` if it has the required properties,
- *    otherwise a string error message.
+ *    otherwise an error.
  */
-function castJsonUploadData(uploadData: unknown): Result<UploadData, string> {
+function castJsonUploadData(uploadData: unknown): Result<UploadData, Error> {
   if (!isValidUploadData(uploadData)) {
-    return Result.error(
+    return Err(
       "Invalid upload data, must contain both codeId and contractCodeHash properties",
     );
   }
@@ -76,14 +77,13 @@ function castJsonUploadData(uploadData: unknown): Result<UploadData, string> {
  * Read in the value of the output from the latest contract upload.
  *
  * @returns A result of an object containing the contract's code ID and code
- *    hash if the data exists in the filesystem, otherwise a string error
- *    message.
+ *    hash if the data exists in the filesystem, otherwise an error.
  */
-async function readUploadData(): Promise<Result<UploadData, string>> {
+async function readUploadData(): Promise<Result<UploadData, Error>> {
   const uploads = await glob.glob("upload-*.json");
 
   if (uploads.length === 0) {
-    return Result.error("No upload files found");
+    return Err("No upload files found");
   }
 
   const { filename } = uploads.reduce(
@@ -95,8 +95,7 @@ async function readUploadData(): Promise<Result<UploadData, string>> {
   );
 
   return await Result.fromAsyncCatching(fs.promises.readFile(filename, "utf8"))
-    .mapCatching(JSON.parse)
-    .mapError(String)
+    .mapCatching(JSON.parse as (_: string) => unknown)
     .map(castJsonUploadData);
 }
 
@@ -109,17 +108,17 @@ async function readUploadData(): Promise<Result<UploadData, string>> {
  *    querying the correct contract and contractAddress: the network address
  *    of the contract instantiation.
  *
- * @returns A result of nothing if writing was successful, otherwise a string error message.
+ * @returns A result of nothing if writing was successful, otherwise an error.
  */
 async function writeInstantiaionData(
   instantiateData: InstantiateData,
-): Promise<Result<void, string>> {
+): Promise<Result<void, Error>> {
   const timestamp = new Date().toISOString();
   const json = JSON.stringify(instantiateData);
 
   return await Result.fromAsyncCatching(
     fs.promises.writeFile(`instantiation-${timestamp}.json`, json),
-  ).mapError(String);
+  );
 }
 
 /**
@@ -150,13 +149,13 @@ function isValidInstantiationData(
  * @param instantiateData - The output of a json parse.
  *
  * @returns A result containing `instantiateData` if it has the required
- *    properties, otherwise a string error message.
+ *    properties, otherwise an error.
  */
 function castJsonInstantiateData(
   instantiateData: unknown,
-): Result<InstantiateData, string> {
+): Result<InstantiateData, Error> {
   if (!isValidInstantiationData(instantiateData)) {
-    return Result.error(
+    return Err(
       "Invalid instantiation data, must contain both contractCodeHash and contractAddress properties",
     );
   }
@@ -168,14 +167,13 @@ function castJsonInstantiateData(
  * Read in the value of the output from the latest contract instantiation.
  *
  * @returns A result of an object containing the contract's code hash and
- *    address if the data exists in the filesystem, otherwise a string error
- *    message.
+ *    address if the data exists in the filesystem, otherwise an error.
  */
-async function readInstantiateData(): Promise<Result<InstantiateData, string>> {
+async function readInstantiateData(): Promise<Result<InstantiateData, Error>> {
   const instantiations = await glob.glob("instantiation-*.json");
 
   if (instantiations.length === 0) {
-    return Result.error("No instantiation files found");
+    return Err("No instantiation files found");
   }
 
   const { filename } = instantiations.reduce(
@@ -187,8 +185,7 @@ async function readInstantiateData(): Promise<Result<InstantiateData, string>> {
   );
 
   return await Result.fromAsyncCatching(fs.promises.readFile(filename, "utf8"))
-    .mapCatching(JSON.parse)
-    .mapError(String)
+    .mapCatching(JSON.parse as (_: string) => unknown)
     .map(castJsonInstantiateData);
 }
 

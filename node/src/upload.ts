@@ -2,6 +2,7 @@ import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
 import { UploadData } from "./io";
+import { Err } from "./utils";
 
 /**
  * Upload the provided Web Assembly code to the network configured inside of the
@@ -15,14 +16,14 @@ import { UploadData } from "./io";
  *    Assembly code
  *
  * @returns A result containing an object with the code ID and the contract
- *    code hash if sucessfull, otherwise a string error message.
+ *    code hash if sucessfull, otherwise an error.
  */
 async function uploadContract(
   gasLimit: number,
   wallet: Wallet,
   networkClient: SecretNetworkClient,
   contractWasm: Buffer,
-): Promise<Result<UploadData, string>> {
+): Promise<Result<UploadData, Error>> {
   const transaction = await networkClient.tx.compute.storeCode(
     {
       sender: wallet.address,
@@ -34,7 +35,7 @@ async function uploadContract(
   );
 
   if (transaction.code !== TxResultCode.Success) {
-    return Result.error(
+    return Err(
       `Failed to upload the contract. Status code: ${TxResultCode[transaction.code]}`,
     );
   }
@@ -44,7 +45,7 @@ async function uploadContract(
   )?.value;
 
   if (codeId === undefined) {
-    return Result.error("Unable to find Code ID");
+    return Err("Unable to find Code ID");
   }
 
   const contractCodeHash = (
@@ -52,7 +53,7 @@ async function uploadContract(
   ).code_hash;
 
   if (contractCodeHash === undefined) {
-    return Result.error("Unable to compute contract code hash");
+    return Err("Unable to compute contract code hash");
   }
 
   return Result.ok({ codeId, contractCodeHash });

@@ -2,27 +2,29 @@ import fetch, { Response } from "node-fetch";
 import { SecretNetworkClient } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
 
+function Err(message: string): Result<never, Error> {
+  return Result.error(new Error(message));
+}
+
 /**
  * Query the network for the balance of the address associated with the given
  * network client.
  *
  * @param networkClient - A network client initialised with a wallet
  *
- * @returns The balance of the address associated with the given network
- *    client.
+ * @returns A result containing the balance of the address associated with the
+ *    given network client if successfull, otherwise an error.
  */
 async function getScrtBalance(
   networkClient: SecretNetworkClient,
-): Promise<Result<number, string>> {
+): Promise<Result<number, Error>> {
   const balanceResponse = await networkClient.query.bank.balance({
     address: networkClient.address,
     denom: "uscrt",
   });
 
   if (balanceResponse.balance?.amount === undefined) {
-    return Result.error(
-      `Failed to get balance for address: ${networkClient.address}`,
-    );
+    return Err(`Failed to get balance for address: ${networkClient.address}`);
   }
 
   return Result.ok(Number(balanceResponse.balance.amount));
@@ -33,13 +35,13 @@ async function getScrtBalance(
  *
  * @param response - An HTTP(S) response from fetch.
  *
- * @returns A result containing the response if it was successfull, otherwise a string error message.
+ * @returns A result containing the response if it was successfull, otherwise an error.
  */
 async function processResponse(
   response: Response,
-): Promise<Result<Response, string>> {
+): Promise<Result<Response, Error>> {
   if (!response.ok) {
-    return Result.error(
+    return Err(
       `${response.status} ${response.statusText}: ${await response.text()}`,
     );
   }
@@ -52,14 +54,12 @@ async function processResponse(
  * @param address - The Secret Network address to send tokens to.
  *
  * @returns An asyncronous result containing the response from the faucet if
- *    successfull, otherwise a string error message.
+ *    successfull, otherwise an error.
  */
-function getFromFaucet(address: string): AsyncResult<Response, string> {
+function getFromFaucet(address: string): AsyncResult<Response, Error> {
   return Result.fromAsyncCatching(
     fetch(`http://localhost:5000/faucet?address=${address}`),
-  )
-    .mapError(String)
-    .map(processResponse);
+  ).map(processResponse);
   // TODO: Add more usefull information: `failed to get tokens from faucet: ${error}`
 }
 
@@ -69,11 +69,13 @@ function getFromFaucet(address: string): AsyncResult<Response, string> {
  *
  * @param networkClient - A secret network client initialised with a wallet.
  * @param targetBalance - The desired SCRT balance of the associated wallet.
+ *
+ * @returns A result of nothing if successfull, otherwise an Error.
  */
 async function fillUpFromFaucet(
   networkClient: SecretNetworkClient,
   targetBalance: number,
-): Promise<Result<void, string>> {
+): Promise<Result<void, Error>> {
   // TODO: implement limit on request attempts, if possible attach any errors
   // to the returned error.
   //
@@ -90,4 +92,4 @@ async function fillUpFromFaucet(
   return Result.ok();
 }
 
-export { getFromFaucet, getScrtBalance, fillUpFromFaucet };
+export { Err, getFromFaucet, getScrtBalance, fillUpFromFaucet };

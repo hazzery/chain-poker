@@ -5,6 +5,7 @@ import { Result } from "typescript-result";
 import { initialiseNetworkClient, Network } from "./src/client";
 import { writeUploadData } from "./src/io";
 import uploadContract from "./src/upload";
+import { Err } from "./src/utils";
 
 /**
  * Upload the compiled contract's binary Web Assembly code to the network.
@@ -12,11 +13,11 @@ import uploadContract from "./src/upload";
  * @returns A result of nothing if execution is sucessfull, otherwise a string
  * error message.
  */
-async function main(): Promise<Result<void, string>> {
+async function main(): Promise<Result<void, Error>> {
   dotenv.config();
 
   if (process.env.MNEMONIC === undefined) {
-    return Result.error("Wallet mnemonic was not found in environment");
+    return Err("Wallet mnemonic was not found in environment");
   }
 
   const [networkClient, wallet] = initialiseNetworkClient(
@@ -28,7 +29,6 @@ async function main(): Promise<Result<void, string>> {
   const gasLimit = 4_000_000;
 
   return await Result.fromAsyncCatching(fs.promises.readFile(contractWasmPath))
-    .mapError(String)
     .map((contractWasm) =>
       uploadContract(gasLimit, wallet, networkClient, contractWasm),
     )

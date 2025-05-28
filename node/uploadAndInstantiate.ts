@@ -6,12 +6,13 @@ import { initialiseNetworkClient, Network } from "./src/client";
 import instantiateContract from "./src/instantiate";
 import { writeInstantiaionData } from "./src/io";
 import uploadContract from "./src/upload";
+import { Err } from "./src/utils";
 
-async function main(): Promise<Result<void, string>> {
+async function main(): Promise<Result<void, Error>> {
   dotenv.config();
 
   if (process.env.MNEMONIC === undefined) {
-    return Result.error("Wallet mnemonic was not found in environment");
+    return Err("Wallet mnemonic was not found in environment");
   }
 
   const [networkClient, wallet] = initialiseNetworkClient(Network.Testnet);
@@ -25,7 +26,6 @@ async function main(): Promise<Result<void, string>> {
     .map((contractWasm) =>
       uploadContract(uploadGasLimit, wallet, networkClient, contractWasm),
     )
-    .mapError(String)
     .map((uploadData) =>
       instantiateContract(
         instantiationMessage,

@@ -4,6 +4,7 @@ import { Result } from "typescript-result";
 import { initialiseNetworkClient, Network } from "./src/client";
 import instantiateContract from "./src/instantiate";
 import { readUploadData, writeInstantiaionData } from "./src/io";
+import { Err } from "./src/utils";
 
 /**
  * Instantiate the contract.
@@ -11,11 +12,11 @@ import { readUploadData, writeInstantiaionData } from "./src/io";
  * @returns A result of nothing if execution was successfull, otherwise a string
  *    error message.
  */
-async function main(): Promise<Result<void, string>> {
+async function main(): Promise<Result<void, Error>> {
   dotenv.config();
 
   if (process.env.MNEMONIC === undefined) {
-    return Result.error("Wallet mnemonic was not found in environment");
+    return Err("Wallet mnemonic was not found in environment");
   }
 
   const [networkClient, wallet] = initialiseNetworkClient(
