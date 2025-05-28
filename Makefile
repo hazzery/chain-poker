@@ -16,7 +16,7 @@ build-docker:
 	cd contract; docker run --rm -v "$$(pwd)":/contract \
 		--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 		--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-		mr7uca/wasm-contract-optimizer:0.0.12
+		ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
 
 schema:
 	cd contract; cargo run --example schema
