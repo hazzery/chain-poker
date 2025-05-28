@@ -1,10 +1,7 @@
-import * as fs from "fs";
-import dotenv from "dotenv";
 import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import { initialiseNetworkClient, Network } from "./client";
-import { UploadData, writeUploadData } from "./io";
+import { UploadData } from "./io";
 
 /**
  * Upload the provided Web Assembly code to the network configured inside of the
@@ -60,35 +57,5 @@ async function uploadContract(
 
   return Result.ok({ codeId, contractCodeHash });
 }
-
-/**
- * Upload the compiled contract's binary Web Assembly code to the network.
- *
- * @returns A result of nothing if execution is sucessfull, otherwise a string
- * error message.
- */
-async function main(): Promise<Result<void, string>> {
-  dotenv.config();
-
-  if (process.env.MNEMONIC === undefined) {
-    return Result.error("Wallet mnemonic was not found in environment");
-  }
-
-  const [networkClient, wallet] = initialiseNetworkClient(
-    Network.Testnet,
-    process.env.MNEMONIC,
-  );
-
-  const contractWasm = fs.readFileSync(
-    "../contract/optimized-wasm/chain_poker.wasm.gz",
-  );
-  const gasLimit = 4_000_000;
-
-  return await Result.fromAsync(
-    uploadContract(gasLimit, wallet, networkClient, contractWasm),
-  ).map(writeUploadData);
-}
-
-await Result.fromAsync(main()).mapError(console.error);
 
 export default uploadContract;

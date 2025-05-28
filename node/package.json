@@ -5,8 +5,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "upload": "npx tsx src/upload.ts",
-    "instantiate": "npx tsx src/instantiate.ts"
+    "upload": "npx tsx upload.ts",
+    "instantiate": "npx tsx instantiate.ts"
   },
   "keywords": [],
   "author": "Harrison Parkes",
