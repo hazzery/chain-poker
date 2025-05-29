@@ -21,8 +21,8 @@ function FanLayout({ children, players, radii }: FanLayoutProps) {
   let xradius: number;
   let yradius: number;
   if (radii === undefined) {
-    xradius = clamp(width * 0.02, 20, 70);
-    yradius = clamp(height * 0.02, 10, 30);
+    xradius = clamp(width * 0.025, 20, 38);
+    yradius = clamp(height * 0.015, 10, 30);
   } else {
     xradius = radii.x;
     yradius = radii.y;
