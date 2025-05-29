@@ -4,7 +4,7 @@ import Typography from "@mui/material/Typography";
 
 function NavBar() {
   return (
-    <AppBar position="static">
+    <AppBar color="success">
       <Toolbar>
         <Typography variant="h6" component="div">
           Chain Poker

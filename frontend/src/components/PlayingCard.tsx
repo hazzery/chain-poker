@@ -37,13 +37,13 @@ export interface PlayingCardProps {
 function suitIcon(suit: Suit) {
   switch (suit) {
     case Suit.Hearts:
-      return <RiPokerHeartsFill size={65} color="red" />;
+      return <RiPokerHeartsFill size="4em" color="red" />;
     case Suit.Diamonds:
-      return <RiPokerDiamondsFill size={65} color="red" />;
+      return <RiPokerDiamondsFill size="4em" color="red" />;
     case Suit.Spades:
-      return <RiPokerSpadesFill size={65} color="black" />;
+      return <RiPokerSpadesFill size="4em" color="black" />;
     case Suit.Clubs:
-      return <RiPokerClubsFill size={65} color="black" />;
+      return <RiPokerClubsFill size="4em" color="black" />;
   }
 }
 
@@ -51,18 +51,17 @@ export default function PlayingCard({ suit, rank }: PlayingCardProps) {
   return (
     <Card
       sx={{
-        width: 100,
-        height: 150,
+        width: "6em",
+        height: "9em",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        borderRadius: "4.5%",
-        backgroundColor: "gray",
+        borderRadius: "5%",
       }}
     >
       <Typography
         color={suit === Suit.Hearts || suit === Suit.Diamonds ? "red" : "black"}
-        fontSize={50}
+        fontSize="3em"
       >
         {rank}
       </Typography>

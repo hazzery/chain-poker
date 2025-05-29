@@ -15,10 +15,13 @@ export function CardSet({ cards }: CardSetProps) {
   return (
     <Card
       sx={{
-        display: "inline-flex",
-        columnGap: "10px",
-        backgroundColor: "darkgrey",
-        padding: "10px",
+        // display: "inline-flex",
+        display: "flex",
+        columnGap: "0.7em",
+        // backgroundColor: "burlywood",
+        backgroundColor: "forestgreen",
+        padding: "0.7em",
+        alignItems: "center",
       }}
     >
       {playingCards(cards)}

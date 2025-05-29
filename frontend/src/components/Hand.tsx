@@ -1,8 +1,8 @@
-import { Box, Typography } from "@mui/material";
-import { PiPokerChipDuotone } from "react-icons/pi";
+import { Card } from "@mui/material";
 
-import { type PlayingCardProps } from "./PlayingCard";
+import { ChipCount } from "../ChipCount";
 import { CardSet } from "./CardSet";
+import { type PlayingCardProps } from "./PlayingCard";
 
 export interface HandProps {
   cards: PlayingCardProps[];
@@ -10,22 +10,29 @@ export interface HandProps {
 
 export function Hand({ cards }: HandProps) {
   return (
-    <>
-      <Box
-        width="100%"
-        display="flex"
-        position="fixed"
-        bottom={0}
-        justifyContent="space-between"
-        alignItems="center"
-        marginLeft="20px"
-      >
-        <PiPokerChipDuotone size={100} />
-        <Typography fontSize={30}>1000</Typography>
-        <Box display="flex" flexGrow={1} justifyContent="center">
-          <CardSet cards={cards} />
-        </Box>
-      </Box>
-    </>
+    <Card
+      sx={{
+        backgroundColor: "gainsboro",
+        display: "flex",
+        flexGrow: 0,
+        flexShrink: 0,
+        justifyContent: "center",
+        borderRadius: "0.4em",
+        margin: "1em",
+        padding: "0.5em",
+      }}
+    >
+      <ChipCount
+        numberOfChips={97.5}
+        chipIconSize="6em"
+        fontSize="2em"
+        sx={{
+          position: "fixed",
+          left: "2em",
+          height: "11em",
+        }}
+      />
+      <CardSet cards={cards} />
+    </Card>
   );
 }
