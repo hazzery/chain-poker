@@ -17,12 +17,12 @@ import { InstantiateData } from "./types";
  * @returns A result containing the query response if successful, otherwise
  *    an error.
  */
-async function queryContract(
+async function queryContract<ReturnType extends object>(
   query: object,
   instantiateData: InstantiateData,
   networkClient: SecretNetworkClient,
-): Promise<Result<object, Error>> {
-  const queryResponse: object | string =
+): Promise<Result<ReturnType, Error>> {
+  const queryResponse: ReturnType | string =
     await networkClient.query.compute.queryContract({
       contract_address: instantiateData.contractAddress,
       code_hash: instantiateData.contractCodeHash,
