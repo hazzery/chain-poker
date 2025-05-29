@@ -3,10 +3,10 @@ import * as fs from "fs";
 import { Result } from "typescript-result";
 
 import { initialiseNetworkClient, Network } from "./src/client";
+import Err from "./src/err";
 import instantiateContract from "./src/instantiate";
 import { writeInstantiaionData } from "./src/io";
 import uploadContract from "./src/upload";
-import { Err } from "./src/utils";
 
 async function main(): Promise<Result<void, Error>> {
   dotenv.config();

@@ -1,17 +1,9 @@
 import * as fs from "fs";
 import * as glob from "glob";
 import { Result } from "typescript-result";
-import { Err } from "./utils";
 
-interface UploadData {
-  codeId: string;
-  contractCodeHash: string;
-}
-
-interface InstantiateData {
-  contractCodeHash: string;
-  contractAddress: string;
-}
+import Err from "./err";
+import { InstantiateData, UploadData } from "./types";
 
 /**
  * Write the code ID and contract code hash to the filesystem for future script
@@ -194,6 +186,4 @@ export {
   readUploadData,
   writeInstantiaionData,
   writeUploadData,
-  type InstantiateData,
-  type UploadData,
 };

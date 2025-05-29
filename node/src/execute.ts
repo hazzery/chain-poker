@@ -5,8 +5,8 @@ import {
   Wallet,
 } from "secretjs";
 import { Result } from "typescript-result";
-import { InstantiateData } from "./io";
-import { Err } from "./utils";
+import { InstantiateData } from "./types";
+import Err from "./err";
 
 /**
  * Try to execute `message` on the network configured inside of `networkClient`

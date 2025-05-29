@@ -1,8 +1,8 @@
 import { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
 
-import { InstantiateData } from "./io";
-import { Err } from "./utils";
+import { InstantiateData } from "./types";
+import Err from "./err";
 
 /**
  * Query the specified contract and return the result.

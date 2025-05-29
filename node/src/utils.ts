@@ -2,9 +2,7 @@ import fetch, { Response } from "node-fetch";
 import { SecretNetworkClient } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
 
-function Err(message: string): Result<never, Error> {
-  return Result.error(new Error(message));
-}
+import Err from "./err";
 
 /**
  * Query the network for the balance of the address associated with the given
@@ -92,4 +90,4 @@ async function fillUpFromFaucet(
   return Result.ok();
 }
 
-export { Err, getFromFaucet, getScrtBalance, fillUpFromFaucet };
+export { fillUpFromFaucet, getFromFaucet, getScrtBalance };

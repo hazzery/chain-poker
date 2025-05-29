@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 import { Result } from "typescript-result";
 
 import { initialiseNetworkClient, Network } from "./src/client";
+import Err from "./src/err";
 import instantiateContract from "./src/instantiate";
 import { readUploadData, writeInstantiaionData } from "./src/io";
-import { Err } from "./src/utils";
 
 /**
  * Instantiate the contract.

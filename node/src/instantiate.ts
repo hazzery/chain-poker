@@ -1,8 +1,8 @@
 import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import { InstantiateData, UploadData } from "./io";
-import { Err } from "./utils";
+import { InstantiateData, UploadData } from "./types";
+import Err from "./err";
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
