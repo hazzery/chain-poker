@@ -4,7 +4,9 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useMemo } from "preact/hooks";
 
 import "./app.css";
+import ConnectWallet from "./pages/ConnectWallet";
 import Landing from "./pages/Landing";
+import { SecretJsContextProvider } from "./secretnetwork/secretNetworkContext";
 
 export interface PlayerInfo {
   name: string;
@@ -26,7 +28,10 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Landing />
+      <SecretJsContextProvider>
+        {/* <Landing /> */}
+        <ConnectWallet />
+      </SecretJsContextProvider>
     </ThemeProvider>
   );
 }
