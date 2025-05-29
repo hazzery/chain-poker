@@ -4,9 +4,9 @@ import { Result } from "typescript-result";
 
 import { initialiseNetworkClient, Network } from "../src/client";
 import instantiateContract from "../src/instantiate";
-import { InstantiateData } from "../src/io";
+import { fillUpFromFaucet } from "../src/node/utils";
+import { InstantiateData } from "../src/types";
 import uploadContract from "../src/upload";
-import { fillUpFromFaucet } from "../src/utils";
 
 interface ContractClient {
   networkClient: SecretNetworkClient;

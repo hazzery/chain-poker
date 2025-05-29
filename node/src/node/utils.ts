@@ -2,7 +2,7 @@ import fetch, { Response } from "node-fetch";
 import { SecretNetworkClient } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
 
-import Err from "./err";
+import Err from "../err";
 
 /**
  * Query the network for the balance of the address associated with the given

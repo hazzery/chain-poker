@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as glob from "glob";
 import { Result } from "typescript-result";
 
-import Err from "./err";
-import { InstantiateData, UploadData } from "./types";
+import Err from "../err";
+import { InstantiateData, UploadData } from "../types";
 
 /**
  * Write the code ID and contract code hash to the filesystem for future script

@@ -5,7 +5,7 @@ import { Result } from "typescript-result";
 import { initialiseNetworkClient, Network } from "./src/client";
 import Err from "./src/err";
 import instantiateContract from "./src/instantiate";
-import { writeInstantiaionData } from "./src/io";
+import { writeInstantiaionData } from "./src/node/io";
 import uploadContract from "./src/upload";
 
 async function main(): Promise<Result<void, Error>> {

@@ -1,8 +1,8 @@
 import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import { UploadData } from "./types";
 import Err from "./err";
+import { UploadData } from "./types";
 
 /**
  * Upload the provided Web Assembly code to the network configured inside of the

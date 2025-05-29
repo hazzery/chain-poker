@@ -4,7 +4,7 @@ import { Result } from "typescript-result";
 
 import { initialiseNetworkClient, Network } from "./src/client";
 import Err from "./src/err";
-import { writeUploadData } from "./src/io";
+import { writeUploadData } from "./src/node/io";
 import uploadContract from "./src/upload";
 
 /**
