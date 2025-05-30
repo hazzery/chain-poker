@@ -1,8 +1,49 @@
-import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
+import {
+  SecretNetworkClient,
+  TxResponse,
+  TxResultCode,
+  Wallet,
+} from "secretjs";
 import { Result } from "typescript-result";
 
 import Err from "./err";
 import { UploadData } from "./types";
+
+async function processUploadTransactionResponse(
+  transaction: TxResponse,
+  networkClient: SecretNetworkClient,
+): Promise<Result<UploadData, Error>> {
+  if (transaction.code !== TxResultCode.Success) {
+    return Err(
+      "Failed to upload the contract.\n\n" +
+        `Status code: ${TxResultCode[transaction.code]}\n\n` +
+        transaction.rawLog,
+    );
+  }
+
+  const codeId = transaction.arrayLog?.find(
+    (log) => log.type === "message" && log.key === "code_id",
+  )?.value;
+
+  if (codeId === undefined) {
+    return Err("Unable to find Code ID");
+  }
+
+  return Result.fromAsyncCatching(
+    networkClient.query.compute.codeHashByCodeId({ code_id: codeId }),
+  )
+    .map((response) => response.code_hash)
+    .map((contractCodeHash) => {
+      if (contractCodeHash === undefined) {
+        return Err("Unable to compute contract code hash");
+      }
+      return contractCodeHash;
+    })
+    .map((contractCodeHash) => ({
+      codeId,
+      contractCodeHash,
+    }));
+}
 
 /**
  * Upload the provided Web Assembly code to the network configured inside of the
@@ -24,39 +65,19 @@ async function uploadContract(
   networkClient: SecretNetworkClient,
   contractWasm: Buffer,
 ): Promise<Result<UploadData, Error>> {
-  const transaction = await networkClient.tx.compute.storeCode(
-    {
-      sender: wallet.address,
-      wasm_byte_code: contractWasm,
-      source: "",
-      builder: "",
-    },
-    { gasLimit },
+  return Result.fromAsyncCatching(
+    networkClient.tx.compute.storeCode(
+      {
+        sender: wallet.address,
+        wasm_byte_code: contractWasm,
+        source: "",
+        builder: "",
+      },
+      { gasLimit },
+    ),
+  ).map((transaxtion) =>
+    processUploadTransactionResponse(transaxtion, networkClient),
   );
-
-  if (transaction.code !== TxResultCode.Success) {
-    return Err(
-      `Failed to upload the contract. Status code: ${TxResultCode[transaction.code]}`,
-    );
-  }
-
-  const codeId = transaction.arrayLog?.find(
-    (log) => log.type === "message" && log.key === "code_id",
-  )?.value;
-
-  if (codeId === undefined) {
-    return Err("Unable to find Code ID");
-  }
-
-  const contractCodeHash = (
-    await networkClient.query.compute.codeHashByCodeId({ code_id: codeId })
-  ).code_hash;
-
-  if (contractCodeHash === undefined) {
-    return Err("Unable to compute contract code hash");
-  }
-
-  return Result.ok({ codeId, contractCodeHash });
 }
 
 export default uploadContract;
