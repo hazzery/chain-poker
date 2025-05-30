@@ -5,6 +5,8 @@ import { Result } from "typescript-result";
 import Err from "../err";
 import { InstantiateData, UploadData } from "../types";
 
+const OUTPUT_DIRECTORY = "output/";
+
 /**
  * Write the code ID and contract code hash to the filesystem for future script
  * executions to read them.
@@ -23,7 +25,7 @@ async function writeUploadData(
   const json = JSON.stringify(uploadData);
 
   return await Result.fromAsyncCatching(
-    fs.promises.writeFile(`upload-${timestamp}.json`, json),
+    fs.promises.writeFile(`${OUTPUT_DIRECTORY}/upload-${timestamp}.json`, json),
   );
 }
 
@@ -109,7 +111,10 @@ async function writeInstantiaionData(
   const json = JSON.stringify(instantiateData);
 
   return await Result.fromAsyncCatching(
-    fs.promises.writeFile(`instantiation-${timestamp}.json`, json),
+    fs.promises.writeFile(
+      `${OUTPUT_DIRECTORY}/instantiation-${timestamp}.json`,
+      json,
+    ),
   );
 }
 
