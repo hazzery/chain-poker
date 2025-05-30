@@ -44,4 +44,7 @@ async function main(): Promise<Result<void, Error>> {
     .map(writeInstantiaionData);
 }
 
-await Result.fromAsync(main()).onFailure(console.error);
+await Result.fromAsync(main()).onFailure((error) => {
+  console.error(error);
+  process.exit(1);
+});

@@ -35,4 +35,7 @@ async function main(): Promise<Result<void, Error>> {
     .map(writeUploadData);
 }
 
-await Result.fromAsync(main()).onFailure(console.error);
+await Result.fromAsync(main()).onFailure((error) => {
+  console.error(error);
+  process.exit(1);
+});
