@@ -8,6 +8,56 @@ import { InstantiateData, UploadData } from "../types";
 const OUTPUT_DIRECTORY = "output";
 
 /**
+ * Type guard function to assert that an unknown value conforms to the given
+ * object specification.
+ *
+ * @param something - Absolutely any value, typically the output of a
+ *    json parse.
+ *
+ * @param spec - An object which maps property names to property types.
+ *
+ * @returns `true` if the value has all of the properties in `spec` of the
+ *    specified types, `false` otherwise.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
+function isValid<T>(
+  something: unknown,
+  spec: Record<string, string>,
+): something is T {
+  if (typeof something !== "object" || something === null) {
+    return false;
+  }
+  return Object.entries(spec).every(
+    ([property, type]) =>
+      property in something && typeof something[property] === type,
+  );
+}
+
+/**
+ * Maps unknown output to a result of a known type.
+ *
+ * @param something - Absolutely any value, typically the output of a
+ *    json parse.
+ *
+ * @param spec - An object which maps property names to property types.
+ *
+ * @returns A result containing `something` cast as type `T` if it has the
+ *    required properties, otherwise an error.
+ */
+function castUnknown<T>(
+  something: unknown,
+  spec: Record<string, string>,
+): Result<T, Error> {
+  if (!isValid<T>(something, spec)) {
+    return Err(
+      "Invalid instantiation data, must contain both contractCodeHash and contractAddress properties",
+    );
+  }
+
+  return Result.ok(something);
+}
+
+/**
  * Write the code ID and contract code hash to the filesystem for future script
  * executions to read them.
  *
@@ -27,44 +77,6 @@ async function writeUploadData(
   return await Result.fromAsyncCatching(
     fs.promises.writeFile(`${OUTPUT_DIRECTORY}/upload-${timestamp}.json`, json),
   );
-}
-
-/**
- * Type guard function to assert that an unknown value contains the code ID and
- * the contract code hash.
- *
- * @param uploadData - Absolutely any value, typically the output of a json
- *    parse.
- *
- * @returns `true` if the value has both the "codeId" and "contractCodeHash"
- *    string properties, `false` otherwise.
- */
-function isValidUploadData(uploadData: unknown): uploadData is UploadData {
-  return (
-    uploadData instanceof Object &&
-    "codeId" in uploadData &&
-    typeof uploadData.codeId === "string" &&
-    "contractCodeHash" in uploadData &&
-    typeof uploadData.contractCodeHash === "string"
-  );
-}
-
-/**
- * Maps unknown output to a result of a known type.
- *
- * @param uploadData - The output of a json parse.
- *
- * @returns A result containing `uploadData` if it has the required properties,
- *    otherwise an error.
- */
-function castJsonUploadData(uploadData: unknown): Result<UploadData, Error> {
-  if (!isValidUploadData(uploadData)) {
-    return Err(
-      "Invalid upload data, must contain both codeId and contractCodeHash properties",
-    );
-  }
-
-  return Result.ok(uploadData);
 }
 
 /**
@@ -90,7 +102,12 @@ async function readUploadData(): Promise<Result<UploadData, Error>> {
 
   return await Result.fromAsyncCatching(fs.promises.readFile(filename, "utf8"))
     .mapCatching(JSON.parse as (_: string) => unknown)
-    .map(castJsonUploadData);
+    .map((value) =>
+      castUnknown<UploadData>(value, {
+        contractCodeHash: "string",
+        codeId: "string",
+      }),
+    );
 }
 
 /**
@@ -119,48 +136,6 @@ async function writeInstantiaionData(
 }
 
 /**
- * Type guard function to assert that an unknown value contains the contract
- * code hash and contract address.
- *
- * @param instantiateData - Absolutely any value, typically the output of a
- *    json parse.
- *
- * @returns `true` if the value has both the "contractCodeHash" and
- *    "contractAddress" string properties, `false` otherwise.
- */
-function isValidInstantiationData(
-  instantiateData: unknown,
-): instantiateData is InstantiateData {
-  return (
-    instantiateData instanceof Object &&
-    "contractCodeHash" in instantiateData &&
-    typeof instantiateData.contractCodeHash === "string" &&
-    "contractAddress" in instantiateData &&
-    typeof instantiateData.contractAddress === "string"
-  );
-}
-
-/**
- * Maps unknown output to a result of a known type.
- *
- * @param instantiateData - The output of a json parse.
- *
- * @returns A result containing `instantiateData` if it has the required
- *    properties, otherwise an error.
- */
-function castJsonInstantiateData(
-  instantiateData: unknown,
-): Result<InstantiateData, Error> {
-  if (!isValidInstantiationData(instantiateData)) {
-    return Err(
-      "Invalid instantiation data, must contain both contractCodeHash and contractAddress properties",
-    );
-  }
-
-  return Result.ok(instantiateData);
-}
-
-/**
  * Read in the value of the output from the latest contract instantiation.
  *
  * @returns A result of an object containing the contract's code hash and
@@ -183,7 +158,12 @@ async function readInstantiateData(): Promise<Result<InstantiateData, Error>> {
 
   return await Result.fromAsyncCatching(fs.promises.readFile(filename, "utf8"))
     .mapCatching(JSON.parse as (_: string) => unknown)
-    .map(castJsonInstantiateData);
+    .map((value) =>
+      castUnknown<InstantiateData>(value, {
+        contractCodeHash: "string",
+        contractAddress: "string",
+      }),
+    );
 }
 
 export {
