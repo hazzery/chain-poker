@@ -5,7 +5,7 @@ import { Result } from "typescript-result";
 import Err from "../err";
 import { InstantiateData, UploadData } from "../types";
 
-const OUTPUT_DIRECTORY = "output/";
+const OUTPUT_DIRECTORY = "output";
 
 /**
  * Write the code ID and contract code hash to the filesystem for future script
