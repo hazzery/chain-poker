@@ -1,23 +1,29 @@
 # Cargo+Git helper file (https://github.com/rust-lang/cargo/blob/0.44.1/src/cargo/sources/git/utils.rs#L320-L327)
 .cargo-ok
 
+# Output of wasm-opt
+contract/optimized-wasm/
+
 # Text file backups
-**/*.rs.bk
+**/*.*.bk
 
-# macOS
-.DS_Store
-
-# IDEs
+# IDE specific files
 *.iml
 .idea
 
-# Ignore node_modules and target directories at any level
+# npm packages
 **/node_modules/
-**/target/
 
-# Ignore specific files at any level
-**/contract.wasm
-**/contract.wasm.gz
-**/cargo.lock
+# Contract upload and instantiation data
+node/output/
+
+# Rust build output
+contract/target/
+
+# MacOS finder metadata
+.DS_Store
 **/.DS_Store
+
+# Environment variables
+.env
 **/.env
