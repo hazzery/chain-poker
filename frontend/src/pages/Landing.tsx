@@ -1,13 +1,9 @@
 import { Box, Button, TextField, Typography } from "@mui/material";
-import { GiPokerHand } from "react-icons/gi";
-import { useContext, useState } from "preact/hooks";
 import type { ReactNode } from "preact/compat";
+import { useState } from "preact/hooks";
+import { GiPokerHand } from "react-icons/gi";
 
-import { SecretJsContext } from "../secretnetwork/secretNetworkContext";
-import contractExecute from "../../../node/src/execute";
-import { initialiseNetworkClient } from "../../../node/src/client";
 import NavBar from "../components/NavBar";
-import contractCodeHash from "../../resources/codeHash.json";
 
 const enum LandingMode {
   ConnectWallet,
@@ -17,25 +13,11 @@ const enum LandingMode {
 }
 
 function Landing() {
-  const secretContext = useContext(SecretJsContext);
-  if (secretContext === null) return;
-  const { connectWallet } = secretContext;
-
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
 
   function goBack(): void {
     setMode(LandingMode.Main);
   }
-
-  // function joinLobby(contractAddress: string): void {
-  //   contractExecute(
-  //     {}, // TODO: Specify buy in ammount
-  //     10000,
-  //     { contractAddress, contractCodeHash },
-  //     wallet,
-  //     networkClient,
-  //   );
-  // }
 
   function showContent(): ReactNode {
     switch (mode) {

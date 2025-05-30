@@ -1,10 +1,5 @@
-import {
-  SecretNetworkClient,
-  TxResponse,
-  TxResultCode,
-  Wallet,
-} from "secretjs";
-import { Result } from "typescript-result";
+import { SecretNetworkClient, TxResponse, TxResultCode } from "secretjs";
+import { AsyncResult, Result } from "typescript-result";
 import { InstantiateData } from "./types";
 import Err from "./err";
 
@@ -25,30 +20,36 @@ import Err from "./err";
  * @returns A result containing the transaction response if successful,
  *    otherwise an error.
  */
-async function tryExecute(
+function tryExecute(
   message: object,
   gasLimit: number,
   instantiateData: InstantiateData,
-  wallet: Wallet,
+  senderAddress: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<TxResponse, Error>> {
-  const transaction = await networkClient.tx.compute.executeContract(
-    {
-      sender: wallet.address,
-      contract_address: instantiateData.contractAddress,
-      msg: message,
-      code_hash: instantiateData.contractCodeHash,
-    },
-    { gasLimit },
-  );
-
-  if (transaction.code !== TxResultCode.Success) {
-    return Err(
-      `Failed to execute the transaction: Status code ${TxResultCode[transaction.code]}`,
-    );
-  }
-
-  return Result.ok(transaction);
+  funds?: bigint,
+): AsyncResult<TxResponse, Error> {
+  return Result.fromAsyncCatching(
+    networkClient.tx.compute.executeContract(
+      {
+        sender: senderAddress,
+        contract_address: instantiateData.contractAddress,
+        msg: message,
+        code_hash: instantiateData.contractCodeHash,
+        sent_funds:
+          funds !== undefined
+            ? [{ denom: "uscrt", amount: funds.toString() }]
+            : undefined,
+      },
+      { gasLimit },
+    ),
+  ).map((transaction) => {
+    if (transaction.code !== TxResultCode.Success) {
+      return Err(
+        `Failed to execute the transaction\n\nStatus code: ${TxResultCode[transaction.code]}\n\n${transaction.rawLog}`,
+      );
+    }
+    return Result.ok(transaction);
+  });
 }
 
 export default tryExecute;

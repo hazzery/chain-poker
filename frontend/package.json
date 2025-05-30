@@ -18,6 +18,7 @@
     "typescript-result": "^3.1.1"
   },
   "devDependencies": {
+    "@keplr-wallet/types": "^0.12.237",
     "@preact/preset-vite": "^2.10.1",
     "typescript": "~5.8.3",
     "vite": "^6.3.5"
