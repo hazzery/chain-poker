@@ -1,5 +1,5 @@
 import { SecretNetworkClient } from "secretjs";
-import { Result } from "typescript-result";
+import { type AsyncResult, Result } from "typescript-result";
 
 import { findInLogs, transactionStatusCheck } from "./transaction";
 import { InstantiateData, UploadData } from "./types";
@@ -24,16 +24,17 @@ interface InstantiationMessage {
  * @param wallet - A wallet initialised with a private key.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  *
- * @returns A result containing the new address of the instantiated contract if
- *    successfull, otherwise an error.
+ * @returns A result of an object containing the new address of the
+ *    instantiated contract and the hash of the contract's code if successfull,
+ *    otherwise an error.
  */
-async function instantiateContract(
+function instantiateContract(
   instantiationMessage: InstantiationMessage,
   gasLimit: number,
   uploadData: UploadData,
   walletAddress: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<InstantiateData, Error>> {
+): AsyncResult<InstantiateData, Error> {
   return Result.fromAsyncCatching(
     networkClient.tx.compute.instantiateContract(
       {
