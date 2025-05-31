@@ -4,7 +4,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useMemo } from "preact/hooks";
 
 import "./app.css";
-import ConnectWallet from "./pages/ConnectWallet";
 import Landing from "./pages/Landing";
 
 export interface PlayerInfo {
@@ -27,8 +26,7 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {/* <Landing /> */}
-      <ConnectWallet />
+      <Landing />
     </ThemeProvider>
   );
 }
