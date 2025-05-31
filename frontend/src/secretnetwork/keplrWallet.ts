@@ -17,35 +17,38 @@ const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
  */
 async function initialseNetworkClient(
   keplr: Keplr,
-): Promise<SecretNetworkState> {
-  await keplr.enable(SECRET_CHAIN_ID);
+): Promise<Result<SecretNetworkState, Error>> {
+  return await Result.fromAsyncCatching(keplr.enable(SECRET_CHAIN_ID)).map(
+    async () => {
+      keplr.defaultOptions = {
+        sign: {
+          preferNoSetFee: false,
+          disableBalanceCheck: true,
+        },
+      };
 
-  keplr.defaultOptions = {
-    sign: {
-      preferNoSetFee: false,
-      disableBalanceCheck: true,
+      const signer = keplr.getOfflineSignerOnlyAmino(SECRET_CHAIN_ID);
+      const walletAddress = (await signer.getAccounts())[0].address;
+      const networkClient = new SecretNetworkClient({
+        url: SECRET_LCD,
+        chainId: SECRET_CHAIN_ID,
+        wallet: signer,
+        walletAddress,
+        encryptionUtils: keplr.getEnigmaUtils(SECRET_CHAIN_ID),
+      });
+
+      Result.try(() =>
+        localStorage.setItem("keplrAutoConnect", "true"),
+      ).onFailure(alert);
+
+      return {
+        networkClient,
+        walletAddress,
+        disconnectWallet: () =>
+          localStorage.setItem("keplrAutoConnect", "false"),
+      };
     },
-  };
-
-  const signer = keplr.getOfflineSignerOnlyAmino(SECRET_CHAIN_ID);
-  const walletAddress = (await signer.getAccounts())[0].address;
-  const networkClient = new SecretNetworkClient({
-    url: SECRET_LCD,
-    chainId: SECRET_CHAIN_ID,
-    wallet: signer,
-    walletAddress,
-    encryptionUtils: keplr.getEnigmaUtils(SECRET_CHAIN_ID),
-  });
-
-  Result.try(() => localStorage.setItem("keplrAutoConnect", "true")).onFailure(
-    alert,
   );
-
-  return {
-    networkClient,
-    walletAddress,
-    disconnectWallet: () => localStorage.setItem("keplrAutoConnect", "false"),
-  };
 }
 
 export default initialseNetworkClient;
