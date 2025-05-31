@@ -20,7 +20,11 @@ async function main(): Promise<Result<void, Error>> {
   const contractWasmPath = "../contract/optimized-wasm/chain_poker.wasm.gz";
   const uploadGasLimit = 4_000_000;
   const instantiateGasLimit = 400_000;
-  const instantiationMessage = {};
+  const instantiationMessage = {
+    big_blind: 1_000_000n,
+    max_buy_in_bb: 100n,
+    min_buy_in_bb: 50n,
+  };
 
   return await Result.fromAsyncCatching(fs.promises.readFile(contractWasmPath))
     .map((contractWasm) =>
@@ -31,7 +35,7 @@ async function main(): Promise<Result<void, Error>> {
         instantiationMessage,
         instantiateGasLimit,
         uploadData,
-        wallet,
+        wallet.address,
         networkClient,
       ),
     )
