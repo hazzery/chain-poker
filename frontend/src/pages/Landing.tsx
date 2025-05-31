@@ -2,13 +2,17 @@ import { Box, Button, TextField, Typography } from "@mui/material";
 import type { ReactNode } from "preact/compat";
 import { useState } from "preact/hooks";
 import { GiPokerHand } from "react-icons/gi";
+import type { Window as KeplrWindow } from "@keplr-wallet/types";
 
 import NavBar from "../components/NavBar";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
 import { Result } from "typescript-result";
-import { createLobby } from "../secretnetwork/chainPokerContract";
 import CreateLobby from "../components/CreateLobby";
+
+declare global {
+  interface Window extends KeplrWindow {}
+}
 
 const enum LandingMode {
   ConnectWallet,
@@ -72,6 +76,10 @@ function Landing() {
         );
 
       case LandingMode.Create:
+        if (networkState === null) {
+          setMode(LandingMode.ConnectWallet);
+          return;
+        }
         return <CreateLobby backAction={goBack} networkState={networkState} />;
 
       case LandingMode.Join:

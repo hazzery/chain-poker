@@ -1,8 +1,9 @@
-import { Box, Button, TextField } from "@mui/material";
-import { type ReactNode } from "preact/compat";
+import { Box, Button } from "@mui/material";
+import { useState, type ReactNode } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
+import TextInput from "./TextInput";
 
 interface CreateLobbyProps {
   backAction: () => void;
@@ -56,26 +57,30 @@ function CreateLobby({
       rowGap="1em"
       width="16em"
     >
-      <TextField
+      <TextInput
         required
         fullWidth
-        error={minBuyInBB.error !== null}
-        helperText={minBuyInBB.error}
-        value={minBuyInBB.value}
-        onChange={(event) => setMinBuyInBB(event.target.value)}
+        label="Big blind value (SCRT)"
         variant="outlined"
-        label="Minimum buy in (number of big blinds)"
-      ></TextField>
-      <TextField
+        state={bigBlind}
+        setState={setBigBlind}
+      />
+      <TextInput
         required
         fullWidth
-        error={maxBuyInBB.error !== null}
-        helperText={maxBuyInBB.error}
-        value={maxBuyInBB.value}
-        onChange={(event) => setMaxBuyInBB(event.target.value)}
-        variant="outlined"
         label="Maximum buy in (number of big blinds)"
-      ></TextField>
+        variant="outlined"
+        state={maxBuyInBB}
+        setState={setMaxBuyInBB}
+      />
+      <TextInput
+        required
+        fullWidth
+        label="Minimum buy in (number of big blinds)"
+        variant="outlined"
+        state={minBuyInBB}
+        setState={setMinBuyInBB}
+      />
       <Button
         disabled={
           bigBlind.error !== null ||
