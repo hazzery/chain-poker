@@ -12,7 +12,7 @@ interface ValidationState {
   error: string | null;
 }
 
-export default function useNumberValidation(
+function useNumberValidation(
   rules: ValidationRules,
   initialValue: string = "",
 ): [ValidationState, React.Dispatch<React.SetStateAction<string>>] {
@@ -38,3 +38,5 @@ export default function useNumberValidation(
 
   return [{ value, error }, setValue];
 }
+
+export { useNumberValidation as default, type ValidationState };
