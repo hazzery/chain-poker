@@ -30,7 +30,7 @@ function createLobby(
   return contractInstantiate(
     gameConfig,
     40_000,
-    CONTRACT_CODE_ID,
+    { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
   ).map((instantiateData) => instantiateData.contractAddress);
