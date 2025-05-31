@@ -1,13 +1,40 @@
 import type { Permit, TxResponse } from "secretjs";
-import { AsyncResult, Result } from "typescript-result";
+import { type AsyncResult, Result } from "typescript-result";
 
 import contractExecute from "../../../node/src/execute";
+import contractInstantiate, {
+  type InstantiationMessage,
+} from "../../../node/src/instantiate";
 import contractQuery from "../../../node/src/query";
 import type { SecretNetworkState } from "./secretNetworkState";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
-const contractCodeHash = import.meta.env.VITE_CONTRACT_CODE_HASH;
-const contractAddress = import.meta.env.VITE_CONTRACT_ADDR;
+const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
+const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDR;
+const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
+
+/**
+ * Create a new game lobby.
+ *
+ * @param gameConfig The game configuration message to instantiate the contract
+ *    with.
+ * @param networkState - An object which contains the user's wallet address and
+ *    the network client.
+ *
+ * @returns A result of the new lobby's join code if successful, otherwise an error.
+ */
+function createLobby(
+  gameConfig: InstantiationMessage,
+  networkState: SecretNetworkState,
+): AsyncResult<string, Error> {
+  return contractInstantiate(
+    gameConfig,
+    40_000,
+    CONTRACT_CODE_ID,
+    networkState.walletAddress,
+    networkState.networkClient,
+  ).map((instantiateData) => instantiateData.contractAddress);
+}
 
 /**
  * Buy in to the game of poker hosted on the connected contract.
@@ -26,7 +53,7 @@ function buyIn(
   return contractExecute(
     { buy_in: {} },
     50_000,
-    { contractAddress, contractCodeHash },
+    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
     buyInAmount,
@@ -48,7 +75,7 @@ function startGame(
   return contractExecute(
     { start_game: {} },
     40_000,
-    { contractAddress, contractCodeHash },
+    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
   );
@@ -71,7 +98,7 @@ function placeBet(
   return contractExecute(
     { place_bet: { value: amount } },
     40_000,
-    { contractAddress, contractCodeHash },
+    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
   );
@@ -91,7 +118,7 @@ async function viewTable(
 ): Promise<Result<object, Error>> {
   return contractQuery(
     { view_table: {} },
-    { contractAddress, contractCodeHash },
+    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.networkClient,
   );
 }
@@ -111,7 +138,10 @@ async function viewPlayer(
   return Result.fromAsync(getPermit(networkState)).map((permit) =>
     contractQuery(
       { view_player: { permit } },
-      { contractAddress, contractCodeHash },
+      {
+        contractAddress: CONTRACT_ADDRESS,
+        contractCodeHash: CONTRACT_CODE_HASH,
+      },
       networkState.networkClient,
     ),
   );
@@ -131,7 +161,7 @@ async function viewPlayer(
 function getPermit(
   networkState: SecretNetworkState,
 ): AsyncResult<Permit, Error> {
-  const storageKey = `${networkState.walletAddress}:${contractAddress}:queryPermit}`;
+  const storageKey = `${networkState.walletAddress}:${CONTRACT_ADDRESS}:queryPermit}`;
   const queryPermitStored = localStorage.getItem(storageKey);
 
   if (queryPermitStored) {
@@ -143,7 +173,7 @@ function getPermit(
       networkState.walletAddress,
       SECRET_CHAIN_ID,
       "Chain Poker game query permit",
-      [contractAddress],
+      [CONTRACT_ADDRESS],
       ["owner"],
       true,
     ),
@@ -152,4 +182,4 @@ function getPermit(
   );
 }
 
-export { buyIn, placeBet, startGame, viewPlayer, viewTable };
+export { buyIn, createLobby, placeBet, startGame, viewPlayer, viewTable };
