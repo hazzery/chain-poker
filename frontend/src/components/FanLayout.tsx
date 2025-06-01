@@ -7,7 +7,7 @@ import Player from "./Player";
 
 // Container component that arranges children in a circle
 interface FanLayoutProps {
-  children: VNode;
+  children: VNode | VNode[];
   players: PlayerInfo[];
   radii?: { x: number; y: number };
 }
