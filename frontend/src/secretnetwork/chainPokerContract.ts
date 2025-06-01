@@ -10,7 +10,6 @@ import type { SecretNetworkState } from "./secretNetworkState";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
-const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDR;
 const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
 
 /**
@@ -40,6 +39,7 @@ function createLobby(
  * Buy in to the game of poker hosted on the connected contract.
  *
  * @param buyInAmount - The number of uSCRT the player wants to start with.
+ * @param lobbyCode - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
@@ -48,12 +48,13 @@ function createLobby(
  */
 function buyIn(
   buyInAmount: bigint,
+  lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
   return contractExecute(
     { buy_in: {} },
     50_000,
-    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
     buyInAmount,
@@ -63,6 +64,7 @@ function buyIn(
 /**
  * Start the game of poker hosted on the connected contract.
  *
+ * @param lobbyCode - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
@@ -70,12 +72,13 @@ function buyIn(
  *    successful, otherwise an Error.
  */
 function startGame(
+  lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
   return contractExecute(
     { start_game: {} },
     40_000,
-    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
   );
@@ -85,6 +88,7 @@ function startGame(
  * Place a bet on the current hand.
  *
  * @param amount - The number of uSCRT to bet, 0 for check/fold.
+ * @param lobbyCode - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
@@ -93,12 +97,13 @@ function startGame(
  */
 function placeBet(
   amount: bigint,
+  lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
   return contractExecute(
     { place_bet: { value: amount } },
     40_000,
-    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.walletAddress,
     networkState.networkClient,
   );
@@ -107,6 +112,7 @@ function placeBet(
 /**
  * View the state of the table (the publicly known cards).
  *
+ * @param lobbyCode - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
@@ -114,11 +120,12 @@ function placeBet(
  *    response if successful, otherwise an error.
  */
 async function viewTable(
+  lobbyCode: string,
   networkState: SecretNetworkState,
 ): Promise<Result<object, Error>> {
   return contractQuery(
     { view_table: {} },
-    { contractAddress: CONTRACT_ADDRESS, contractCodeHash: CONTRACT_CODE_HASH },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.networkClient,
   );
 }
@@ -126,6 +133,7 @@ async function viewTable(
 /**
  * View the player's hand and chip balance.
  *
+ * @param lobbyCode - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
@@ -133,13 +141,14 @@ async function viewTable(
  *    respose if successful, otherise an error.
  */
 async function viewPlayer(
+  lobbyCode: string,
   networkState: SecretNetworkState,
 ): Promise<Result<object, Error>> {
-  return Result.fromAsync(getPermit(networkState)).map((permit) =>
+  return Result.fromAsync(getPermit(lobbyCode, networkState)).map((permit) =>
     contractQuery(
       { view_player: { permit } },
       {
-        contractAddress: CONTRACT_ADDRESS,
+        contractAddress: lobbyCode,
         contractCodeHash: CONTRACT_CODE_HASH,
       },
       networkState.networkClient,
@@ -153,15 +162,17 @@ async function viewPlayer(
  * Attempts to fetch cached permit from local storage before signing a new
  * permit.
  *
+ * @param contractAddress - The address of the instantiated contract.
  * @param networkState - An object which contains the user's wallet address and
  *    the network client.
  *
  * @returns A result containing a permit if successful, otherwise an error.
  */
 function getPermit(
+  contractAddress: string,
   networkState: SecretNetworkState,
 ): AsyncResult<Permit, Error> {
-  const storageKey = `${networkState.walletAddress}:${CONTRACT_ADDRESS}:queryPermit}`;
+  const storageKey = `${networkState.walletAddress}:${contractAddress}:queryPermit}`;
   const queryPermitStored = localStorage.getItem(storageKey);
 
   if (queryPermitStored) {
@@ -173,7 +184,7 @@ function getPermit(
       networkState.walletAddress,
       SECRET_CHAIN_ID,
       "Chain Poker game query permit",
-      [CONTRACT_ADDRESS],
+      [contractAddress],
       ["owner"],
       true,
     ),

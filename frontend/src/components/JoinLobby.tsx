@@ -24,7 +24,7 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
       return;
     }
 
-    await buyIn(BigInt(buyInAmount.value), networkState)
+    await buyIn(BigInt(buyInAmount.value), lobbyCode.value, networkState)
       .onSuccess(console.log)
       .onFailure(console.error);
   }
