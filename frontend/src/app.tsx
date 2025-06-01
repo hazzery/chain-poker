@@ -2,9 +2,12 @@ import { useMediaQuery } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { useMemo } from "preact/hooks";
+import { Router, Route, LocationProvider } from "preact-iso";
 
 import "./app.css";
 import Landing from "./pages/Landing";
+import Game from "./pages/Game";
+import NotFound from "./pages/NotFound";
 
 export interface PlayerInfo {
   name: string;
@@ -26,7 +29,13 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Landing />
+      <LocationProvider>
+        <Router>
+          <Route path="/" component={Landing} />
+          <Route path="/play" component={Game} />
+          <Route default component={NotFound} />
+        </Router>
+      </LocationProvider>
     </ThemeProvider>
   );
 }
