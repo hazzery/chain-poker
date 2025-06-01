@@ -9,6 +9,7 @@ import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
 import { Result } from "typescript-result";
 import CreateLobby from "../components/CreateLobby";
+import JoinLobby from "../components/JoinLobby";
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -83,27 +84,11 @@ function Landing() {
         return <CreateLobby backAction={goBack} networkState={networkState} />;
 
       case LandingMode.Join:
-        return (
-          <>
-            <Box display="flex" columnGap="1em">
-              <TextField
-                variant="outlined"
-                label={"Enter contract address"}
-              ></TextField>
-              <Button variant="outlined" color="success">
-                Join
-              </Button>
-            </Box>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={goBack}
-              sx={{ width: "6em" }}
-            >
-              Back
-            </Button>
-          </>
-        );
+        if (networkState === null) {
+          setMode(LandingMode.ConnectWallet);
+          return;
+        }
+        return <JoinLobby backAction={goBack} networkState={networkState} />;
     }
   }
 
