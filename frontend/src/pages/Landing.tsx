@@ -49,11 +49,9 @@ function Landing() {
     switch (mode) {
       case LandingMode.ConnectWallet:
         return (
-          <>
-            <Button variant="outlined" color="success" onClick={connectWallet}>
-              Connect Wallet
-            </Button>
-          </>
+          <Button variant="outlined" color="success" onClick={connectWallet}>
+            Connect Wallet
+          </Button>
         );
 
       case LandingMode.Main:
