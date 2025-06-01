@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { useState, type ReactNode } from "preact/compat";
+import { useState, type JSX, type ReactNode } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
@@ -27,7 +27,9 @@ function CreateLobby({
     required: true,
   });
 
-  async function handleCreate() {
+  async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
+    event.preventDefault();
+
     if (
       bigBlind.error !== null ||
       minBuyInBB.error !== null ||
@@ -51,7 +53,7 @@ function CreateLobby({
   return (
     <Box
       component="form"
-      onSubmit={handleCreate}
+      onSubmit={handleSubmit}
       display="flex"
       flexDirection="column"
       rowGap="1em"
@@ -82,15 +84,15 @@ function CreateLobby({
         setState={setMinBuyInBB}
       />
       <Button
+        fullWidth
         disabled={
           bigBlind.error !== null ||
           minBuyInBB.error !== null ||
           maxBuyInBB.error !== null
         }
-        fullWidth
+        type="submit"
         variant="outlined"
         color="success"
-        onClick={handleCreate}
       >
         Create
       </Button>
