@@ -22,11 +22,13 @@ function useNumberValidation(
   useEffect(() => {
     let newError = null;
 
-    const numberValue = rules.integer ? parseInt(value) : Number(value);
+    const numberValue = Number(value);
     if (rules.required && value.trim() === "") {
       newError = "This field is required";
     } else if (isNaN(numberValue)) {
       newError = "This field must be numeric";
+    } else if (rules.integer && numberValue % 1 !== 0) {
+      newError = "This field must be a whole number";
     } else if (rules.maxValue !== undefined && numberValue > rules.maxValue) {
       newError = `This field cannot exceed ${rules.maxValue}`;
     } else if (rules.minValue !== undefined && numberValue < rules.minValue) {
