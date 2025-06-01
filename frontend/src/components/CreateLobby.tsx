@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { useState, type JSX, type ReactNode } from "preact/compat";
+import { type JSX, type ReactNode } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
@@ -57,31 +57,34 @@ function CreateLobby({
       display="flex"
       flexDirection="column"
       rowGap="1em"
-      width="16em"
+      width="20em"
     >
       <TextInput
         required
         fullWidth
-        label="Big blind value (SCRT)"
-        variant="outlined"
         state={bigBlind}
         setState={setBigBlind}
+        label="Big blind value (SCRT)"
+        variant="outlined"
+        color="success"
       />
       <TextInput
         required
         fullWidth
-        label="Maximum buy in (number of big blinds)"
-        variant="outlined"
         state={maxBuyInBB}
         setState={setMaxBuyInBB}
+        label="Maximum buy in (number of big blinds)"
+        variant="outlined"
+        color="success"
       />
       <TextInput
         required
         fullWidth
-        label="Minimum buy in (number of big blinds)"
-        variant="outlined"
         state={minBuyInBB}
         setState={setMinBuyInBB}
+        label="Minimum buy in (number of big blinds)"
+        variant="outlined"
+        color="success"
       />
       <Button
         fullWidth
@@ -97,10 +100,10 @@ function CreateLobby({
         Create
       </Button>
       <Button
+        onClick={backAction}
         variant="outlined"
         color="inherit"
         sx={{ width: "6em" }}
-        onClick={backAction}
       >
         Back
       </Button>
