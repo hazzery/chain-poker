@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import type { JSX, ReactNode } from "preact/compat";
+import type { JSX, VNode } from "preact";
 import useNumberValidation from "../hooks/useNumberValidation";
 import useStringValidation from "../hooks/useStringValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
@@ -12,7 +12,7 @@ interface JoinLobbyProps {
   networkState: SecretNetworkState;
 }
 
-function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
+function JoinLobby({ backAction, networkState }: JoinLobbyProps): VNode {
   const location = useLocation();
   const [lobbyCode, setLobbyCode] = useStringValidation({
     required: true,

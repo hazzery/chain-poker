@@ -1,4 +1,9 @@
-import { useEffect, useState } from "preact/hooks";
+import {
+  useEffect,
+  useState,
+  type Dispatch,
+  type StateUpdater,
+} from "preact/hooks";
 import type { ValidationState } from "./useNumberValidation";
 
 interface StringValidationRules {
@@ -10,7 +15,7 @@ interface StringValidationRules {
 function useStringValidation(
   rules: StringValidationRules,
   initialValue: string = "",
-): [ValidationState, React.Dispatch<React.SetStateAction<string>>] {
+): [ValidationState, Dispatch<StateUpdater<string>>] {
   const [value, setValue] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
 

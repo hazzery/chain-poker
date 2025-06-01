@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import type { JSX, ReactNode } from "preact/compat";
+import type { JSX, VNode } from "preact";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
@@ -11,10 +11,7 @@ interface CreateLobbyProps {
   networkState: SecretNetworkState;
 }
 
-function CreateLobby({
-  backAction,
-  networkState,
-}: CreateLobbyProps): ReactNode {
+function CreateLobby({ backAction, networkState }: CreateLobbyProps): VNode {
   const location = useLocation();
   const [bigBlind, setBigBlind] = useNumberValidation({
     integer: true,

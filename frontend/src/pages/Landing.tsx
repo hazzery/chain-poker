@@ -1,6 +1,6 @@
 import type { Window as KeplrWindow } from "@keplr-wallet/types";
 import { Box, Button, Typography } from "@mui/material";
-import type { ReactNode } from "preact/compat";
+import type { VNode } from "preact";
 import { useState } from "preact/hooks";
 import { GiPokerHand } from "react-icons/gi";
 
@@ -21,7 +21,7 @@ const enum LandingMode {
   Join,
 }
 
-function Landing() {
+function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
   const [networkState, setNetworkState] = useState<SecretNetworkState | null>(
     null,
@@ -44,7 +44,7 @@ function Landing() {
       .onSuccess(() => setMode(LandingMode.Main));
   }
 
-  function showContent(): ReactNode {
+  function showContent(): VNode | undefined {
     switch (mode) {
       case LandingMode.ConnectWallet:
         return (

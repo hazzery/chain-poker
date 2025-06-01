@@ -1,4 +1,5 @@
 import { Box } from "@mui/material";
+import type { VNode } from "preact";
 
 import type { PlayerInfo } from "../app";
 import useWindowSize from "../hooks/useWindowSize";
@@ -6,7 +7,7 @@ import Player from "./Player";
 
 // Container component that arranges children in a circle
 interface FanLayoutProps {
-  children: React.ReactNode;
+  children: VNode;
   players: PlayerInfo[];
   radii?: { x: number; y: number };
 }

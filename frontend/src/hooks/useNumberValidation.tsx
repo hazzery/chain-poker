@@ -1,4 +1,9 @@
-import { useEffect, useState } from "preact/hooks";
+import {
+  useEffect,
+  useState,
+  type Dispatch,
+  type StateUpdater,
+} from "preact/hooks";
 
 interface NumberValidationRules {
   required?: boolean;
@@ -15,7 +20,7 @@ interface ValidationState {
 function useNumberValidation(
   rules: NumberValidationRules,
   initialValue: string = "",
-): [ValidationState, React.Dispatch<React.SetStateAction<string>>] {
+): [ValidationState, Dispatch<StateUpdater<string>>] {
   const [value, setValue] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
 
