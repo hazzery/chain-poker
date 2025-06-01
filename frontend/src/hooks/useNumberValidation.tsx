@@ -1,6 +1,6 @@
 import { useEffect, useState } from "preact/hooks";
 
-interface ValidationRules {
+interface NumberValidationRules {
   required?: boolean;
   maxValue?: number;
   minValue?: number;
@@ -13,7 +13,7 @@ interface ValidationState {
 }
 
 function useNumberValidation(
-  rules: ValidationRules,
+  rules: NumberValidationRules,
   initialValue: string = "",
 ): [ValidationState, React.Dispatch<React.SetStateAction<string>>] {
   const [value, setValue] = useState<string>(initialValue);
