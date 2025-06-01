@@ -1,9 +1,10 @@
-import { Box, Button, TextField } from "@mui/material";
-import { useState, type JSX, type ReactNode } from "preact/compat";
-import TextInput from "./TextInput";
+import { Box, Button } from "@mui/material";
+import type { JSX, ReactNode } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
-import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
+import useStringValidation from "../hooks/useStringValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
+import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
+import TextInput from "./TextInput";
 
 interface JoinLobbyProps {
   backAction: () => void;
@@ -11,7 +12,11 @@ interface JoinLobbyProps {
 }
 
 function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
-  const [lobbyCode, setLobbyCode] = useState<string>("");
+  const [lobbyCode, setLobbyCode] = useStringValidation({
+    required: true,
+    minLength: 45,
+    maxLength: 45,
+  });
   const [buyInAmount, setBuyInAmount] = useNumberValidation({
     integer: true,
     required: true,
@@ -38,30 +43,34 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
       rowGap="1em"
       width="16em"
     >
-      <TextField
-        value={lobbyCode}
-        onChange={(event) => setLobbyCode(event.target.value)}
-        variant="outlined"
-        label={"Lobby code"}
-      ></TextField>
       <TextInput
+        required
+        state={lobbyCode}
+        setState={setLobbyCode}
+        label={"Lobby code"}
+        variant="outlined"
+        color="success"
+      ></TextInput>
+      <TextInput
+        required
         state={buyInAmount}
         setState={setBuyInAmount}
         label="Buy in amount (SCRT)"
         variant="outlined"
+        color="success"
       />
       <Button
         type="submit"
-        disabled={lobbyCode === "" || buyInAmount.error !== null}
+        disabled={lobbyCode.error !== null || buyInAmount.error !== null}
         variant="outlined"
         color="success"
       >
         Join
       </Button>
       <Button
+        onClick={backAction}
         variant="outlined"
         color="inherit"
-        onClick={backAction}
         sx={{ width: "6em" }}
       >
         Back
