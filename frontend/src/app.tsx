@@ -8,6 +8,7 @@ import "./app.css";
 import Landing from "./pages/Landing";
 import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
+import NavBar from "./components/NavBar";
 
 export interface PlayerInfo {
   name: string;
@@ -29,6 +30,7 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
+      <NavBar />
       <LocationProvider>
         <Router>
           <Route path="/" component={Landing} />

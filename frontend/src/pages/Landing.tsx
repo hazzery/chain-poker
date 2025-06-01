@@ -7,7 +7,6 @@ import { GiPokerHand } from "react-icons/gi";
 import { Result } from "typescript-result";
 import CreateLobby from "../components/CreateLobby";
 import JoinLobby from "../components/JoinLobby";
-import NavBar from "../components/NavBar";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 
@@ -92,7 +91,6 @@ function Landing() {
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <NavBar />
       <Box display="flex" alignItems="center" marginTop="5em">
         <GiPokerHand size="20em" />
         <Typography fontSize="5em">Chain Poker</Typography>
