@@ -5,6 +5,7 @@ import useStringValidation from "../hooks/useStringValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import TextInput from "./TextInput";
+import { useLocation } from "preact-iso";
 
 interface JoinLobbyProps {
   backAction: () => void;
@@ -12,6 +13,7 @@ interface JoinLobbyProps {
 }
 
 function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
+  const location = useLocation();
   const [lobbyCode, setLobbyCode] = useStringValidation({
     required: true,
     minLength: 45,
@@ -31,6 +33,7 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
 
     await buyIn(BigInt(buyInAmount.value), lobbyCode.value, networkState)
       .onSuccess(console.log)
+      .onSuccess(() => location.route("/play"))
       .onFailure(console.error);
   }
 

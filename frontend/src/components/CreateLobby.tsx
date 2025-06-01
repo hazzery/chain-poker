@@ -4,6 +4,7 @@ import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import TextInput from "./TextInput";
+import { useLocation } from "preact-iso";
 
 interface CreateLobbyProps {
   backAction: () => void;
@@ -14,6 +15,7 @@ function CreateLobby({
   backAction,
   networkState,
 }: CreateLobbyProps): ReactNode {
+  const location = useLocation();
   const [bigBlind, setBigBlind] = useNumberValidation({
     integer: true,
     required: true,
@@ -47,6 +49,7 @@ function CreateLobby({
       networkState,
     )
       .onSuccess(console.dir)
+      .onSuccess(() => location.route("/play"))
       .onFailure(console.dir);
   }
 
