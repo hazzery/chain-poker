@@ -86,7 +86,7 @@ async function writeUploadData(
  *    hash if the data exists in the filesystem, otherwise an error.
  */
 async function readUploadData(): Promise<Result<UploadData, Error>> {
-  const uploads = await glob.glob("upload-*.json");
+  const uploads = await glob.glob(`${OUTPUT_DIRECTORY}/upload-*.json`);
 
   if (uploads.length === 0) {
     return Err("No upload files found");
@@ -142,7 +142,9 @@ async function writeInstantiaionData(
  *    address if the data exists in the filesystem, otherwise an error.
  */
 async function readInstantiateData(): Promise<Result<InstantiateData, Error>> {
-  const instantiations = await glob.glob("instantiation-*.json");
+  const instantiations = await glob.glob(
+    `${OUTPUT_DIRECTORY}/instantiation-*.json`,
+  );
 
   if (instantiations.length === 0) {
     return Err("No instantiation files found");
