@@ -24,9 +24,15 @@ function useStringValidation(
 
     if (rules.required && value.trim() === "") {
       errorMessage = "This field is required";
-    } else if (rules.maxLength !== undefined && value.length > rules.maxLength) {
+    } else if (
+      rules.maxLength !== undefined &&
+      value.length > rules.maxLength
+    ) {
       errorMessage = `This field must be at most ${rules.maxLength} characters long`;
-    } else if (rules.minLength !== undefined && value.length < rules.minLength) {
+    } else if (
+      rules.minLength !== undefined &&
+      value.length < rules.minLength
+    ) {
       errorMessage = `This field must be at least ${rules.minLength} characters long`;
     }
 
