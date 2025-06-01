@@ -1,7 +1,7 @@
-import { SecretNetworkClient, TxResponse, TxResultCode } from "secretjs";
+import { SecretNetworkClient, TxResponse } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
+import { transactionStatusCheck } from "./transaction";
 import { InstantiateData } from "./types";
-import Err from "./err";
 
 /**
  * Try to execute `message` on the network configured inside of `networkClient`
@@ -42,14 +42,7 @@ function tryExecute(
       },
       { gasLimit },
     ),
-  ).map((transaction) => {
-    if (transaction.code !== TxResultCode.Success) {
-      return Err(
-        `Failed to execute the transaction\n\nStatus code: ${TxResultCode[transaction.code]}\n\n${transaction.rawLog}`,
-      );
-    }
-    return Result.ok(transaction);
-  });
+  ).map(transactionStatusCheck);
 }
 
 export default tryExecute;

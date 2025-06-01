@@ -1,9 +1,18 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
-import type { ReactNode } from "preact/compat";
+import type { Window as KeplrWindow } from "@keplr-wallet/types";
+import { Box, Button, Typography } from "@mui/material";
+import type { VNode } from "preact";
 import { useState } from "preact/hooks";
 import { GiPokerHand } from "react-icons/gi";
 
-import NavBar from "../components/NavBar";
+import { Result } from "typescript-result";
+import CreateLobby from "../components/CreateLobby";
+import JoinLobby from "../components/JoinLobby";
+import initialseNetworkClient from "../secretnetwork/keplrWallet";
+import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
+
+declare global {
+  interface Window extends KeplrWindow {}
+}
 
 const enum LandingMode {
   ConnectWallet,
@@ -12,21 +21,38 @@ const enum LandingMode {
   Join,
 }
 
-function Landing() {
+function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
+  const [networkState, setNetworkState] = useState<SecretNetworkState | null>(
+    null,
+  );
 
   function goBack(): void {
     setMode(LandingMode.Main);
   }
 
-  function showContent(): ReactNode {
+  async function connectWallet(): Promise<void> {
+    if (window.keplr === undefined) {
+      alert(
+        "Keplr Wallet is not installed. Please install the Keplr Wallet browser extension to use Chain Poker",
+      );
+      return;
+    }
+
+    Result.fromAsync(initialseNetworkClient(window.keplr))
+      .onSuccess(setNetworkState)
+      .onSuccess(() => setMode(LandingMode.Main));
+  }
+
+  function showContent(): VNode | undefined {
     switch (mode) {
       case LandingMode.ConnectWallet:
         return (
-          <>
-            <Button onClick={connectWallet}>Connect Wallet</Button>
-          </>
+          <Button variant="outlined" color="success" onClick={connectWallet}>
+            Connect Wallet
+          </Button>
         );
+
       case LandingMode.Main:
         return (
           <>
@@ -46,55 +72,25 @@ function Landing() {
             </Button>
           </>
         );
+
       case LandingMode.Create:
-        return (
-          <>
-            <Box display="flex" columnGap="1em">
-              <TextField
-                variant="outlined"
-                label={"Enter contract code ID"}
-              ></TextField>
-              <Button variant="outlined" color="success">
-                Create
-              </Button>
-            </Box>
-            <Button
-              variant="outlined"
-              color="inherit"
-              sx={{ width: "6em" }}
-              onClick={goBack}
-            >
-              Back
-            </Button>
-          </>
-        );
+        if (networkState === null) {
+          setMode(LandingMode.ConnectWallet);
+          return;
+        }
+        return <CreateLobby backAction={goBack} networkState={networkState} />;
+
       case LandingMode.Join:
-        return (
-          <>
-            <Box display="flex" columnGap="1em">
-              <TextField variant="outlined" label={"Enter contract address"}>
-                Hello
-              </TextField>
-              <Button variant="outlined" color="success">
-                Join
-              </Button>
-            </Box>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={goBack}
-              sx={{ width: "6em" }}
-            >
-              Back
-            </Button>
-          </>
-        );
+        if (networkState === null) {
+          setMode(LandingMode.ConnectWallet);
+          return;
+        }
+        return <JoinLobby backAction={goBack} networkState={networkState} />;
     }
   }
 
   return (
     <Box display="flex" flexDirection="column" alignItems="center">
-      <NavBar />
       <Box display="flex" alignItems="center" marginTop="5em">
         <GiPokerHand size="20em" />
         <Typography fontSize="5em">Chain Poker</Typography>

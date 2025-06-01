@@ -1,8 +1,14 @@
-import { SecretNetworkClient, TxResultCode, Wallet } from "secretjs";
-import { Result } from "typescript-result";
+import { SecretNetworkClient } from "secretjs";
+import { type AsyncResult, Result } from "typescript-result";
 
+import { findInLogs, transactionStatusCheck } from "./transaction";
 import { InstantiateData, UploadData } from "./types";
-import Err from "./err";
+
+interface InstantiationMessage {
+  big_blind: bigint;
+  min_buy_in_bb: bigint;
+  max_buy_in_bb: bigint;
+}
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
@@ -18,47 +24,38 @@ import Err from "./err";
  * @param wallet - A wallet initialised with a private key.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  *
- * @returns A result containing the new address of the instantiated contract if
- *    successfull, otherwise an error.
+ * @returns A result of an object containing the new address of the
+ *    instantiated contract and the hash of the contract's code if successfull,
+ *    otherwise an error.
  */
-async function instantiateContract(
-  instantiationMessage: object,
+function instantiateContract(
+  instantiationMessage: InstantiationMessage,
   gasLimit: number,
   uploadData: UploadData,
-  wallet: Wallet,
+  walletAddress: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<InstantiateData, Error>> {
-  const transaction = await networkClient.tx.compute.instantiateContract(
-    {
-      code_id: uploadData.codeId,
-      sender: wallet.address,
-      code_hash: uploadData.contractCodeHash,
-      init_msg: instantiationMessage,
-      label: `Init ${Math.ceil(Math.random() * 10000)}`,
-      admin: wallet.address,
-    },
-    { gasLimit },
-  );
-
-  if (transaction.code !== TxResultCode.Success) {
-    return Err(
-      `Failed to instantiate the contract. Status code: ${TxResultCode[transaction.code]}`,
-    );
-  }
-
-  // Find the contract_address in the logs
-  const contractAddress = transaction.arrayLog?.find(
-    (log) => log.type === "message" && log.key === "contract_address",
-  )?.value;
-
-  if (contractAddress === undefined) {
-    return Err("Unable to find contract address");
-  }
-
-  return Result.ok({
-    contractCodeHash: uploadData.contractCodeHash,
-    contractAddress,
-  });
+): AsyncResult<InstantiateData, Error> {
+  return Result.fromAsyncCatching(
+    networkClient.tx.compute.instantiateContract(
+      {
+        code_id: uploadData.codeId,
+        sender: walletAddress,
+        code_hash: uploadData.contractCodeHash,
+        init_msg: instantiationMessage,
+        label: `Init ${Math.ceil(Math.random() * 10000)}`,
+        admin: walletAddress,
+      },
+      { gasLimit },
+    ),
+  )
+    .map(transactionStatusCheck)
+    .map((transactionResponse) =>
+      findInLogs(transactionResponse, "contract_address"),
+    )
+    .map((contractAddress) => ({
+      contractCodeHash: uploadData.contractCodeHash,
+      contractAddress,
+    }));
 }
 
-export default instantiateContract;
+export { instantiateContract as default, type InstantiationMessage };

@@ -4,7 +4,6 @@ import { ChipCount } from "../ChipCount";
 import { CardSet } from "../components/CardSet";
 import FanLayout from "../components/FanLayout";
 import { Hand } from "../components/Hand";
-import NavBar from "../components/NavBar";
 import { Rank, Suit } from "../components/PlayingCard";
 
 function Game() {
@@ -35,7 +34,6 @@ function Game() {
   const currentPot = 10;
   return (
     <Box display="flex" flexDirection="column" height="100vh">
-      <NavBar />
       <FanLayout players={players}>
         <CardSet cards={table} />
         <ChipCount
