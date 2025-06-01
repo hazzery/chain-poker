@@ -50,7 +50,7 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): ReactNode {
         label={"Lobby code"}
         variant="outlined"
         color="success"
-      ></TextInput>
+      />
       <TextInput
         required
         state={buyInAmount}
