@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import { type JSX, type ReactNode } from "preact/compat";
+import type { JSX, ReactNode } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
