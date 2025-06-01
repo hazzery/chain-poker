@@ -1,15 +1,15 @@
-import { Box, Button, TextField, Typography } from "@mui/material";
+import type { Window as KeplrWindow } from "@keplr-wallet/types";
+import { Box, Button, Typography } from "@mui/material";
 import type { ReactNode } from "preact/compat";
 import { useState } from "preact/hooks";
 import { GiPokerHand } from "react-icons/gi";
-import type { Window as KeplrWindow } from "@keplr-wallet/types";
 
-import NavBar from "../components/NavBar";
-import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
-import initialseNetworkClient from "../secretnetwork/keplrWallet";
 import { Result } from "typescript-result";
 import CreateLobby from "../components/CreateLobby";
 import JoinLobby from "../components/JoinLobby";
+import NavBar from "../components/NavBar";
+import initialseNetworkClient from "../secretnetwork/keplrWallet";
+import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 
 declare global {
   interface Window extends KeplrWindow {}
