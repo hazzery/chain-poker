@@ -1,13 +1,14 @@
 import { Card, Typography, type SxProps } from "@mui/material";
+
 import { ChipCount } from "../ChipCount";
 
-export interface PlayerProps {
+interface PlayerProps {
   name: string;
   chipBalance: number;
   sx?: SxProps;
 }
 
-export function Player({ name, chipBalance, sx }: PlayerProps) {
+function Player({ name, chipBalance, sx }: PlayerProps) {
   return (
     <Card
       sx={{
@@ -30,3 +31,5 @@ export function Player({ name, chipBalance, sx }: PlayerProps) {
     </Card>
   );
 }
+
+export { Player as default, type PlayerProps };
