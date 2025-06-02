@@ -1,6 +1,6 @@
 import { Box, Button, Card, TextField } from "@mui/material";
 
-import { ChipCount } from "../ChipCount";
+import { ChipCount } from "./ChipCount";
 import { CardSet } from "./CardSet";
 import { type PlayingCardProps } from "./PlayingCard";
 import scrtLogo from "../../resources/scrt.svg";

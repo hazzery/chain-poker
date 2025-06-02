@@ -1,6 +1,6 @@
 import { Card, Typography, type SxProps } from "@mui/material";
 
-import { ChipCount } from "../ChipCount";
+import { ChipCount } from "./ChipCount";
 
 interface PlayerProps {
   name: string;

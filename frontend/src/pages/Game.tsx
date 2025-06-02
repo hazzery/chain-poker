@@ -1,6 +1,6 @@
 import { Box } from "@mui/material";
 
-import { ChipCount } from "../ChipCount";
+import { ChipCount } from "../components/ChipCount";
 import { CardSet } from "../components/CardSet";
 import FanLayout from "../components/FanLayout";
 import { Hand } from "../components/Hand";
