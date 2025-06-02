@@ -1,6 +1,7 @@
 import { SecretNetworkClient, type TxResponse } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
 
+import { AsyncErr } from "./err.ts";
 import { transactionStatusCheck } from "./transaction.ts";
 import type { InstantiateData } from "./types.ts";
 
@@ -15,8 +16,10 @@ import type { InstantiateData } from "./types.ts";
  *    address of the contract on the network and contractCodeHash: the hash
  *    of the contract's compiled binary Web Assembly, to verify we're querying
  *    the correct contract.
- * @param wallet - A wallet initialised with a private key.
+ * @param walletAddress - The Secret Network wallet address of the user.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
+ * @param funds - The number of uSCRT to attach to the execution message. Must
+ *    be an integer!
  *
  * @returns A result containing the transaction response if successful,
  *    otherwise an error.
@@ -27,8 +30,12 @@ function tryExecute(
   instantiateData: InstantiateData,
   senderAddress: string,
   networkClient: SecretNetworkClient,
-  funds?: bigint,
+  funds?: number,
 ): AsyncResult<TxResponse, Error> {
+  if (funds !== undefined && funds % 1 !== 0) {
+    return AsyncErr("funds value must be an integer amount");
+  }
+
   return Result.fromAsyncCatching(
     networkClient.tx.compute.executeContract(
       {

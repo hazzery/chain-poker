@@ -4,6 +4,7 @@ import { type AsyncResult, Result } from "typescript-result";
 
 import type { SecretNetworkState } from "./secretNetworkState";
 import type { LobbyConfig } from "./types";
+import { AsyncErr } from "secretts/dist/err";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -46,7 +47,7 @@ function createLobby(
  *    successful, otherwise and error.
  */
 function buyIn(
-  buyInAmount: bigint,
+  buyInAmount: number,
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
@@ -95,10 +96,16 @@ function startGame(
  *    successful, otherwise an error.
  */
 function placeBet(
-  amount: bigint,
+  amount: number,
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
+  const uScrt = String(amount * 1_000_000);
+  if (uScrt.split(".").length > 1) {
+    return AsyncErr(
+      "amount value too precise. At most 6 places after the decimal point are allowed",
+    );
+  }
   return secretts.tryExecute(
     { place_bet: { value: amount } },
     40_000,

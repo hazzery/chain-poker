@@ -31,7 +31,7 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): VNode {
       return;
     }
 
-    await buyIn(BigInt(buyInAmount.value), lobbyCode.value, networkState)
+    await buyIn(Number(buyInAmount.value), lobbyCode.value, networkState)
       .onSuccess(console.log)
       .onSuccess(() => location.route("/play"))
       .onFailure(console.error);

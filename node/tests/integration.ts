@@ -29,9 +29,9 @@ async function initializeAndUploadContract(): Promise<
   const wasmPath = "../../contract/optimized-wasm/chain_poker.wasm.gz";
   const gasLimit = 400_000;
   const instantiationMessage = {
-    big_blind: 1_000_000n,
-    max_buy_in_bb: 100n,
-    min_buy_in_bb: 50n,
+    big_blind: 1_000_000,
+    max_buy_in_bb: 100,
+    min_buy_in_bb: 50,
   };
 
   return await Result.fromAsyncCatching(fs.promises.readFile(wasmPath))
