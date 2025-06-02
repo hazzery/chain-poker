@@ -9,11 +9,11 @@ test:
 build:
 	cd contract; RUSTFLAGS='-C link-arg=-s' cargo build --release --target wasm32-unknown-unknown
 	mkdir -p $(OPTIMISED_WASM_DIR)
-	wasm-opt -Oz ./contract/target/wasm32-unknown-unknown/release/*.wasm -o $(OPTIMISED_WASM_DIR)/contract.wasm
+	wasm-opt -Oz ./contract/target/wasm32-unknown-unknown/release/chain_poker.wasm -o $(OPTIMISED_WASM_DIR)/chain_poker.wasm --enable-bulk-memory
 	cd $(OPTIMISED_WASM_DIR); gzip -n -9 -f *
 
 build-docker:
-	cd contract; docker run --rm -v "$$(pwd)":/contract \
+	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
 		--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 		--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 		ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
@@ -35,6 +35,6 @@ store-contract-local:
 	sudo docker exec secretdev secretcli tx compute store -y --from a --gas 100000000 /root/code/contract.wasm.gz
 
 clean:
-	cargo clean
-	-rm -f $(OPTIMISED_WASM_DIR)
+	cd contract; cargo clean
+	-rm -rf $(OPTIMISED_WASM_DIR)
 
