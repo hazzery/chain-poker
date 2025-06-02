@@ -1,12 +1,9 @@
 import type { Permit, TxResponse } from "secretjs";
+import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import contractExecute from "../../../node/src/execute";
-import contractInstantiate, {
-  type InstantiationMessage,
-} from "../../../node/src/instantiate";
-import contractQuery from "../../../node/src/query";
 import type { SecretNetworkState } from "./secretNetworkState";
+import type { LobbyConfig } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -23,16 +20,18 @@ const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
  * @returns A result of the new lobby's join code if successful, otherwise an error.
  */
 function createLobby(
-  gameConfig: InstantiationMessage,
+  gameConfig: LobbyConfig,
   networkState: SecretNetworkState,
 ): AsyncResult<string, Error> {
-  return contractInstantiate(
-    gameConfig,
-    40_000,
-    { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
-    networkState.walletAddress,
-    networkState.networkClient,
-  ).map((instantiateData) => instantiateData.contractAddress);
+  return secretts
+    .instantiateContract(
+      gameConfig,
+      40_000,
+      { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
+      networkState.walletAddress,
+      networkState.networkClient,
+    )
+    .map((instantiateData) => instantiateData.contractAddress);
 }
 
 /**
@@ -51,7 +50,7 @@ function buyIn(
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
-  return contractExecute(
+  return secretts.tryExecute(
     { buy_in: {} },
     50_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
@@ -75,7 +74,7 @@ function startGame(
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
-  return contractExecute(
+  return secretts.tryExecute(
     { start_game: {} },
     40_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
@@ -100,7 +99,7 @@ function placeBet(
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): AsyncResult<TxResponse, Error> {
-  return contractExecute(
+  return secretts.tryExecute(
     { place_bet: { value: amount } },
     40_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
@@ -123,7 +122,7 @@ async function viewTable(
   lobbyCode: string,
   networkState: SecretNetworkState,
 ): Promise<Result<object, Error>> {
-  return contractQuery(
+  return secretts.queryContract(
     { view_table: {} },
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkState.networkClient,
@@ -145,7 +144,7 @@ async function viewPlayer(
   networkState: SecretNetworkState,
 ): Promise<Result<object, Error>> {
   return Result.fromAsync(getPermit(lobbyCode, networkState)).map((permit) =>
-    contractQuery(
+    secretts.queryContract(
       { view_player: { permit } },
       {
         contractAddress: lobbyCode,

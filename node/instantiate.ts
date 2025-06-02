@@ -1,10 +1,13 @@
 import dotenv from "dotenv";
+import {
+  Err,
+  initialiseNetworkClient,
+  instantiateContract,
+  Network,
+} from "secretts";
 import { Result } from "typescript-result";
 
-import { initialiseNetworkClient, Network } from "./src/client";
-import Err from "./src/err";
-import instantiateContract from "./src/instantiate";
-import { readUploadData, writeInstantiaionData } from "./src/node/io";
+import { readUploadData, writeInstantiaionData } from "./src/io";
 
 /**
  * Instantiate the contract.

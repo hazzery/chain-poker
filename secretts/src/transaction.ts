@@ -1,6 +1,7 @@
+import { type TxResponse, TxResultCode } from "secretjs";
 import { Result } from "typescript-result";
-import Err from "./err";
-import { TxResponse, TxResultCode } from "secretjs";
+
+import Err from "./err.ts";
 
 /**
  * Check that the status of the given transaction response is success.
@@ -58,4 +59,4 @@ function findInLogs(
   return Result.ok(value);
 }
 
-export { transactionStatusCheck, findInLogs };
+export { findInLogs, transactionStatusCheck };

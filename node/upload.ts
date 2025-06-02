@@ -1,11 +1,14 @@
 import dotenv from "dotenv";
 import * as fs from "fs";
+import {
+  Err,
+  initialiseNetworkClient,
+  Network,
+  uploadContract,
+} from "secretts";
 import { Result } from "typescript-result";
 
-import { initialiseNetworkClient, Network } from "./src/client";
-import Err from "./src/err";
-import { writeUploadData } from "./src/node/io";
-import uploadContract from "./src/upload";
+import { writeUploadData } from "./src/io";
 
 /**
  * Upload the compiled contract's binary Web Assembly code to the network.

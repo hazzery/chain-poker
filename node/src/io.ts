@@ -2,8 +2,8 @@ import * as fs from "fs";
 import * as glob from "glob";
 import { Result } from "typescript-result";
 
-import Err from "../err";
-import { InstantiateData, UploadData } from "../types";
+import { Err } from "secretts";
+import type { InstantiateData, UploadData } from "secretts";
 
 const OUTPUT_DIRECTORY = "output";
 

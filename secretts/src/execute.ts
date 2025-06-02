@@ -1,7 +1,8 @@
-import { SecretNetworkClient, TxResponse } from "secretjs";
+import { SecretNetworkClient, type TxResponse } from "secretjs";
 import { AsyncResult, Result } from "typescript-result";
-import { transactionStatusCheck } from "./transaction";
-import { InstantiateData } from "./types";
+
+import { transactionStatusCheck } from "./transaction.ts";
+import type { InstantiateData } from "./types.ts";
 
 /**
  * Try to execute `message` on the network configured inside of `networkClient`

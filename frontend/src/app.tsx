@@ -10,11 +10,6 @@ import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
 import NavBar from "./components/NavBar";
 
-export interface PlayerInfo {
-  name: string;
-  chipBalance: number;
-}
-
 export function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const theme = useMemo(

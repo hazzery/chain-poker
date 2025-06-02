@@ -1,12 +1,15 @@
 import dotenv from "dotenv";
 import * as fs from "fs";
+import {
+  Err,
+  initialiseNetworkClient,
+  instantiateContract,
+  Network,
+  uploadContract,
+} from "secretts";
 import { Result } from "typescript-result";
 
-import { initialiseNetworkClient, Network } from "./src/client";
-import Err from "./src/err";
-import instantiateContract from "./src/instantiate";
-import { writeInstantiaionData } from "./src/node/io";
-import uploadContract from "./src/upload";
+import { writeInstantiaionData } from "./src/io";
 
 async function main(): Promise<Result<void, Error>> {
   dotenv.config();

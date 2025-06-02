@@ -1,9 +1,9 @@
 import { SecretNetworkClient, Wallet } from "secretjs";
 import { Result } from "typescript-result";
 
-import Err from "./err";
-import { findInLogs, transactionStatusCheck } from "./transaction";
-import { UploadData } from "./types";
+import Err from "./err.ts";
+import { findInLogs, transactionStatusCheck } from "./transaction.ts";
+import type { UploadData } from "./types.ts";
 
 /**
  * Request the hash of the contract's binary Web Assembly.

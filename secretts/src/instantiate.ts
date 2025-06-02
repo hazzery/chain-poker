@@ -1,14 +1,8 @@
 import { SecretNetworkClient } from "secretjs";
 import { type AsyncResult, Result } from "typescript-result";
 
-import { findInLogs, transactionStatusCheck } from "./transaction";
-import { InstantiateData, UploadData } from "./types";
-
-interface InstantiationMessage {
-  big_blind: bigint;
-  min_buy_in_bb: bigint;
-  max_buy_in_bb: bigint;
-}
+import { findInLogs, transactionStatusCheck } from "./transaction.ts";
+import type { InstantiateData, UploadData } from "./types.ts";
 
 /**
  * Instantiate the contract at with the given code ID and hash with the provided
@@ -29,7 +23,7 @@ interface InstantiationMessage {
  *    otherwise an error.
  */
 function instantiateContract(
-  instantiationMessage: InstantiationMessage,
+  instantiationMessage: object,
   gasLimit: number,
   uploadData: UploadData,
   walletAddress: string,
@@ -58,4 +52,4 @@ function instantiateContract(
     }));
 }
 
-export { instantiateContract as default, type InstantiationMessage };
+export default instantiateContract;

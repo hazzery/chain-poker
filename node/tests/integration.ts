@@ -1,12 +1,15 @@
 import * as fs from "fs";
 import { SecretNetworkClient } from "secretjs";
+import {
+  initialiseNetworkClient,
+  instantiateContract,
+  InstantiateData,
+  Network,
+  uploadContract,
+} from "secretts";
 import { Result } from "typescript-result";
 
-import { initialiseNetworkClient, Network } from "../src/client";
-import instantiateContract from "../src/instantiate";
-import { fillUpFromFaucet } from "../src/node/utils";
-import { InstantiateData } from "../src/types";
-import uploadContract from "../src/upload";
+import { fillUpFromFaucet } from "../src/utils";
 
 interface ContractClient {
   networkClient: SecretNetworkClient;
@@ -26,9 +29,9 @@ async function initializeAndUploadContract(): Promise<
   const wasmPath = "../../contract/optimized-wasm/chain_poker.wasm.gz";
   const gasLimit = 400_000;
   const instantiationMessage = {
-    big_blind: 1_000_000,
-    max_buy_in: 100,
-    min_buy_in: 50,
+    big_blind: 1_000_000n,
+    max_buy_in_bb: 100n,
+    min_buy_in_bb: 50n,
   };
 
   return await Result.fromAsyncCatching(fs.promises.readFile(wasmPath))
@@ -40,7 +43,7 @@ async function initializeAndUploadContract(): Promise<
         instantiationMessage,
         gasLimit,
         uploadData,
-        wallet,
+        wallet.address,
         networkClient,
       ),
     )

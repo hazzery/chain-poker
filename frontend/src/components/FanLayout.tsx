@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 import type { VNode } from "preact";
 
-import type { PlayerInfo } from "../app";
+import type { PlayerInfo } from "../secretnetwork/types";
 import useWindowSize from "../hooks/useWindowSize";
 import Player from "./Player";
 
