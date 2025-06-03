@@ -39,9 +39,9 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
 
     await createLobby(
       {
-        big_blind: bigBlind.value,
-        min_buy_in_bb: minBuyInBB.value,
-        max_buy_in_bb: maxBuyInBB.value,
+        big_blind: Number(bigBlind.value),
+        min_buy_in_bb: Number(minBuyInBB.value),
+        max_buy_in_bb: Number(maxBuyInBB.value),
       },
       networkClient,
     )
