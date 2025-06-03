@@ -142,16 +142,16 @@ async function viewTable(
  */
 async function viewPlayer(
   lobbyCode: string,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): Promise<Result<object, Error>> {
-  return Result.fromAsync(getPermit(lobbyCode, networkState)).map((permit) =>
+  return Result.fromAsync(getPermit(lobbyCode, networkClient)).map((permit) =>
     secretts.queryContract(
       { view_player: { permit } },
       {
         contractAddress: lobbyCode,
         contractCodeHash: CONTRACT_CODE_HASH,
       },
-      networkState.networkClient,
+      networkClient,
     ),
   );
 }
