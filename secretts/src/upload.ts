@@ -19,7 +19,7 @@ async function computeCodeHash(
   codeId: string,
   networkClient: SecretNetworkClient,
 ): Promise<Result<UploadData, Error>> {
-  return Result.fromAsyncCatching(
+  return await Result.fromAsyncCatching(
     networkClient.query.compute.codeHashByCodeId({ code_id: codeId }),
   ).map((queryResponse) => {
     if (queryResponse.code_hash === undefined) {
@@ -51,7 +51,7 @@ async function uploadContract(
   networkClient: SecretNetworkClient,
   contractWasm: Buffer,
 ): Promise<Result<UploadData, Error>> {
-  return Result.fromAsyncCatching(
+  return await Result.fromAsyncCatching(
     networkClient.tx.compute.storeCode(
       {
         sender: networkClient.address,
