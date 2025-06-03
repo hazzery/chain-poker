@@ -1,4 +1,4 @@
-import { SecretNetworkClient, Wallet } from "secretjs";
+import { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
 
 import Err from "./err.ts";
@@ -48,14 +48,13 @@ async function computeCodeHash(
  */
 async function uploadContract(
   gasLimit: number,
-  wallet: Wallet,
   networkClient: SecretNetworkClient,
   contractWasm: Buffer,
 ): Promise<Result<UploadData, Error>> {
   return Result.fromAsyncCatching(
     networkClient.tx.compute.storeCode(
       {
-        sender: wallet.address,
+        sender: networkClient.address,
         wasm_byte_code: contractWasm,
         source: "",
         builder: "",

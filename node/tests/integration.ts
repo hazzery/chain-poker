@@ -19,7 +19,7 @@ interface ContractClient {
 async function initializeAndUploadContract(): Promise<
   Result<ContractClient, Error>
 > {
-  const [networkClient, wallet] = initialiseNetworkClient(Network.Localnet);
+  const networkClient = initialiseNetworkClient(Network.Localnet);
 
   const faucetResult = await fillUpFromFaucet(networkClient, 100_000_000);
   if (faucetResult.isError()) {
@@ -36,14 +36,13 @@ async function initializeAndUploadContract(): Promise<
 
   return await Result.fromAsyncCatching(fs.promises.readFile(wasmPath))
     .map((contractWasm) =>
-      uploadContract(gasLimit, wallet, networkClient, contractWasm),
+      uploadContract(gasLimit, networkClient, contractWasm),
     )
     .map((uploadData) =>
       instantiateContract(
         instantiationMessage,
         gasLimit,
         uploadData,
-        wallet.address,
         networkClient,
       ),
     )

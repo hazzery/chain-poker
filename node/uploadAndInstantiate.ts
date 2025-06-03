@@ -18,7 +18,7 @@ async function main(): Promise<Result<void, Error>> {
     return Err("Wallet mnemonic was not found in environment");
   }
 
-  const [networkClient, wallet] = initialiseNetworkClient(Network.Testnet);
+  const networkClient = initialiseNetworkClient(Network.Testnet);
 
   const contractWasmPath = "../contract/optimized-wasm/chain_poker.wasm.gz";
   const uploadGasLimit = 4_000_000;
@@ -31,14 +31,13 @@ async function main(): Promise<Result<void, Error>> {
 
   return await Result.fromAsyncCatching(fs.promises.readFile(contractWasmPath))
     .map((contractWasm) =>
-      uploadContract(uploadGasLimit, wallet, networkClient, contractWasm),
+      uploadContract(uploadGasLimit, networkClient, contractWasm),
     )
     .map((uploadData) =>
       instantiateContract(
         instantiationMessage,
         instantiateGasLimit,
         uploadData,
-        wallet.address,
         networkClient,
       ),
     )

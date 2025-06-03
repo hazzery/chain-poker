@@ -25,7 +25,7 @@ enum Network {
 function initialiseNetworkClient(
   network: Network,
   walletMnemonic = "",
-): [SecretNetworkClient, Wallet] {
+): SecretNetworkClient {
   let endpoint: string;
   let networkName: string;
   const wallet = new Wallet(walletMnemonic);
@@ -52,7 +52,7 @@ function initialiseNetworkClient(
     walletAddress: wallet.address,
   });
 
-  return [client, wallet];
+  return client;
 }
 
 export { initialiseNetworkClient, Network };

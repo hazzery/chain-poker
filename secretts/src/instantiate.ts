@@ -26,18 +26,17 @@ function instantiateContract(
   instantiationMessage: object,
   gasLimit: number,
   uploadData: UploadData,
-  walletAddress: string,
   networkClient: SecretNetworkClient,
 ): AsyncResult<InstantiateData, Error> {
   return Result.fromAsyncCatching(
     networkClient.tx.compute.instantiateContract(
       {
         code_id: uploadData.codeId,
-        sender: walletAddress,
+        sender: networkClient.address,
         code_hash: uploadData.contractCodeHash,
         init_msg: instantiationMessage,
         label: `Init ${Math.ceil(Math.random() * 10000)}`,
-        admin: walletAddress,
+        admin: networkClient.address,
       },
       { gasLimit },
     ),

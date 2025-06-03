@@ -28,7 +28,6 @@ function tryExecute(
   message: object,
   gasLimit: number,
   instantiateData: InstantiateData,
-  senderAddress: string,
   networkClient: SecretNetworkClient,
   funds?: number,
 ): AsyncResult<TxResponse, Error> {
@@ -39,7 +38,7 @@ function tryExecute(
   return Result.fromAsyncCatching(
     networkClient.tx.compute.executeContract(
       {
-        sender: senderAddress,
+        sender: networkClient.address,
         contract_address: instantiateData.contractAddress,
         msg: message,
         code_hash: instantiateData.contractCodeHash,
