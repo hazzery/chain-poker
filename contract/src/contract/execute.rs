@@ -1,24 +1,21 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult};
 
-use crate::state::{next_card, Player, IS_STARTED, PLAYERS, POT, TABLE};
+use crate::state::{next_card, Player, BALANCES, HANDS, IS_STARTED, POT, TABLE};
 
 pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has already started"));
     }
 
-    if PLAYERS.get_len(deps.storage)? < 2 {
+    if BALANCES.get_len(deps.storage)? < 2 {
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
-    let adresses: Vec<CanonicalAddr> = PLAYERS.iter_keys(deps.storage)?.flatten().collect();
+    let adresses: Vec<CanonicalAddr> = BALANCES.iter_keys(deps.storage)?.flatten().collect();
 
     for address in adresses {
-        let Some(mut player) = PLAYERS.get(deps.storage, &address) else {
-            unreachable!()
-        };
-        player.hand = Some((next_card(), next_card()));
-        PLAYERS.insert(deps.storage, &address, &player)?;
+        let hand = Some((next_card(), next_card()));
+        HANDS.insert(deps.storage, &address, &hand)?;
     }
 
     for _ in 0..5 {
@@ -37,7 +34,7 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
 
     let sender = deps.api.addr_canonicalize(sender.as_str())?;
 
-    if PLAYERS.get(deps.storage, &sender).is_some() {
+    if BALANCES.get(deps.storage, &sender).is_some() {
         return Err(StdError::generic_err("You have already bought in!"));
     }
 
@@ -54,7 +51,7 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
         hand: None,
     };
 
-    PLAYERS.insert(deps.storage, &sender, &player)?;
+    BALANCES.insert(deps.storage, &sender, &player)?;
 
     Ok(Response::default())
 }
@@ -66,18 +63,18 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
 
     let sender = deps.api.addr_canonicalize(sender.as_str())?;
 
-    let Some(mut player) = PLAYERS.get(deps.storage, &sender) else {
+    let Some(mut players_balance) = BALANCES.get(deps.storage, &sender) else {
         return Err(StdError::generic_err("You are not bought in!"));
     };
 
-    if value > player.chip_count {
+    if value > players_balance {
         return Err(StdError::generic_err(
             "You do not have that many chips to bet with",
         ));
     }
 
-    player.chip_count -= value;
-    PLAYERS.insert(deps.storage, &sender, &player)?;
+    players_balance -= value;
+    BALANCES.insert(deps.storage, &sender, &players_balance)?;
 
     POT.update(deps.storage, |pot| Ok(pot + value))?;
 

@@ -12,7 +12,7 @@ use rank::Rank;
 use suit::Suit;
 
 pub static GAME: Item<Game> = Item::new(b"game");
-pub static HANDS: Keymap<CanonicalAddr, Option<Card, Card>, Bincode2, WithoutIter> =
+pub static HANDS: Keymap<CanonicalAddr, Option<(Card, Card)>, Bincode2, WithoutIter> =
     KeymapBuilder::new(b"hands").without_iter().build();
 pub static BALANCES: Keymap<CanonicalAddr, u128> = Keymap::new(b"balances");
 pub static TABLE: AppendStore<Card> = AppendStore::new(b"table");
