@@ -2,8 +2,6 @@ import type { Keplr } from "@keplr-wallet/types";
 import { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
 
-import type { SecretNetworkState } from "./secretNetworkState";
-
 const SECRET_LCD = import.meta.env.VITE_SECRET_LCD;
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 
@@ -17,7 +15,7 @@ const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
  */
 async function initialseNetworkClient(
   keplr: Keplr,
-): Promise<Result<SecretNetworkState, Error>> {
+): Promise<Result<SecretNetworkClient, Error>> {
   return await Result.fromAsyncCatching(keplr.enable(SECRET_CHAIN_ID)).map(
     async () => {
       keplr.defaultOptions = {
@@ -41,12 +39,7 @@ async function initialseNetworkClient(
         localStorage.setItem("keplrAutoConnect", "true"),
       ).onFailure(alert);
 
-      return {
-        networkClient,
-        walletAddress,
-        disconnectWallet: () =>
-          localStorage.setItem("keplrAutoConnect", "false"),
-      };
+      return networkClient;
     },
   );
 }

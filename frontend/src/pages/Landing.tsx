@@ -8,7 +8,7 @@ import { Result } from "typescript-result";
 import CreateLobby from "../components/CreateLobby";
 import JoinLobby from "../components/JoinLobby";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
-import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
+import type { SecretNetworkClient } from "secretjs";
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -23,7 +23,7 @@ const enum LandingMode {
 
 function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
-  const [networkState, setNetworkState] = useState<SecretNetworkState | null>(
+  const [networkClient, setNetworkClient] = useState<SecretNetworkClient | null>(
     null,
   );
 
@@ -40,7 +40,7 @@ function Landing(): VNode {
     }
 
     Result.fromAsync(initialseNetworkClient(window.keplr))
-      .onSuccess(setNetworkState)
+      .onSuccess(setNetworkClient)
       .onSuccess(() => setMode(LandingMode.Main));
   }
 
@@ -74,18 +74,18 @@ function Landing(): VNode {
         );
 
       case LandingMode.Create:
-        if (networkState === null) {
+        if (networkClient === null) {
           setMode(LandingMode.ConnectWallet);
           return;
         }
-        return <CreateLobby backAction={goBack} networkState={networkState} />;
+        return <CreateLobby backAction={goBack} networkClient={networkClient} />;
 
       case LandingMode.Join:
-        if (networkState === null) {
+        if (networkClient === null) {
           setMode(LandingMode.ConnectWallet);
           return;
         }
-        return <JoinLobby backAction={goBack} networkState={networkState} />;
+        return <JoinLobby backAction={goBack} networkClient={networkClient} />;
     }
   }
 

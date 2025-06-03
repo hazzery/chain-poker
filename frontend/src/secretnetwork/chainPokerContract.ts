@@ -13,8 +13,7 @@ const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
  *
  * @param gameConfig The game configuration message to instantiate the contract
  *    with.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result of the new lobby's join code if successful, otherwise an error.
  */
@@ -37,8 +36,7 @@ function createLobby(
  *
  * @param buyInAmount - The number of uSCRT the player wants to start with.
  * @param lobbyCode - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result of the transaction response from the contract if
  *    successful, otherwise and error.
@@ -61,8 +59,7 @@ function buyIn(
  * Start the game of poker hosted on the connected contract.
  *
  * @param lobbyCode - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns Result containing the transaction result from the contract if
  *    successful, otherwise an Error.
@@ -84,8 +81,7 @@ function startGame(
  *
  * @param amount - The number of uSCRT to bet, 0 for check/fold.
  * @param lobbyCode - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result containing the transaction result from the contract if
  *    successful, otherwise an error.
@@ -113,8 +109,7 @@ function placeBet(
  * View the state of the table (the publicly known cards).
  *
  * @param lobbyCode - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result containing an object representation of the contract's
  *    response if successful, otherwise an error.
@@ -134,8 +129,7 @@ async function viewTable(
  * View the player's hand and chip balance.
  *
  * @param lobbyCode - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result containing an object representation of the contract's
  *    respose if successful, otherise an error.
@@ -163,8 +157,7 @@ async function viewPlayer(
  * permit.
  *
  * @param contractAddress - The address of the instantiated contract.
- * @param networkState - An object which contains the user's wallet address and
- *    the network client.
+ * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result containing a permit if successful, otherwise an error.
  */

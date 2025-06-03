@@ -1,17 +1,17 @@
 import { Box, Button } from "@mui/material";
 import type { JSX, VNode } from "preact";
+import { useLocation } from "preact-iso";
+import type { SecretNetworkClient } from "secretjs";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
-import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import TextInput from "./TextInput";
-import { useLocation } from "preact-iso";
 
 interface CreateLobbyProps {
   backAction: () => void;
-  networkState: SecretNetworkState;
+  networkClient: SecretNetworkClient;
 }
 
-function CreateLobby({ backAction, networkState }: CreateLobbyProps): VNode {
+function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
   const location = useLocation();
   const [bigBlind, setBigBlind] = useNumberValidation({
     integer: true,
@@ -43,7 +43,7 @@ function CreateLobby({ backAction, networkState }: CreateLobbyProps): VNode {
         min_buy_in_bb: minBuyInBB.value,
         max_buy_in_bb: maxBuyInBB.value,
       },
-      networkState,
+      networkClient,
     )
       .onSuccess(console.dir)
       .onSuccess(() => location.route("/play"))

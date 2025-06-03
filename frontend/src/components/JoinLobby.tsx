@@ -1,18 +1,18 @@
 import { Box, Button } from "@mui/material";
 import type { JSX, VNode } from "preact";
+import { useLocation } from "preact-iso";
+import type { SecretNetworkClient } from "secretjs";
 import useNumberValidation from "../hooks/useNumberValidation";
 import useStringValidation from "../hooks/useStringValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
-import type { SecretNetworkState } from "../secretnetwork/secretNetworkState";
 import TextInput from "./TextInput";
-import { useLocation } from "preact-iso";
 
 interface JoinLobbyProps {
   backAction: () => void;
-  networkState: SecretNetworkState;
+  networkClient: SecretNetworkClient;
 }
 
-function JoinLobby({ backAction, networkState }: JoinLobbyProps): VNode {
+function JoinLobby({ backAction, networkClient }: JoinLobbyProps): VNode {
   const location = useLocation();
   const [lobbyCode, setLobbyCode] = useStringValidation({
     required: true,
@@ -31,7 +31,7 @@ function JoinLobby({ backAction, networkState }: JoinLobbyProps): VNode {
       return;
     }
 
-    await buyIn(Number(buyInAmount.value), lobbyCode.value, networkState)
+    await buyIn(Number(buyInAmount.value), lobbyCode.value, networkClient)
       .onSuccess(console.log)
       .onSuccess(() => location.route("/play"))
       .onFailure(console.error);
