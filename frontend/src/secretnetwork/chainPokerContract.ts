@@ -1,8 +1,7 @@
-import type { Permit, TxResponse } from "secretjs";
+import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { SecretNetworkState } from "./secretNetworkState";
 import type { LobbyConfig } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
@@ -21,15 +20,14 @@ const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
  */
 function createLobby(
   gameConfig: LobbyConfig,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): AsyncResult<string, Error> {
   return secretts
     .instantiateContract(
       gameConfig,
       40_000,
       { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
-      networkState.walletAddress,
-      networkState.networkClient,
+      networkClient,
     )
     .map((instantiateData) => instantiateData.contractAddress);
 }
@@ -48,14 +46,13 @@ function createLobby(
 function buyIn(
   buyInAmount: number,
   lobbyCode: string,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { buy_in: {} },
     50_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkState.walletAddress,
-    networkState.networkClient,
+    networkClient,
     buyInAmount,
   );
 }
@@ -72,14 +69,13 @@ function buyIn(
  */
 function startGame(
   lobbyCode: string,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { start_game: {} },
     40_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkState.walletAddress,
-    networkState.networkClient,
+    networkClient,
   );
 }
 
@@ -97,7 +93,7 @@ function startGame(
 function placeBet(
   amount: number,
   lobbyCode: string,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
   const uScrt = String(amount * 1_000_000);
   if (uScrt.split(".").length > 1) {
@@ -109,8 +105,7 @@ function placeBet(
     { place_bet: { value: amount } },
     40_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkState.walletAddress,
-    networkState.networkClient,
+    networkClient,
   );
 }
 
@@ -126,12 +121,12 @@ function placeBet(
  */
 async function viewTable(
   lobbyCode: string,
-  networkState: SecretNetworkState,
+  networkClient: SecretNetworkClient,
 ): Promise<Result<object, Error>> {
   return secretts.queryContract(
     { view_table: {} },
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkState.networkClient,
+    networkClient,
   );
 }
 
@@ -173,26 +168,24 @@ async function viewPlayer(
  *
  * @returns A result containing a permit if successful, otherwise an error.
  */
-function getPermit(
+async function getPermit(
   contractAddress: string,
-  networkState: SecretNetworkState,
-): AsyncResult<Permit, Error> {
-  const storageKey = `${networkState.walletAddress}:${contractAddress}:queryPermit}`;
+  networkClient: SecretNetworkClient,
+): Promise<Result<Permit, Error>> {
+  const storageKey = `${networkClient.address}:${contractAddress}:queryPermit}`;
   const queryPermitStored = localStorage.getItem(storageKey);
 
   if (queryPermitStored) {
     return Result.try(JSON.parse(queryPermitStored));
   }
 
-  return Result.fromAsyncCatching(
-    networkState.networkClient.utils.accessControl.permit.sign(
-      networkState.walletAddress,
+  return (
+    await secretts.signPermit(
+      contractAddress,
       SECRET_CHAIN_ID,
-      "Chain Poker game query permit",
-      [contractAddress],
-      ["owner"],
+      networkClient,
       true,
-    ),
+    )
   ).onSuccess((permit) =>
     localStorage.setItem(storageKey, JSON.stringify(permit)),
   );
