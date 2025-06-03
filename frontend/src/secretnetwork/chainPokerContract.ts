@@ -2,7 +2,7 @@ import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { LobbyConfig } from "./types";
+import type { LobbyConfig, PlayerInfo } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -151,6 +151,26 @@ async function viewPlayer(
 }
 
 /**
+ * Query the contract for the balances of all bought-in players.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result of an array containing two-tuples of a player's address
+ *    and their balance.
+ */
+async function viewPlayers(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): Promise<Result<PlayerInfo[], Error>> {
+  return secretts.queryContract(
+    { view_players: {} },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
+    networkClient,
+  );
+}
+
+/**
  * Get a permit to perform authenticated queries.
  *
  * Attempts to fetch cached permit from local storage before signing a new
@@ -190,5 +210,6 @@ export {
   placeBet,
   startGame,
   viewPlayer,
+  viewPlayers,
   viewTable,
 };
