@@ -24,7 +24,7 @@ function createLobby(
   return secretts
     .instantiateContract(
       gameConfig,
-      40_000,
+      400_000,
       { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
       networkClient,
     )
@@ -48,7 +48,7 @@ function buyIn(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { buy_in: {} },
-    50_000,
+    500_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
     buyInAmount,
