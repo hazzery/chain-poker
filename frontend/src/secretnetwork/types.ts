@@ -1,7 +1,7 @@
 interface LobbyConfig {
-  big_blind: number;
-  max_buy_in_bb: number;
-  min_buy_in_bb: number;
+  big_blind: string;
+  max_buy_in_bb: string;
+  min_buy_in_bb: string;
 }
 
 interface PlayerInfo {
