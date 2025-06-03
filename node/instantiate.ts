@@ -22,7 +22,7 @@ async function main(): Promise<Result<void, Error>> {
     return Err("Wallet mnemonic was not found in environment");
   }
 
-  const [networkClient, wallet] = initialiseNetworkClient(
+  const networkClient = initialiseNetworkClient(
     Network.Testnet,
     process.env.MNEMONIC,
   );
@@ -40,7 +40,6 @@ async function main(): Promise<Result<void, Error>> {
         instantiationMessage,
         gasLimit,
         uploadData,
-        wallet.address,
         networkClient,
       ),
     )
