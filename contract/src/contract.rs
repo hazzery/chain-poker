@@ -3,7 +3,7 @@ mod query;
 
 use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use execute::{try_buy_in, try_place_bet, try_start_game};
-use query::{query_player, query_table};
+use query::{query_hand, query_players, query_table};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
@@ -47,7 +47,8 @@ pub fn execute(
 #[entry_point]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ViewPlayer { permit } => query_player(deps, env, permit),
+        QueryMsg::ViewPlayers {} => query_players(deps),
+        QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
         QueryMsg::ViewTable {} => query_table(deps),
     }
 }

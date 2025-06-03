@@ -2,14 +2,19 @@ mod rank;
 mod suit;
 
 use cosmwasm_std::CanonicalAddr;
-use secret_toolkit::storage::{AppendStore, Item, Keymap};
+use secret_toolkit::{
+    serialization::Bincode2,
+    storage::{AppendStore, Item, Keymap, KeymapBuilder, WithoutIter},
+};
 use serde::{Deserialize, Serialize};
 
 use rank::Rank;
 use suit::Suit;
 
 pub static GAME: Item<Game> = Item::new(b"game");
-pub static PLAYERS: Keymap<CanonicalAddr, Player> = Keymap::new(b"players");
+pub static HANDS: Keymap<CanonicalAddr, Option<Card, Card>, Bincode2, WithoutIter> =
+    KeymapBuilder::new(b"hands").without_iter().build();
+pub static BALANCES: Keymap<CanonicalAddr, u128> = Keymap::new(b"balances");
 pub static TABLE: AppendStore<Card> = AppendStore::new(b"table");
 pub static REVEALED_CARDS: Item<u8> = Item::new(b"num_revealed");
 pub static POT: Item<u128> = Item::new(b"pot");

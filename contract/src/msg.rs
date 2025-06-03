@@ -21,6 +21,7 @@ pub enum ExecuteMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
-    ViewPlayer { permit: Permit },
+    ViewPlayers {},
+    ViewHand { permit: Permit },
     ViewTable {},
 }
