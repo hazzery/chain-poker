@@ -152,7 +152,7 @@ async function readInstantiateData(): Promise<Result<InstantiateData, Error>> {
 
   const { filename } = instantiations.reduce(
     (accumulator, filename) => {
-      const date = new Date(filename.substring(14, filename.length - 5));
+      const date = new Date(filename.substring(21, filename.length - 5));
       return date > accumulator.date ? { date, filename } : accumulator;
     },
     { date: new Date(0), filename: "" },
