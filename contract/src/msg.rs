@@ -13,8 +13,8 @@ pub struct InstantiateMsg {
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub enum ExecuteMsg {
-    StartGame,
-    BuyIn,
+    StartGame {},
+    BuyIn {},
     PlaceBet { value: Uint128 },
 }
 
@@ -22,5 +22,5 @@ pub enum ExecuteMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     ViewPlayer { permit: Permit },
-    ViewTable,
+    ViewTable {},
 }
