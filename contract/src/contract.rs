@@ -38,8 +38,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::StartGame => try_start_game(deps),
-        ExecuteMsg::BuyIn => try_buy_in(deps, info.sender, info.funds),
+        ExecuteMsg::StartGame {} => try_start_game(deps),
+        ExecuteMsg::BuyIn {} => try_buy_in(deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
     }
 }
@@ -48,6 +48,6 @@ pub fn execute(
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::ViewPlayer { permit } => query_player(deps, env, permit),
-        QueryMsg::ViewTable => query_table(deps),
+        QueryMsg::ViewTable {} => query_table(deps),
     }
 }
