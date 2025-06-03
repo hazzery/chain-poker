@@ -1,0 +1,48 @@
+import dotenv from "dotenv";
+import { Err, initialiseNetworkClient, Network, tryExecute } from "secretts";
+import { Result } from "typescript-result";
+
+import { readInstantiateData } from "./src/io";
+
+/**
+ * Instantiate the contract.
+ *
+ * @returns A result of nothing if execution was successfull, otherwise a string
+ *    error message.
+ */
+async function main(): Promise<Result<void, Error>> {
+  dotenv.config();
+
+  if (process.env.MNEMONIC === undefined) {
+    return Err("Wallet mnemonic was not found in environment");
+  }
+
+  const [networkClient, wallet] = initialiseNetworkClient(
+    Network.Testnet,
+    process.env.MNEMONIC,
+  );
+
+  const executeMessage = {
+    buy_in: {},
+  };
+  const gasLimit = 400_000;
+
+  return await Result.fromAsync(readInstantiateData())
+    .map((instantiateData) =>
+      tryExecute(
+        executeMessage,
+        gasLimit,
+        instantiateData,
+        wallet.address,
+        networkClient,
+        50_000_000,
+      ),
+    )
+    .onSuccess(console.log)
+    .map(() => {});
+}
+
+await Result.fromAsync(main()).onFailure((error) => {
+  console.error(error);
+  process.exit(1);
+});
