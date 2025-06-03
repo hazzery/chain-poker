@@ -1,6 +1,6 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult};
 
-use crate::state::{next_card, Player, BALANCES, HANDS, IS_STARTED, POT, TABLE};
+use crate::state::{next_card, BALANCES, HANDS, IS_STARTED, POT, TABLE};
 
 pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
@@ -14,7 +14,7 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
     let adresses: Vec<CanonicalAddr> = BALANCES.iter_keys(deps.storage)?.flatten().collect();
 
     for address in adresses {
-        let hand = Some((next_card(), next_card()));
+        let hand = (next_card(), next_card());
         HANDS.insert(deps.storage, &address, &hand)?;
     }
 
@@ -46,12 +46,7 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
         return Err(StdError::generic_err("Only SCRT is accepted"));
     }
 
-    let player = Player {
-        chip_count: funds[0].amount.u128(),
-        hand: None,
-    };
-
-    BALANCES.insert(deps.storage, &sender, &player)?;
+    BALANCES.insert(deps.storage, &sender, &funds[0].amount.u128())?;
 
     Ok(Response::default())
 }
