@@ -1,4 +1,4 @@
-import { initialiseNetworkClient, Network } from "./client.ts";
+import { initialiseNetworkClient, Network, signPermit } from "./client.ts";
 import Err, { AsyncErr } from "./err.ts";
 import tryExecute from "./execute.ts";
 import instantiateContract from "./instantiate.ts";
@@ -13,6 +13,7 @@ export {
   instantiateContract,
   Network,
   queryContract,
+  signPermit,
   tryExecute,
   uploadContract,
   type InstantiateData,

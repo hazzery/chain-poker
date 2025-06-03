@@ -1,4 +1,5 @@
-import { SecretNetworkClient, Wallet } from "secretjs";
+import { Permit, SecretNetworkClient, Wallet } from "secretjs";
+import { Result } from "typescript-result";
 
 const MAINNET_ENDPOINT = "https://lcd.mainnet.secretsaturn.net";
 const MAINNET_NAME = "secret-4";
@@ -11,6 +12,35 @@ enum Network {
   Mainnet,
   Testnet,
   Localnet,
+}
+
+/**
+ * Sign a permit for usage with the given contract address on the given chain.
+ *
+ * @param contractAddress - The address of an instantiated contract.
+ * @param chainId - The name of the chain the contract is hosted on.
+ * @param networkClient - A Secret Network client instantiated with a wallet.
+ * @param keplr - Wether or not to sign the permit using the Keplr Wallet
+ *    extension. This should be `true` when in the browser, and `false` when
+ *    in Node.js.
+ * @returns
+ */
+async function signPermit(
+  contractAddress: string,
+  chainId: string,
+  networkClient: SecretNetworkClient,
+  keplr: boolean = false,
+): Promise<Result<Permit, Error>> {
+  return await Result.fromAsyncCatching(
+    networkClient.utils.accessControl.permit.sign(
+      networkClient.address,
+      chainId,
+      "Query permit",
+      [contractAddress],
+      ["owner"],
+      keplr,
+    ),
+  );
 }
 
 /**
@@ -55,4 +85,4 @@ function initialiseNetworkClient(
   return client;
 }
 
-export { initialiseNetworkClient, Network };
+export { initialiseNetworkClient, Network, signPermit };
