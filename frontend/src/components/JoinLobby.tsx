@@ -22,7 +22,7 @@ function JoinLobby({ backAction }: JoinLobbyProps): VNode {
   async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    location.route(`/play/${lobbyCode}/buy-in`);
+    location.route(`/play/${lobbyCode.value}/buy-in`);
   }
 
   return (

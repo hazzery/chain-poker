@@ -23,7 +23,7 @@ const enum LandingMode {
 
 function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
-  const setNetworkClient = useNetworkClient().setNetworkClient;
+  const networkContext = useNetworkClient();
 
   function goBack(): void {
     setMode(LandingMode.Main);
@@ -38,7 +38,7 @@ function Landing(): VNode {
     }
 
     Result.fromAsync(initialseNetworkClient(window.keplr))
-      .onSuccess(setNetworkClient)
+      .onSuccess(networkContext.setNetworkClient)
       .onSuccess(() => setMode(LandingMode.Main));
   }
 
@@ -72,20 +72,28 @@ function Landing(): VNode {
         );
 
       case LandingMode.Create:
-        if (networkClient === null) {
+        if (networkContext.networkClient === null) {
           setMode(LandingMode.ConnectWallet);
           return;
         }
         return (
-          <CreateLobby backAction={goBack} networkClient={networkClient} />
+          <CreateLobby
+            backAction={goBack}
+            networkClient={networkContext.networkClient}
+          />
         );
 
       case LandingMode.Join:
-        if (networkClient === null) {
+        if (networkContext.networkClient === null) {
           setMode(LandingMode.ConnectWallet);
           return;
         }
-        return <JoinLobby backAction={goBack} networkClient={networkClient} />;
+        return (
+          <JoinLobby
+            backAction={goBack}
+            networkClient={networkContext.networkClient}
+          />
+        );
     }
   }
 
