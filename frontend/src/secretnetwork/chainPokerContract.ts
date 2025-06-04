@@ -162,7 +162,7 @@ async function viewPlayer(
 async function viewPlayers(
   lobbyCode: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<PlayerInfo[], Error>> {
+): Promise<Result<[string, number][], Error>> {
   return secretts.queryContract(
     { view_players: {} },
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
