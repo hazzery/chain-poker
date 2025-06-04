@@ -9,6 +9,8 @@ import Landing from "./pages/Landing";
 import Game from "./pages/Game";
 import NotFound from "./pages/NotFound";
 import NavBar from "./components/NavBar";
+import { NetworkClientContextProvider } from "./secretnetwork/SecretNetworkContext";
+import BuyIn from "./pages/BuyIn";
 
 export function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -27,11 +29,14 @@ export function App() {
       <CssBaseline />
       <NavBar />
       <LocationProvider>
-        <Router>
-          <Route path="/" component={Landing} />
-          <Route path="/play" component={Game} />
-          <Route default component={NotFound} />
-        </Router>
+        <NetworkClientContextProvider>
+          <Router>
+            <Route path="/" component={Landing} />
+            <Route path="/play/:lobbyCode" component={Game} />
+            <Route path="/play/:lobbyCode/buy-in" component={BuyIn} />
+            <Route default component={NotFound} />
+          </Router>
+        </NetworkClientContextProvider>
       </LocationProvider>
     </ThemeProvider>
   );

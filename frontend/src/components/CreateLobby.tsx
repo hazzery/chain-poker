@@ -29,14 +29,6 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
   async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (
-      bigBlind.error !== null ||
-      minBuyInBB.error !== null ||
-      maxBuyInBB.error !== null
-    ) {
-      return;
-    }
-
     await createLobby(
       {
         big_blind: Number(bigBlind.value),
@@ -45,8 +37,7 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
       },
       networkClient,
     )
-      .onSuccess(console.dir)
-      .onSuccess(() => location.route("/play"))
+      .onSuccess((lobbyCode) => location.route(`/play/${lobbyCode}/buy-in`))
       .onFailure(console.dir);
   }
 

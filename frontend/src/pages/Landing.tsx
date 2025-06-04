@@ -3,12 +3,12 @@ import { Box, Button, Typography } from "@mui/material";
 import type { VNode } from "preact";
 import { useState } from "preact/hooks";
 import { GiPokerHand } from "react-icons/gi";
-
 import { Result } from "typescript-result";
+
 import CreateLobby from "../components/CreateLobby";
 import JoinLobby from "../components/JoinLobby";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
-import type { SecretNetworkClient } from "secretjs";
+import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -23,8 +23,7 @@ const enum LandingMode {
 
 function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
-  const [networkClient, setNetworkClient] =
-    useState<SecretNetworkClient | null>(null);
+  const setNetworkClient = useNetworkClient().setNetworkClient;
 
   function goBack(): void {
     setMode(LandingMode.Main);
