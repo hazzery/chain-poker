@@ -23,9 +23,8 @@ const enum LandingMode {
 
 function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
-  const [networkClient, setNetworkClient] = useState<SecretNetworkClient | null>(
-    null,
-  );
+  const [networkClient, setNetworkClient] =
+    useState<SecretNetworkClient | null>(null);
 
   function goBack(): void {
     setMode(LandingMode.Main);
@@ -78,7 +77,9 @@ function Landing(): VNode {
           setMode(LandingMode.ConnectWallet);
           return;
         }
-        return <CreateLobby backAction={goBack} networkClient={networkClient} />;
+        return (
+          <CreateLobby backAction={goBack} networkClient={networkClient} />
+        );
 
       case LandingMode.Join:
         if (networkClient === null) {
