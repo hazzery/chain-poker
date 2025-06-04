@@ -1,7 +1,7 @@
 use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
-use crate::state::{Card, BALANCES, HANDS, REVEALED_CARDS, TABLE};
+use crate::state::{Card, BALANCES, GAME, HANDS, REVEALED_CARDS, TABLE};
 
 pub fn query_players(deps: Deps) -> StdResult<Binary> {
     let players: Vec<(CanonicalAddr, u128)> = BALANCES.iter(deps.storage)?.flatten().collect();
@@ -36,4 +36,10 @@ pub fn query_table(deps: Deps) -> StdResult<Binary> {
         .collect();
 
     to_binary(&cards)
+}
+
+pub fn query_game(deps: Deps) -> StdResult<Binary> {
+    let game = GAME.load(deps.storage)?;
+
+    to_binary(&game)
 }
