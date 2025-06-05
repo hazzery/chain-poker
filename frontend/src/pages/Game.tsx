@@ -1,35 +1,52 @@
 import { Box } from "@mui/material";
+import type { VNode } from "preact";
+import { useLocation, useRoute } from "preact-iso";
+import { useEffect, useState } from "preact/hooks";
+import { Result } from "typescript-result";
 
 import CardSet from "../components/CardSet";
 import { ChipCount } from "../components/ChipCount";
 import FanLayout from "../components/FanLayout";
 import { Hand } from "../components/Hand";
-import { Rank, Suit } from "../components/PlayingCard";
+import type { PlayingCardProps } from "../components/PlayingCard";
+import { viewHand, viewPlayers } from "../secretnetwork/chainPokerContract";
+import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
+import type { PlayerInfo } from "../secretnetwork/types";
 
-function Game() {
-  const playersHand = [
-    { suit: Suit.Hearts, rank: Rank.Ace },
-    { suit: Suit.Diamonds, rank: Rank.Ace },
-  ];
+function Game(): VNode | undefined {
+  const location = useLocation();
+  const networkClient = useNetworkClient().networkClient;
+  if (networkClient === null) {
+    location.route("/");
+    return;
+  }
+  const { lobbyCode } = useRoute().params;
+  const [players, setPlayers] = useState<PlayerInfo[]>([]);
+  const [hand, setHand] = useState<[PlayingCardProps, PlayingCardProps] | []>(
+    [],
+  );
+  const [table, setTable] = useState<PlayingCardProps[]>([]);
+  const [gameStarted, setGameStarted] = useState(false);
 
-  const table = [
-    { suit: Suit.Clubs, rank: Rank.Ace },
-    { suit: Suit.Clubs, rank: Rank.Seven },
-    { suit: Suit.Diamonds, rank: Rank.Two },
-    { suit: Suit.Hearts, rank: Rank.Two },
-    { suit: Suit.Spades, rank: Rank.Four },
-  ];
+  useEffect(() => {
+    if (players.length > 0) return;
 
-  const players = [
-    { name: "John", chipBalance: 70 },
-    { name: "James", chipBalance: 80 },
-    { name: "Jimmy", chipBalance: 90 },
-    { name: "Jeff", chipBalance: 60 },
-    { name: "Jake", chipBalance: 50 },
-    { name: "Jacob", chipBalance: 110 },
-    { name: "Jack", chipBalance: 120 },
-    { name: "Jamie", chipBalance: 70 },
-  ];
+    Result.fromAsync(viewPlayers(lobbyCode, networkClient))
+      .onSuccess((players) =>
+        setPlayers(
+          players.map(([name, chipBalance]) => ({ name, chipBalance })),
+        ),
+      )
+      .onFailure(console.error);
+  }, [lobbyCode]);
+
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    Result.fromAsync(viewHand(lobbyCode, networkClient))
+      .onSuccess((cards) => void 0)
+      .onFailure(console.error);
+  }, [lobbyCode]);
 
   const currentPot = 10;
   return (
@@ -43,7 +60,7 @@ function Game() {
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
-      <Hand cards={playersHand} chipBalance={97.5} />
+      <Hand cards={hand} chipBalance={97.5} />
     </Box>
   );
 }
