@@ -1,10 +1,17 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult};
 
-use crate::state::{next_card, BALANCES, HANDS, IS_STARTED, POT, TABLE};
+use crate::state::{next_card, ADMIN, BALANCES, HANDS, IS_STARTED, POT, TABLE};
 
-pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
+pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has already started"));
+    }
+
+    let admin = deps.api.addr_humanize(&ADMIN.load(deps.storage)?)?;
+    if sender != admin {
+        return Err(StdError::generic_err(
+            "Only the person who created the lobby can start the game",
+        ));
     }
 
     if BALANCES.get_len(deps.storage)? < 2 {

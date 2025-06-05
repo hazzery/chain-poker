@@ -7,14 +7,14 @@ use query::{query_game, query_hand, query_players, query_table};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{Game, GAME, IS_STARTED, POT, REVEALED_CARDS},
+    state::{Game, ADMIN, GAME, IS_STARTED, POT, REVEALED_CARDS},
 };
 
 #[entry_point]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
-    _info: MessageInfo,
+    info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let game = Game {
@@ -22,6 +22,9 @@ pub fn instantiate(
         max_buy_in_bb: msg.max_buy_in_bb,
         min_buy_in_bb: msg.min_buy_in_bb,
     };
+    let admin_canonical_address = deps.api.addr_canonicalize(info.sender.as_str())?;
+
+    ADMIN.save(deps.storage, &admin_canonical_address)?;
     GAME.save(deps.storage, &game)?;
     REVEALED_CARDS.save(deps.storage, &0)?;
     IS_STARTED.save(deps.storage, &false)?;
@@ -38,7 +41,7 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::StartGame {} => try_start_game(deps),
+        ExecuteMsg::StartGame {} => try_start_game(deps, info.sender),
         ExecuteMsg::BuyIn {} => try_buy_in(deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
     }
