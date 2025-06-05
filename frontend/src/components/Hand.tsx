@@ -10,11 +10,12 @@ import useNumberValidation from "../hooks/useNumberValidation";
 export interface HandProps {
   cards: PlayingCardProps[];
   chipBalance: number;
+  gameStarted: boolean;
 }
 
 function placeBet(): void {}
 
-export function Hand({ cards, chipBalance }: HandProps) {
+export function Hand({ cards, chipBalance, gameStarted }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
     minValue: 0,
     maxValue: chipBalance,
@@ -46,7 +47,7 @@ export function Hand({ cards, chipBalance }: HandProps) {
       <CardSet cards={cards} maxCards={2} />
       <Box
         sx={{ position: "fixed", right: "2em" }}
-        display="flex"
+        display={gameStarted ? "flex": "none"}
         columnGap="1em"
         justifyContent="center"
       >

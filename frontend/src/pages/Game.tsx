@@ -60,7 +60,7 @@ function Game(): VNode | undefined {
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
-      <Hand cards={hand} chipBalance={97.5} />
+      <Hand cards={hand} chipBalance={97.5} gameStarted={gameStarted} />
     </Box>
   );
 }
