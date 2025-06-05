@@ -23,7 +23,7 @@ pub static IS_STARTED: Item<bool> = Item::new(b"started");
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Card {
     pub suit: Suit,
-    pub value: Rank,
+    pub rank: Rank,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -35,7 +35,7 @@ pub struct Game {
 
 pub fn next_card() -> Card {
     Card {
-        value: Rank::Queen,
+        rank: Rank::Queen,
         suit: Suit::Hearts,
     }
 }
