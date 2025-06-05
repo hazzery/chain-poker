@@ -27,6 +27,7 @@ function Game(): VNode | undefined {
   );
   const [table, setTable] = useState<PlayingCardProps[]>([]);
   const [gameStarted, setGameStarted] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (players.length > 0) return;
@@ -60,7 +61,12 @@ function Game(): VNode | undefined {
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
-      <Hand cards={hand} chipBalance={97.5} gameStarted={gameStarted} />
+      <Hand
+        cards={hand}
+        chipBalance={97.5}
+        gameStarted={gameStarted}
+        isAdmin={isAdmin}
+      />
     </Box>
   );
 }
