@@ -18,9 +18,7 @@ pub fn try_start_game(deps: DepsMut) -> StdResult<Response> {
         HANDS.insert(deps.storage, &address, &hand)?;
     }
 
-    for _ in 0..5 {
-        TABLE.push(deps.storage, &next_card())?;
-    }
+    (0..5).try_for_each(|_| TABLE.push(deps.storage, &next_card()))?;
 
     IS_STARTED.save(deps.storage, &true)?;
 
