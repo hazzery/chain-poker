@@ -1,24 +1,27 @@
 import { Card } from "@mui/material";
 import PlayingCard, { type PlayingCardProps } from "./PlayingCard";
 
-export interface CardSetProps {
+interface CardSetProps {
   cards: PlayingCardProps[];
+  maxCards: number;
 }
 
-function playingCards(cards: PlayingCardProps[]) {
-  return cards.map((cardProps) => (
-    <PlayingCard suit={cardProps.suit} rank={cardProps.rank} />
-  ));
-}
+function CardSet({ cards, maxCards }: CardSetProps) {
+  function playingCards(cards: PlayingCardProps[]) {
+    return cards.map((cardProps) => (
+      <PlayingCard suit={cardProps.suit} rank={cardProps.rank} />
+    ));
+  }
 
-export function CardSet({ cards }: CardSetProps) {
+  const width = maxCards * 6 + (maxCards - 1) * 0.7;
+
   return (
     <Card
       sx={{
-        // display: "inline-flex",
         display: "flex",
         columnGap: "0.7em",
-        // backgroundColor: "burlywood",
+        width: `${width}em`,
+        height: "9em",
         backgroundColor: "forestgreen",
         padding: "0.7em",
         alignItems: "center",
@@ -28,3 +31,5 @@ export function CardSet({ cards }: CardSetProps) {
     </Card>
   );
 }
+
+export { CardSet as default, type CardSetProps };

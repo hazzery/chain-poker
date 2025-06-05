@@ -1,7 +1,7 @@
 import { Box, Button, Card, TextField } from "@mui/material";
 
 import { ChipCount } from "./ChipCount";
-import { CardSet } from "./CardSet";
+import CardSet from "./CardSet";
 import { type PlayingCardProps } from "./PlayingCard";
 import scrtLogo from "../../resources/scrt.svg";
 import type { ChangeEvent } from "preact/compat";
@@ -43,7 +43,7 @@ export function Hand({ cards, chipBalance }: HandProps) {
           left: "2em",
         }}
       />
-      <CardSet cards={cards} />
+      <CardSet cards={cards} maxCards={2} />
       <Box
         sx={{ position: "fixed", right: "2em" }}
         display="flex"

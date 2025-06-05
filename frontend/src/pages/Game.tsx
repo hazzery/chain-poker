@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 
+import CardSet from "../components/CardSet";
 import { ChipCount } from "../components/ChipCount";
-import { CardSet } from "../components/CardSet";
 import FanLayout from "../components/FanLayout";
 import { Hand } from "../components/Hand";
 import { Rank, Suit } from "../components/PlayingCard";
@@ -35,7 +35,7 @@ function Game() {
   return (
     <Box display="flex" flexDirection="column" height="100vh">
       <FanLayout players={players}>
-        <CardSet cards={table} />
+        <CardSet cards={table} maxCards={5} />
         <ChipCount
           numberOfChips={currentPot}
           chipIconSize="3em"
