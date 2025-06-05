@@ -2,7 +2,8 @@ import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { LobbyConfig, PlayerInfo } from "./types";
+import type { LobbyConfig } from "./types";
+import type { PlayingCardProps } from "../components/PlayingCard";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -134,13 +135,13 @@ async function viewTable(
  * @returns A result containing an object representation of the contract's
  *    respose if successful, otherise an error.
  */
-async function viewPlayer(
+async function viewHand(
   lobbyCode: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<object, Error>> {
+): Promise<Result<[PlayingCardProps, PlayingCardProps], Error>> {
   return Result.fromAsync(getPermit(lobbyCode, networkClient)).map((permit) =>
-    secretts.queryContract(
-      { view_player: { permit } },
+    secretts.queryContract<[PlayingCardProps, PlayingCardProps]>(
+      { view_hand: { permit } },
       {
         contractAddress: lobbyCode,
         contractCodeHash: CONTRACT_CODE_HASH,
@@ -209,7 +210,7 @@ export {
   createLobby,
   placeBet,
   startGame,
-  viewPlayer,
+  viewHand,
   viewPlayers,
   viewTable,
 };
