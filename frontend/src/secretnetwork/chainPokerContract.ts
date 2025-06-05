@@ -172,6 +172,26 @@ async function viewPlayers(
 }
 
 /**
+ * Query the contract for the configuration of the specified lobby.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing the lobby configuration if successful,
+ *    otherwise an Error.
+ */
+async function viewLobbyConfig(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): Promise<Result<LobbyConfig, Error>> {
+  return secretts.queryContract(
+    { view_game: {} },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
+    networkClient,
+  );
+}
+
+/**
  * Get a permit to perform authenticated queries.
  *
  * Attempts to fetch cached permit from local storage before signing a new
@@ -211,6 +231,7 @@ export {
   placeBet,
   startGame,
   viewHand,
+  viewLobbyConfig,
   viewPlayers,
   viewTable,
 };
