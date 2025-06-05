@@ -1,7 +1,7 @@
 use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
-use crate::state::{Card, BALANCES, GAME, HANDS, REVEALED_CARDS, TABLE};
+use crate::state::{Card, BALANCES, GAME, HANDS, IS_STARTED, REVEALED_CARDS, TABLE};
 
 pub fn query_players(deps: Deps) -> StdResult<Binary> {
     let players: Vec<(CanonicalAddr, u128)> = BALANCES.iter(deps.storage)?.flatten().collect();
@@ -10,6 +10,10 @@ pub fn query_players(deps: Deps) -> StdResult<Binary> {
 }
 
 pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
+    if !IS_STARTED.load(deps.storage)? {
+        return Err(StdError::generic_err("The game has not yet started"));
+    }
+
     let account = secret_toolkit::permit::validate(
         deps,
         "revoked_permits",
@@ -21,7 +25,9 @@ pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
     let sender = deps.api.addr_canonicalize(&account)?;
 
     let Some(hand): Option<(Card, Card)> = HANDS.get(deps.storage, &sender) else {
-        return Err(StdError::generic_err("You are not bought in!"));
+        return Err(StdError::generic_err(
+            "You do not currently have a hand in this game",
+        ));
     };
 
     to_binary(&hand)
