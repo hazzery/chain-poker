@@ -11,6 +11,7 @@ import NotFound from "./pages/NotFound";
 import NavBar from "./components/NavBar";
 import { NetworkClientContextProvider } from "./secretnetwork/SecretNetworkContext";
 import BuyIn from "./pages/BuyIn";
+import Reconnect from "./pages/Reconnect";
 
 export function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -34,6 +35,7 @@ export function App() {
             <Route path="/" component={Landing} />
             <Route path="/play/:lobbyCode" component={Game} />
             <Route path="/play/:lobbyCode/buy-in" component={BuyIn} />
+            <Route path="/play/:lobbyCode/reconnect" component={Reconnect} />
             <Route default component={NotFound} />
           </Router>
         </NetworkClientContextProvider>
