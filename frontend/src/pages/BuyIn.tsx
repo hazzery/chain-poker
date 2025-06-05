@@ -7,9 +7,8 @@ import { Result } from "typescript-result";
 
 import TextInput from "../components/TextInput";
 import useNumberValidation from "../hooks/useNumberValidation";
-import { buyIn } from "../secretnetwork/chainPokerContract";
+import { buyIn, viewLobbyConfig } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
-import { GiPokerHand } from "react-icons/gi";
 
 function BuyIn(): VNode | undefined {
   const location = useLocation();
@@ -21,9 +20,23 @@ function BuyIn(): VNode | undefined {
   }
 
   const { lobbyCode } = useRoute().params;
+  const [minBuyIn, setMinBuyIn] = useState<number>();
+  const [maxBuyIn, setMaxBuyIn] = useState<number>();
+
+  useEffect(() => {
+    if (maxBuyIn !== undefined) return;
+
+    Result.fromAsync(viewLobbyConfig(lobbyCode, networkClient!))
+      .onSuccess(({ min_buy_in_bb, max_buy_in_bb, big_blind }) => {
+        setMaxBuyIn(max_buy_in_bb * big_blind);
+        setMinBuyIn(min_buy_in_bb * big_blind);
+      }) .onFailure(console.error);
+  }, [lobbyCode]);
+
   const [buyInAmount, setBuyInAmount] = useNumberValidation({
-    integer: true,
     required: true,
+    maxValue: maxBuyIn,
+    minValue: minBuyIn,
   });
 
   async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
@@ -40,6 +53,11 @@ function BuyIn(): VNode | undefined {
       <Box display="flex" alignItems="center" marginTop="5em">
         <GiPokerHand size="20em" />
         <Typography fontSize="5em">Chain Poker</Typography>
+      </Box>
+      <Box>
+        <Typography>Buy in to lobby: {lobbyCode}</Typography>
+        <Typography>Minimum buy in {minBuyIn}</Typography>
+        <Typography>Maximum buy in {maxBuyIn}</Typography>
       </Box>
       <Box
         sx={{
