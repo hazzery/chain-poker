@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
+use cosmwasm_std::{to_binary, Addr, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
@@ -54,17 +54,20 @@ pub fn query_game(deps: Deps) -> StdResult<Binary> {
 
 pub fn query_all_state(deps: Deps) -> StdResult<Binary> {
     let all_state = AllState {
-        admin: deps.api.addr_humanize(&ADMIN.load(deps.storage)?),
+        admin: deps.api.addr_humanize(&ADMIN.load(deps.storage)?)?,
         big_blind: 1,
         is_started: IS_STARTED.load(deps.storage)?,
         players: BALANCES
             .iter(deps.storage)?
             .flatten()
-            .map(|player| (deps.api.addr_humanize(&player.0), player.1))
+            .map(|player| {
+                Ok::<(Addr, u128), StdError>((deps.api.addr_humanize(&player.0)?, player.1))
+            })
+            .flatten()
             .collect(),
         table: TABLE
             .iter(deps.storage)?
-            .take(REVEALED_CARDS.load(deps.storage)?)
+            .take(REVEALED_CARDS.load(deps.storage)? as usize)
             .flatten()
             .collect(),
         pot: POT.load(deps.storage)?,

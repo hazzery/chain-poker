@@ -34,12 +34,13 @@ pub struct Game {
     pub min_buy_in_bb: u8,
 }
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct AllState {
     pub admin: Addr,
     pub big_blind: u32,
     pub is_started: bool,
     pub players: Vec<(Addr, u128)>,
-    pub table: Option<Vec<Card>>,
+    pub table: Vec<Card>,
     pub pot: u128,
 }
 
