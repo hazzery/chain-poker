@@ -1,7 +1,9 @@
 use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
-use crate::state::{Card, BALANCES, GAME, HANDS, IS_STARTED, REVEALED_CARDS, TABLE};
+use crate::state::{
+    AllState, Card, ADMIN, BALANCES, GAME, HANDS, IS_STARTED, POT, REVEALED_CARDS, TABLE,
+};
 
 pub fn query_players(deps: Deps) -> StdResult<Binary> {
     let players: Vec<(CanonicalAddr, u128)> = BALANCES.iter(deps.storage)?.flatten().collect();
@@ -48,4 +50,25 @@ pub fn query_game(deps: Deps) -> StdResult<Binary> {
     let game = GAME.load(deps.storage)?;
 
     to_binary(&game)
+}
+
+pub fn query_all_state(deps: Deps) -> StdResult<Binary> {
+    let all_state = AllState {
+        admin: deps.api.addr_humanize(&ADMIN.load(deps.storage)?),
+        big_blind: 1,
+        is_started: IS_STARTED.load(deps.storage)?,
+        players: BALANCES
+            .iter(deps.storage)?
+            .flatten()
+            .map(|player| (deps.api.addr_humanize(&player.0), player.1))
+            .collect(),
+        table: TABLE
+            .iter(deps.storage)?
+            .take(REVEALED_CARDS.load(deps.storage)?)
+            .flatten()
+            .collect(),
+        pot: POT.load(deps.storage)?,
+    };
+
+    to_binary(&all_state)
 }

@@ -1,7 +1,7 @@
 mod rank;
 mod suit;
 
-use cosmwasm_std::CanonicalAddr;
+use cosmwasm_std::{Addr, CanonicalAddr};
 use secret_toolkit::{
     serialization::Bincode2,
     storage::{AppendStore, Item, Keymap, KeymapBuilder, WithoutIter},
@@ -32,6 +32,15 @@ pub struct Game {
     pub big_blind: u32,
     pub max_buy_in_bb: u8,
     pub min_buy_in_bb: u8,
+}
+
+pub struct AllState {
+    pub admin: Addr,
+    pub big_blind: u32,
+    pub is_started: bool,
+    pub players: Vec<(Addr, u128)>,
+    pub table: Option<Vec<Card>>,
+    pub pot: u128,
 }
 
 pub fn next_card() -> Card {
