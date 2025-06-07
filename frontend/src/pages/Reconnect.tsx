@@ -1,9 +1,9 @@
-import { Box, Button, Typography } from "@mui/material";
+import { Button } from "@mui/material";
 import type { VNode } from "preact";
 import { useLocation, useRoute } from "preact-iso";
-import { GiPokerHand } from "react-icons/gi";
 import { Result } from "typescript-result";
 
+import ChainPoker from "../components/ChainPoker";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 
@@ -29,25 +29,11 @@ function Reconnect(): VNode | undefined {
   }
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center">
-      <Box display="flex" alignItems="center" marginTop="5em">
-        <GiPokerHand size="20em" />
-        <Typography fontSize="5em">Chain Poker</Typography>
-      </Box>
-      <Box
-        sx={{
-          padding: "2em",
-          display: "flex",
-          flexDirection: "column",
-          columnGap: "1em",
-          rowGap: "1em",
-        }}
-      >
-        <Button variant="outlined" color="success" onClick={connectWallet}>
-          Connect Wallet
-        </Button>
-      </Box>
-    </Box>
+    <ChainPoker>
+      <Button variant="outlined" color="success" onClick={connectWallet}>
+        Connect Wallet
+      </Button>
+    </ChainPoker>
   );
 }
 
