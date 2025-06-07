@@ -1,14 +1,16 @@
-use cosmwasm_std::{to_binary, Addr, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
+use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdResult};
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
-    AllState, Card, ADMIN, BALANCES, GAME, HANDS, IS_STARTED, POT, REVEALED_CARDS, TABLE,
+    get_balances, AllState, Card, PreStartState, ADMIN, BIG_BLIND_POSITION, CURRENT_TURN_POSITION,
+    GAME, HANDS, IS_STARTED, PLAYERS, POT, REVEALED_CARDS, TABLE,
 };
 
 pub fn query_players(deps: Deps) -> StdResult<Binary> {
-    let players: Vec<(CanonicalAddr, u128)> = BALANCES.iter(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = PLAYERS.iter(deps.storage)?.flatten().collect();
+    let balances = get_balances(&players, deps)?;
 
-    to_binary(&players)
+    to_binary(&balances)
 }
 
 pub fn query_hand(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
@@ -52,26 +54,56 @@ pub fn query_game(deps: Deps) -> StdResult<Binary> {
     to_binary(&game)
 }
 
-pub fn query_all_state(deps: Deps) -> StdResult<Binary> {
-    let all_state = AllState {
-        admin: deps.api.addr_humanize(&ADMIN.load(deps.storage)?)?,
-        big_blind: 1,
-        is_started: IS_STARTED.load(deps.storage)?,
-        players: BALANCES
-            .iter(deps.storage)?
-            .flatten()
-            .map(|player| {
-                Ok::<(Addr, u128), StdError>((deps.api.addr_humanize(&player.0)?, player.1))
-            })
-            .flatten()
-            .collect(),
-        table: TABLE
-            .iter(deps.storage)?
-            .take(REVEALED_CARDS.load(deps.storage)? as usize)
-            .flatten()
-            .collect(),
-        pot: POT.load(deps.storage)?,
-    };
+pub fn query_all_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
+    let admin = deps.api.addr_humanize(&ADMIN.load(deps.storage)?)?;
+    let lobby_config = GAME.load(deps.storage)?;
+    let is_started = IS_STARTED.load(deps.storage)?;
+    let players: Vec<CanonicalAddr> = PLAYERS.iter(deps.storage)?.flatten().collect();
+    let balances = get_balances(&players, deps)?;
 
-    to_binary(&all_state)
+    if is_started {
+        let account = secret_toolkit::permit::validate(
+            deps,
+            "revoked_permits",
+            &permit,
+            env.contract.address.to_string(),
+            None,
+        )?;
+
+        let sender = deps.api.addr_canonicalize(&account)?;
+
+        let current_turn = balances[CURRENT_TURN_POSITION.load(deps.storage)? as usize]
+            .0
+            .clone();
+        let big_blind = balances[BIG_BLIND_POSITION.load(deps.storage)? as usize]
+            .0
+            .clone();
+
+        let all_state = AllState {
+            admin,
+            lobby_config,
+            is_started,
+            balances,
+            table: TABLE
+                .iter(deps.storage)?
+                .take(REVEALED_CARDS.load(deps.storage)? as usize)
+                .flatten()
+                .collect(),
+            pot: POT.load(deps.storage)?,
+            hand: HANDS.get(deps.storage, &sender),
+            current_turn,
+            big_blind,
+        };
+
+        to_binary(&all_state)
+    } else {
+        let pre_start_state = PreStartState {
+            admin,
+            lobby_config,
+            is_started,
+            balances,
+        };
+
+        to_binary(&pre_start_state)
+    }
 }

@@ -54,6 +54,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
         QueryMsg::ViewTable {} => query_table(deps),
         QueryMsg::ViewGame {} => query_game(deps),
-        QueryMsg::ViewAllState {} => query_all_state(deps),
+        QueryMsg::ViewAllState { permit } => query_all_state(deps, env, permit),
     }
 }

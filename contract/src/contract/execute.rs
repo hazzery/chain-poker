@@ -1,6 +1,78 @@
-use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult};
+use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult, Storage};
 
-use crate::state::{next_card, ADMIN, BALANCES, HANDS, IS_STARTED, POT, TABLE};
+use crate::state::{
+    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, GAME, HANDS, IS_STARTED,
+    PLAYERS, POT, TABLE,
+};
+
+fn find_next_player<'a>(
+    storage: &mut dyn Storage,
+    player_position: u8,
+    addresses: &'a [CanonicalAddr],
+) -> StdResult<(u8, &'a CanonicalAddr, u128)> {
+    addresses
+        .iter()
+        .cycle()
+        .enumerate()
+        .skip(player_position as usize)
+        .take(addresses.len())
+        .find_map(|(index, address)| Some((index as u8, address, BALANCES.get(storage, address)?)))
+        .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
+}
+
+fn take_forced_bet(
+    take_amount: u32,
+    player_position: u8,
+    addresses: &[CanonicalAddr],
+    storage: &mut dyn Storage,
+) -> StdResult<u8> {
+    let (index, address, mut balance) = find_next_player(storage, player_position, addresses)?;
+
+    let bet_amount = if balance > take_amount as u128 {
+        take_amount as u128
+    } else {
+        balance
+    };
+
+    balance -= bet_amount;
+    BALANCES.insert(storage, address, &balance)?;
+
+    POT.update(storage, |pot| Ok(pot + bet_amount))?;
+
+    Ok(index)
+}
+
+fn new_round(storage: &mut dyn Storage, big_blind_player_position: u8) -> StdResult<()> {
+    let addresses: Vec<CanonicalAddr> = PLAYERS.iter(storage)?.flatten().collect();
+
+    addresses
+        .iter()
+        .try_for_each(|address| HANDS.insert(storage, address, &(next_card(), next_card())))?;
+
+    (0..5).try_for_each(|_| TABLE.push(storage, &next_card()))?;
+
+    let big_blind_amount = GAME.load(storage)?.big_blind;
+
+    let big_blind_position = take_forced_bet(
+        big_blind_amount,
+        big_blind_player_position,
+        &addresses,
+        storage,
+    )?;
+
+    BIG_BLIND_POSITION.save(storage, &big_blind_position)?;
+
+    let small_blind_position = take_forced_bet(
+        big_blind_amount / 2,
+        big_blind_position + 1,
+        &addresses,
+        storage,
+    )?;
+
+    CURRENT_TURN_POSITION.save(storage, &(small_blind_position + 1))?;
+
+    Ok(())
+}
 
 pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
@@ -14,18 +86,11 @@ pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
         ));
     }
 
-    if BALANCES.get_len(deps.storage)? < 2 {
+    if PLAYERS.get_len(deps.storage)? < 2 {
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
-    let adresses: Vec<CanonicalAddr> = BALANCES.iter_keys(deps.storage)?.flatten().collect();
-
-    for address in adresses {
-        let hand = (next_card(), next_card());
-        HANDS.insert(deps.storage, &address, &hand)?;
-    }
-
-    (0..5).try_for_each(|_| TABLE.push(deps.storage, &next_card()))?;
+    new_round(deps.storage, 0)?;
 
     IS_STARTED.save(deps.storage, &true)?;
 

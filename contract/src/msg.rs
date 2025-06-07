@@ -25,5 +25,5 @@ pub enum QueryMsg {
     ViewHand { permit: Permit },
     ViewTable {},
     ViewGame {},
-    ViewAllState {},
+    ViewAllState { permit: Permit },
 }
