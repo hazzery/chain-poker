@@ -1,10 +1,10 @@
-import { Box, Button, Card, TextField } from "@mui/material";
+import { Box, Button, Card } from "@mui/material";
 
-import scrtLogo from "../../resources/scrt.svg";
 import useNumberValidation from "../hooks/useNumberValidation";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import { type PlayingCardProps } from "./PlayingCard";
+import ScrtInput from "./ScrtInput";
 
 interface HandProps {
   cards: PlayingCardProps[] | null;
@@ -51,19 +51,11 @@ function Hand({ cards, chipBalance, ourTurn }: HandProps) {
           columnGap="1em"
           justifyContent="center"
         >
-          <TextField
-            value={betAmount.value}
-            label="Bet Value"
+          <ScrtInput
+            state={betAmount}
+            setState={setBetAmount}
             color="success"
-            error={Boolean(betAmount.error)}
-            helperText={betAmount.error}
-            onChange={(event) => setBetAmount(event.target.value)}
-            variant="outlined"
-            slotProps={{
-              input: { startAdornment: <img src={scrtLogo} width="20em" /> },
-              htmlInput: { sx: { paddingLeft: "0.4em" } },
-            }}
-          ></TextField>
+          />
           <Button onClick={placeBet} variant="outlined" color="success">
             Place Bet
           </Button>
