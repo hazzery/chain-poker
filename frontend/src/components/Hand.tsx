@@ -16,6 +16,7 @@ function placeBet(): void {}
 
 function Hand({ cards, chipBalance, ourTurn }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
+    required: true,
     minValue: 0,
     maxValue: chipBalance,
   });
@@ -56,7 +57,12 @@ function Hand({ cards, chipBalance, ourTurn }: HandProps) {
             setState={setBetAmount}
             color="success"
           />
-          <Button onClick={placeBet} variant="outlined" color="success">
+          <Button
+            onClick={placeBet}
+            disabled={betAmount.error !== null}
+            variant="outlined"
+            color="success"
+          >
             Place Bet
           </Button>
         </Box>
