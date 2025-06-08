@@ -1,8 +1,8 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult, Storage};
 
 use crate::state::{
-    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, LOBBY_CONFIG, HANDS, IS_STARTED,
-    PLAYERS, POT, TABLE,
+    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, HANDS, IS_STARTED,
+    LOBBY_CONFIG, PLAYERS, POT, TABLE,
 };
 
 fn find_next_player<'a>(
@@ -69,7 +69,9 @@ fn new_round(storage: &mut dyn Storage, big_blind_player_position: u8) -> StdRes
         storage,
     )?;
 
-    CURRENT_TURN_POSITION.save(storage, &(small_blind_position + 1))?;
+    let next_player_position = find_next_player(storage, small_blind_position + 1, &addresses)?.0;
+
+    CURRENT_TURN_POSITION.save(storage, &(next_player_position % addresses.len() as u8))?;
 
     Ok(())
 }
