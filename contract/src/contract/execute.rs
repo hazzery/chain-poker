@@ -35,7 +35,11 @@ fn take_forced_bet(
     };
 
     balance -= bet_amount;
-    BALANCES.insert(storage, address, &balance)?;
+    if balance > 0 {
+        BALANCES.insert(storage, address, &balance)?;
+    } else {
+        BALANCES.remove(storage, address)?;
+    }
 
     POT.update(storage, |pot| Ok(pot + bet_amount))?;
 
