@@ -15,9 +15,11 @@ interface GameProps extends GameState {
 
 function Game({
   balances,
-  pot,
   table,
+  pot,
   hand,
+  current_turn,
+  big_blind,
   networkClient,
 }: GameProps): VNode | undefined {
   const [playerInfos] = useState<PlayerInfo[]>(
@@ -38,7 +40,11 @@ function Game({
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
-      <Hand cards={hand} chipBalance={chipBalance} />
+      <Hand
+        cards={hand}
+        chipBalance={chipBalance}
+        ourTurn={current_turn === networkClient.address}
+      />
     </Box>
   );
 }

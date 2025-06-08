@@ -9,11 +9,12 @@ import { type PlayingCardProps } from "./PlayingCard";
 interface HandProps {
   cards: PlayingCardProps[] | null;
   chipBalance: number;
+  ourTurn: boolean;
 }
 
 function placeBet(): void {}
 
-function Hand({ cards, chipBalance }: HandProps) {
+function Hand({ cards, chipBalance, ourTurn }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
     minValue: 0,
     maxValue: chipBalance,
@@ -43,28 +44,30 @@ function Hand({ cards, chipBalance }: HandProps) {
         }}
       />
       <CardSet cards={cards} maxCards={2} />
-      <Box
-        sx={{ position: "fixed", right: "2em" }}
-        display="flex"
-        columnGap="1em"
-        justifyContent="center"
-      >
-        <TextField
-          value={betAmount.value}
-          label="Bet Value"
-          color="success"
-          error={Boolean(betAmount.error)}
-          helperText={betAmount.error}
-          onChange={(event) => setBetAmount(event.target.value)}
-          variant="outlined"
-          slotProps={{
-            input: { startAdornment: <img src={scrtLogo} width="20em" /> },
-          }}
-        ></TextField>
-        <Button variant="outlined" color="success" onClick={placeBet}>
-          Place Bet
-        </Button>
-      </Box>
+      {ourTurn && (
+        <Box
+          sx={{ position: "fixed", right: "2em" }}
+          display="flex"
+          columnGap="1em"
+          justifyContent="center"
+        >
+          <TextField
+            value={betAmount.value}
+            label="Bet Value"
+            color="success"
+            error={Boolean(betAmount.error)}
+            helperText={betAmount.error}
+            onChange={(event) => setBetAmount(event.target.value)}
+            variant="outlined"
+            slotProps={{
+              input: { startAdornment: <img src={scrtLogo} width="20em" /> },
+            }}
+          ></TextField>
+          <Button onClick={placeBet} variant="outlined" color="success">
+            Place Bet
+          </Button>
+        </Box>
+      )}
     </Card>
   );
 }
