@@ -61,6 +61,7 @@ function Hand({ cards, chipBalance, ourTurn }: HandProps) {
             variant="outlined"
             slotProps={{
               input: { startAdornment: <img src={scrtLogo} width="20em" /> },
+              htmlInput: { sx: { paddingLeft: "0.4em" } },
             }}
           ></TextField>
           <Button onClick={placeBet} variant="outlined" color="success">
