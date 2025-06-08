@@ -2,7 +2,7 @@ import { Card } from "@mui/material";
 import PlayingCard, { type PlayingCardProps } from "./PlayingCard";
 
 interface CardSetProps {
-  cards: PlayingCardProps[];
+  cards: PlayingCardProps[] | null;
   maxCards: number;
 }
 
@@ -27,7 +27,7 @@ function CardSet({ cards, maxCards }: CardSetProps) {
         alignItems: "center",
       }}
     >
-      {playingCards(cards)}
+      {cards && playingCards(cards)}
     </Card>
   );
 }

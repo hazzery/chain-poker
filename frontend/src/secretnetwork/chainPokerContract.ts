@@ -2,8 +2,8 @@ import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { LobbyConfig } from "./types";
 import type { PlayingCardProps } from "../components/PlayingCard";
+import type { GameState, LobbyConfig, PreStartState } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -71,7 +71,7 @@ function startGame(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { start_game: {} },
-    40_000,
+    400_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
   );
@@ -185,7 +185,50 @@ async function viewLobbyConfig(
   networkClient: SecretNetworkClient,
 ): Promise<Result<LobbyConfig, Error>> {
   return secretts.queryContract(
-    { view_game: {} },
+    { view_lobby_config: {} },
+    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
+    networkClient,
+  );
+}
+
+/**
+ * Query the contract for the variable state of a game.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing an object with the variable state of a game if
+ *    successful, otherwise an error.
+ */
+async function viewGameState(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): Promise<Result<GameState, Error>> {
+  return await Result.fromAsync(getPermit(lobbyCode, networkClient)).map(
+    (permit) =>
+      secretts.queryContract<GameState>(
+        { view_game_state: { permit } },
+        { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
+        networkClient,
+      ),
+  );
+}
+
+/**
+ * Query the contract for the pre-start state of a lobby.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing an object with the pre-start state of the
+ *    lobby if successful, otherwise and error.
+ */
+async function viewPreStartState(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): Promise<Result<PreStartState, Error>> {
+  return await secretts.queryContract<PreStartState>(
+    { view_pre_start_state: {} },
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
   );
@@ -210,7 +253,7 @@ async function getPermit(
   const queryPermitStored = localStorage.getItem(storageKey);
 
   if (queryPermitStored) {
-    return Result.try(JSON.parse(queryPermitStored));
+    return Result.try(() => JSON.parse(queryPermitStored));
   }
 
   return (
@@ -230,8 +273,10 @@ export {
   createLobby,
   placeBet,
   startGame,
+  viewGameState,
   viewHand,
   viewLobbyConfig,
   viewPlayers,
+  viewPreStartState,
   viewTable,
 };

@@ -1,5 +1,5 @@
 import { Box, Button } from "@mui/material";
-import type { JSX, VNode } from "preact";
+import type { VNode } from "preact";
 import { useLocation } from "preact-iso";
 import type { SecretNetworkClient } from "secretjs";
 
@@ -19,21 +19,12 @@ function JoinLobby({ backAction }: JoinLobbyProps): VNode {
     maxLength: 45,
   });
 
-  async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    location.route(`/play/${lobbyCode.value}/buy-in`);
+  async function handleJoin() {
+    location.route(`/lobby/${lobbyCode.value}`);
   }
 
   return (
-    <Box
-      component="form"
-      onSubmit={handleSubmit}
-      display="flex"
-      flexDirection="column"
-      rowGap="1em"
-      width="16em"
-    >
+    <Box display="flex" flexDirection="column" rowGap="1em" width="16em">
       <TextInput
         required
         state={lobbyCode}
@@ -43,7 +34,7 @@ function JoinLobby({ backAction }: JoinLobbyProps): VNode {
         color="success"
       />
       <Button
-        type="submit"
+        onClick={handleJoin}
         disabled={lobbyCode.error !== null}
         variant="outlined"
         color="success"

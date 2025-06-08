@@ -12,8 +12,6 @@ function Player({ name, chipBalance, sx }: PlayerProps) {
   return (
     <Card
       sx={{
-        position: "absolute",
-        transform: "translate(-50%, -50%)",
         display: "inline-flex",
         flexDirection: "column",
         backgroundColor: "gainsboro",

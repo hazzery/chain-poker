@@ -1,86 +1,58 @@
-import { Box, Button, Typography } from "@mui/material";
-import type { JSX, VNode } from "preact";
-import { useLocation, useRoute } from "preact-iso";
-import { useEffect, useState } from "preact/hooks";
-import { Result } from "typescript-result";
+import { Box, Button } from "@mui/material";
+import type { VNode } from "preact";
 
-import ChainPoker from "../components/ChainPoker";
+import type { SecretNetworkClient } from "secretjs";
 import TextInput from "../components/TextInput";
 import useNumberValidation from "../hooks/useNumberValidation";
-import { buyIn, viewLobbyConfig } from "../secretnetwork/chainPokerContract";
-import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
+import { buyIn } from "../secretnetwork/chainPokerContract";
 
-function BuyIn(): VNode | undefined {
-  const location = useLocation();
-  const networkClient = useNetworkClient().networkClient;
-  if (networkClient === null) {
-    console.error("Network client from context was null");
-    location.route("/");
-    return;
-  }
+interface BuyInProps {
+  lobbyCode: string;
+  minBuyIn: number;
+  maxBuyIn: number;
+  onBuyIn: () => void;
+  networkClient: SecretNetworkClient;
+}
 
-  const { lobbyCode } = useRoute().params;
-  const [minBuyIn, setMinBuyIn] = useState<number>();
-  const [maxBuyIn, setMaxBuyIn] = useState<number>();
-
-  useEffect(() => {
-    if (maxBuyIn !== undefined) return;
-
-    Result.fromAsync(viewLobbyConfig(lobbyCode, networkClient!))
-      .onSuccess(({ min_buy_in_bb, max_buy_in_bb, big_blind }) => {
-        setMaxBuyIn(max_buy_in_bb * big_blind);
-        setMinBuyIn(min_buy_in_bb * big_blind);
-      }) .onFailure(console.error);
-  }, [lobbyCode]);
-
+function BuyIn({
+  lobbyCode,
+  maxBuyIn,
+  minBuyIn,
+  networkClient,
+  onBuyIn,
+}: BuyInProps): VNode | undefined {
   const [buyInAmount, setBuyInAmount] = useNumberValidation({
     required: true,
     maxValue: maxBuyIn,
     minValue: minBuyIn,
   });
 
-  async function handleSubmit(event: JSX.TargetedSubmitEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    await buyIn(Number(buyInAmount.value), lobbyCode, networkClient!)
-      .onSuccess(console.log)
-      .onSuccess(() => location.route(`/play/${lobbyCode}`))
+  async function handleBuyIn() {
+    await buyIn(Number(buyInAmount.value), lobbyCode, networkClient)
+      .onSuccess(onBuyIn)
       .onFailure(console.error);
   }
 
   return (
-    <ChainPoker>
-      <Box>
-        <Typography>Buy in to lobby: {lobbyCode}</Typography>
-        <Typography>Minimum buy in {minBuyIn}</Typography>
-        <Typography>Maximum buy in {maxBuyIn}</Typography>
-      </Box>
-      <Box
-        component="form"
-        onSubmit={handleSubmit}
-        display="flex"
-        flexDirection="column"
-        rowGap="1em"
-        width="16em"
+    <Box display="flex" flexDirection="column" rowGap="1em">
+      <TextInput
+        required
+        state={buyInAmount}
+        setState={setBuyInAmount}
+        label="Buy in amount (SCRT)"
+        variant="outlined"
+        color="success"
+      />
+      <Button
+        disabled={buyInAmount.error !== null}
+        onClick={handleBuyIn}
+        variant="outlined"
+        color="success"
+        sx={{ marginX: "1em" }}
       >
-        <TextInput
-          required
-          state={buyInAmount}
-          setState={setBuyInAmount}
-          label="Buy in amount (SCRT)"
-          variant="outlined"
-          color="success"
-        />
-        <Button
-          type="submit"
-          disabled={buyInAmount.error !== null}
-          variant="outlined"
-          color="success"
-        >
-          Buy in
-        </Button>
-      </Box>
-    </ChainPoker>
+        Buy in
+      </Button>
+    </Box>
   );
 }
 

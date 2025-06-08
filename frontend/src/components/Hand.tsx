@@ -1,59 +1,23 @@
 import { Box, Button, Card, TextField } from "@mui/material";
 
-import { ChipCount } from "./ChipCount";
-import CardSet from "./CardSet";
-import { type PlayingCardProps } from "./PlayingCard";
 import scrtLogo from "../../resources/scrt.svg";
-import type { ChangeEvent } from "preact/compat";
 import useNumberValidation from "../hooks/useNumberValidation";
-import type { VNode } from "preact";
+import CardSet from "./CardSet";
+import { ChipCount } from "./ChipCount";
+import { type PlayingCardProps } from "./PlayingCard";
 
-export interface HandProps {
-  cards: PlayingCardProps[];
+interface HandProps {
+  cards: PlayingCardProps[] | null;
   chipBalance: number;
-  gameStarted: boolean;
-  isAdmin: boolean;
 }
 
 function placeBet(): void {}
 
-export function Hand({ cards, chipBalance, gameStarted, isAdmin }: HandProps) {
+function Hand({ cards, chipBalance }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
     minValue: 0,
     maxValue: chipBalance,
   });
-
-  function rightSide(): VNode | undefined {
-    if (gameStarted) {
-      return (
-        <>
-          <TextField
-            value={betAmount.value}
-            label="Bet Value"
-            color="success"
-            error={Boolean(betAmount.error)}
-            helperText={betAmount.error}
-            onChange={(event: ChangeEvent<HTMLInputElement>) =>
-              setBetAmount(event.target?.value)
-            }
-            variant="outlined"
-            slotProps={{
-              input: { startAdornment: <img src={scrtLogo} width="20em" /> },
-            }}
-          ></TextField>
-          <Button variant="outlined" color="success" onClick={placeBet}>
-            Place Bet
-          </Button>
-        </>
-      );
-    } else if (isAdmin) {
-      return (
-        <Button variant="outlined" color="success">
-          Start Game
-        </Button>
-      );
-    }
-  }
 
   return (
     <Card
@@ -85,8 +49,24 @@ export function Hand({ cards, chipBalance, gameStarted, isAdmin }: HandProps) {
         columnGap="1em"
         justifyContent="center"
       >
-        {rightSide()}
+        <TextField
+          value={betAmount.value}
+          label="Bet Value"
+          color="success"
+          error={Boolean(betAmount.error)}
+          helperText={betAmount.error}
+          onChange={(event) => setBetAmount(event.target.value)}
+          variant="outlined"
+          slotProps={{
+            input: { startAdornment: <img src={scrtLogo} width="20em" /> },
+          }}
+        ></TextField>
+        <Button variant="outlined" color="success" onClick={placeBet}>
+          Place Bet
+        </Button>
       </Box>
     </Card>
   );
 }
+
+export default Hand;

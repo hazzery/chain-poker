@@ -7,8 +7,8 @@ import { Result } from "typescript-result";
 import ChainPoker from "../components/ChainPoker";
 import CreateLobby from "../components/CreateLobby";
 import JoinLobby from "../components/JoinLobby";
+import { useNetworkContext } from "../secretnetwork/SecretNetworkContext";
 import initialseNetworkClient from "../secretnetwork/keplrWallet";
-import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 
 declare global {
   interface Window extends KeplrWindow {}
@@ -23,7 +23,7 @@ const enum LandingMode {
 
 function Landing(): VNode {
   const [mode, setMode] = useState(LandingMode.ConnectWallet);
-  const networkContext = useNetworkClient();
+  const networkContext = useNetworkContext();
 
   function goBack(): void {
     setMode(LandingMode.Main);

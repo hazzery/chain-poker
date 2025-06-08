@@ -1,5 +1,5 @@
 import { Box } from "@mui/material";
-import type { VNode } from "preact";
+import type { ComponentChildren } from "preact";
 
 import type { PlayerInfo } from "../secretnetwork/types";
 import useWindowSize from "../hooks/useWindowSize";
@@ -7,7 +7,7 @@ import Player from "./Player";
 
 // Container component that arranges children in a circle
 interface FanLayoutProps {
-  children: VNode | VNode[];
+  children?: ComponentChildren;
   players: PlayerInfo[];
   radii?: { x: number; y: number };
 }
@@ -60,6 +60,8 @@ function FanLayout({ children, players, radii }: FanLayoutProps) {
             name={player.name}
             chipBalance={player.chipBalance}
             sx={{
+              position: "absolute",
+              transform: "translate(-50%, -50%)",
               top: `calc(50% + ${y}em)`,
               left: `calc(50% + ${x}em)`,
             }}

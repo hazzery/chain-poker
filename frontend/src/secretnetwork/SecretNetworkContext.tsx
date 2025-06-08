@@ -1,11 +1,14 @@
-import type { SecretNetworkClient } from "secretjs";
+import { createContext, type VNode } from "preact";
 import {
   useContext,
   useState,
   type Dispatch,
   type StateUpdater,
 } from "preact/hooks";
-import { createContext, type VNode } from "preact";
+import type { SecretNetworkClient } from "secretjs";
+import { Result } from "typescript-result";
+
+import initialseNetworkClient from "./keplrWallet";
 
 interface NetworkClient {
   networkClient: SecretNetworkClient | null;
@@ -20,7 +23,24 @@ const NetworkClientContext = createContext<NetworkClient>({
   disconnectWallet: () => {},
 });
 
-function useNetworkClient(): NetworkClient {
+function useNetworkClient(): SecretNetworkClient | null | undefined {
+  const networkContext = useContext(NetworkClientContext);
+
+  if (networkContext.networkClient === null) {
+    if (window.keplr === undefined) {
+      return null;
+    }
+
+    Result.fromAsync(initialseNetworkClient(window.keplr))
+      .onSuccess(networkContext.setNetworkClient)
+      .onFailure(console.error);
+    return;
+  }
+
+  return networkContext.networkClient;
+}
+
+function useNetworkContext(): NetworkClient {
   return useContext(NetworkClientContext);
 }
 
@@ -56,4 +76,4 @@ function NetworkClientContextProvider({
   );
 }
 
-export { useNetworkClient, NetworkClientContextProvider };
+export { NetworkClientContextProvider, useNetworkClient, useNetworkContext };

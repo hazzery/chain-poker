@@ -1,9 +1,9 @@
 import { Box, Typography } from "@mui/material";
-import type { VNode } from "preact";
+import type { ComponentChildren, VNode } from "preact";
 import { GiPokerHand } from "react-icons/gi";
 
 interface ChainPokerProps {
-  children: VNode | VNode[] | undefined;
+  children: ComponentChildren;
 }
 
 function ChainPoker({ children }: ChainPokerProps): VNode {

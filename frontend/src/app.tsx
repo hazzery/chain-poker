@@ -1,17 +1,17 @@
 import { useMediaQuery } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { LocationProvider, Route, Router } from "preact-iso";
 import { useMemo } from "preact/hooks";
-import { Router, Route, LocationProvider } from "preact-iso";
 
 import "./app.css";
-import Landing from "./pages/Landing";
-import Game from "./pages/Game";
-import NotFound from "./pages/NotFound";
 import NavBar from "./components/NavBar";
-import { NetworkClientContextProvider } from "./secretnetwork/SecretNetworkContext";
-import BuyIn from "./pages/BuyIn";
+import Landing from "./pages/Landing";
+import Lobby from "./pages/Lobby";
+import NotFound from "./pages/NotFound";
+import Play from "./pages/Play";
 import Reconnect from "./pages/Reconnect";
+import { NetworkClientContextProvider } from "./secretnetwork/SecretNetworkContext";
 
 export function App() {
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -33,8 +33,8 @@ export function App() {
         <NetworkClientContextProvider>
           <Router>
             <Route path="/" component={Landing} />
-            <Route path="/play/:lobbyCode" component={Game} />
-            <Route path="/play/:lobbyCode/buy-in" component={BuyIn} />
+            <Route path="/play/:lobbyCode" component={Play} />
+            <Route path="/lobby/:lobbyCode" component={Lobby} />
             <Route path="/play/:lobbyCode/reconnect" component={Reconnect} />
             <Route default component={NotFound} />
           </Router>
