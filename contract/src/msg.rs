@@ -24,6 +24,7 @@ pub enum QueryMsg {
     ViewPlayers {},
     ViewHand { permit: Permit },
     ViewTable {},
-    ViewGame {},
-    ViewAllState { permit: Permit },
+    ViewLobbyConfig {},
+    ViewPreStartState {},
+    ViewGameState { permit: Permit },
 }

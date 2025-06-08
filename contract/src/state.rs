@@ -11,7 +11,7 @@ use serde::{Deserialize, Serialize};
 use rank::Rank;
 use suit::Suit;
 
-pub static GAME: Item<Game> = Item::new(b"game");
+pub static LOBBY_CONFIG: Item<LobbyConfig> = Item::new(b"lobby_config");
 pub static PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
 pub static HANDS: Keymap<CanonicalAddr, (Card, Card), Bincode2, WithoutIter> =
     KeymapBuilder::new(b"hands").without_iter().build();
@@ -32,7 +32,7 @@ pub struct Card {
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct Game {
+pub struct LobbyConfig {
     pub big_blind: u32,
     pub max_buy_in_bb: u8,
     pub min_buy_in_bb: u8,
@@ -41,16 +41,13 @@ pub struct Game {
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PreStartState {
     pub admin: Addr,
-    pub lobby_config: Game,
+    pub lobby_config: LobbyConfig,
     pub is_started: bool,
     pub balances: Vec<(Addr, u128)>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
-pub struct AllState {
-    pub admin: Addr,
-    pub lobby_config: Game,
-    pub is_started: bool,
+pub struct GameState {
     pub balances: Vec<(Addr, u128)>,
     pub table: Vec<Card>,
     pub pot: u128,

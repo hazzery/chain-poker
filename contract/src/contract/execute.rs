@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult, Storage};
 
 use crate::state::{
-    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, GAME, HANDS, IS_STARTED,
+    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, LOBBY_CONFIG, HANDS, IS_STARTED,
     PLAYERS, POT, TABLE,
 };
 
@@ -51,7 +51,7 @@ fn new_round(storage: &mut dyn Storage, big_blind_player_position: u8) -> StdRes
 
     (0..5).try_for_each(|_| TABLE.push(storage, &next_card()))?;
 
-    let big_blind_amount = GAME.load(storage)?.big_blind;
+    let big_blind_amount = LOBBY_CONFIG.load(storage)?.big_blind;
 
     let big_blind_position = take_forced_bet(
         big_blind_amount,

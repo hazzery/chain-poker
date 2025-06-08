@@ -3,11 +3,14 @@ mod query;
 
 use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
 use execute::{try_buy_in, try_place_bet, try_start_game};
-use query::{query_all_state, query_game, query_hand, query_players, query_table};
+use query::{
+    query_game_state, query_hand, query_lobby_config, query_players, query_pre_start_state,
+    query_table,
+};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{Game, ADMIN, GAME, IS_STARTED, POT, REVEALED_CARDS},
+    state::{LobbyConfig, ADMIN, LOBBY_CONFIG, IS_STARTED, POT, REVEALED_CARDS},
 };
 
 #[entry_point]
@@ -17,7 +20,7 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let game = Game {
+    let lobby_config = LobbyConfig {
         big_blind: msg.big_blind,
         max_buy_in_bb: msg.max_buy_in_bb,
         min_buy_in_bb: msg.min_buy_in_bb,
@@ -25,7 +28,7 @@ pub fn instantiate(
     let admin_canonical_address = deps.api.addr_canonicalize(info.sender.as_str())?;
 
     ADMIN.save(deps.storage, &admin_canonical_address)?;
-    GAME.save(deps.storage, &game)?;
+    LOBBY_CONFIG.save(deps.storage, &lobby_config)?;
     REVEALED_CARDS.save(deps.storage, &0)?;
     IS_STARTED.save(deps.storage, &false)?;
     POT.save(deps.storage, &0)?;
@@ -53,7 +56,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::ViewPlayers {} => query_players(deps),
         QueryMsg::ViewHand { permit } => query_hand(deps, env, permit),
         QueryMsg::ViewTable {} => query_table(deps),
-        QueryMsg::ViewGame {} => query_game(deps),
-        QueryMsg::ViewAllState { permit } => query_all_state(deps, env, permit),
+        QueryMsg::ViewLobbyConfig {} => query_lobby_config(deps),
+        QueryMsg::ViewPreStartState {} => query_pre_start_state(deps),
+        QueryMsg::ViewGameState { permit } => query_game_state(deps, env, permit),
     }
 }
