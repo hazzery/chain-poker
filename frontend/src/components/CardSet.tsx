@@ -13,7 +13,7 @@ function CardSet({ cards, maxCards }: CardSetProps) {
     ));
   }
 
-  const width = maxCards * 6 + (maxCards - 1) * 0.7;
+  const width = maxCards * 6 + (maxCards + 1) * 0.7;
 
   return (
     <Card
@@ -21,7 +21,7 @@ function CardSet({ cards, maxCards }: CardSetProps) {
         display: "flex",
         columnGap: "0.7em",
         width: `${width}em`,
-        height: "9em",
+        height: "10.4em",
         backgroundColor: "forestgreen",
         padding: "0.7em",
         alignItems: "center",
