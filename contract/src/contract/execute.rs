@@ -116,6 +116,7 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
         return Err(StdError::generic_err("Only SCRT is accepted"));
     }
 
+    PLAYERS.push(deps.storage, &sender)?;
     BALANCES.insert(deps.storage, &sender, &funds[0].amount.u128())?;
 
     Ok(Response::default())
