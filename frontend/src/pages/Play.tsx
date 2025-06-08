@@ -37,7 +37,6 @@ function Play(): VNode {
     console.log("Querying Game state");
 
     Result.fromAsync(viewGameState(lobbyCode, networkClient))
-      .onSuccess(console.log)
       .onSuccess(setGameState)
       .onFailure(console.error);
   }, [lobbyCode]);
