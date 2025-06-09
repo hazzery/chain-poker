@@ -10,7 +10,7 @@ use query::{
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{LobbyConfig, ADMIN, LOBBY_CONFIG, IS_STARTED, POT, REVEALED_CARDS},
+    state::{LobbyConfig, ADMIN, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, USERNAMES},
 };
 
 #[entry_point]
@@ -28,6 +28,8 @@ pub fn instantiate(
     let admin_canonical_address = deps.api.addr_canonicalize(info.sender.as_str())?;
 
     ADMIN.save(deps.storage, &admin_canonical_address)?;
+    USERNAMES.insert(deps.storage, &admin_canonical_address, &msg.username)?;
+
     LOBBY_CONFIG.save(deps.storage, &lobby_config)?;
     REVEALED_CARDS.save(deps.storage, &0)?;
     IS_STARTED.save(deps.storage, &false)?;
