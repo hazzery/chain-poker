@@ -33,12 +33,14 @@ function Play(): VNode {
   const [gameState, setGameState] = useState<GameState>();
 
   useEffect(() => {
-    if (gameState !== undefined) return;
-    console.log("Querying Game state");
-
-    Result.fromAsync(viewGameState(lobbyCode, networkClient))
-      .onSuccess(setGameState)
-      .onFailure(console.error);
+    const interval = setInterval(
+      () =>
+        Result.fromAsync(viewGameState(lobbyCode, networkClient))
+          .onSuccess(setGameState)
+          .onFailure(console.error),
+      333,
+    );
+    return () => clearInterval(interval);
   }, [lobbyCode]);
 
   if (gameState === undefined) {
@@ -49,7 +51,9 @@ function Play(): VNode {
     );
   }
 
-  return <Game {...gameState} lobbyCode={lobbyCode} networkClient={networkClient} />;
+  return (
+    <Game {...gameState} lobbyCode={lobbyCode} networkClient={networkClient} />
+  );
 }
 
 export default Play;
