@@ -19,12 +19,15 @@ const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
  * @returns A result of the new lobby's join code if successful, otherwise an error.
  */
 function createLobby(
-  gameConfig: LobbyConfig,
+  username: string,
+  big_blind: number,
+  min_buy_in_bb: number,
+  max_buy_in_bb: number,
   networkClient: SecretNetworkClient,
 ): AsyncResult<string, Error> {
   return secretts
     .instantiateContract(
-      gameConfig,
+      { username, big_blind, max_buy_in_bb, min_buy_in_bb },
       400_000,
       { codeId: CONTRACT_CODE_ID, contractCodeHash: CONTRACT_CODE_HASH },
       networkClient,
@@ -43,12 +46,13 @@ function createLobby(
  *    successful, otherwise and error.
  */
 function buyIn(
+  username: string,
   buyInAmount: number,
   lobbyCode: string,
   networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
-    { buy_in: {} },
+    { buy_in: { username } },
     500_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,

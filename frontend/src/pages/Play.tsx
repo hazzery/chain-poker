@@ -49,7 +49,7 @@ function Play(): VNode {
     );
   }
 
-  return <Game {...gameState} networkClient={networkClient} />;
+  return <Game {...gameState} lobbyCode={lobbyCode} networkClient={networkClient} />;
 }
 
 export default Play;

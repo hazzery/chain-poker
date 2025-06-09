@@ -11,6 +11,7 @@ import { useEffect, useMemo, useState } from "preact/hooks";
 import { Result } from "typescript-result";
 
 import ChainPoker from "../components/ChainPoker";
+import Player from "../components/Player";
 import {
   startGame,
   viewPreStartState,
@@ -18,12 +19,10 @@ import {
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
 import BuyIn from "./BuyIn";
-import Player from "../components/Player";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
   if (networkClient === undefined) {
-    console.log("Waiting for networkClient");
     return (
       <ChainPoker>
         <CircularProgress color="success" />
@@ -42,9 +41,9 @@ function Lobby(): VNode | undefined {
 
   const { lobbyCode } = useRoute().params;
   const [preStartState, setPreStartState] = useState<PreStartState>();
+  const [shouldRerequest, setShouldRerequest] = useState(false);
   useEffect(() => {
     if (preStartState !== undefined) return;
-    console.log("Querying PreStartState");
 
     async function queryPrestartState() {
       await Result.fromAsync(viewPreStartState(lobbyCode, networkClient!))
@@ -53,9 +52,8 @@ function Lobby(): VNode | undefined {
     }
 
     queryPrestartState();
-  }, [lobbyCode]);
+  }, [lobbyCode, shouldRerequest]);
   if (preStartState === undefined) {
-    console.log("Waiting for preStartState");
     return (
       <ChainPoker>
         <CircularProgress color="success" />
@@ -71,12 +69,14 @@ function Lobby(): VNode | undefined {
   }
 
   const data = useMemo(() => {
+    const playersUsername = localStorage.getItem("username");
+
     const playerInfos: PlayerInfo[] = preStartState.balances.map(
       ([name, chipBalance]) => ({ name, chipBalance }),
     );
 
     const chipBalance = preStartState.balances.find(
-      ([address]) => address === networkClient.address,
+      ([username]) => username === playersUsername,
     )?.[1];
 
     const minBuyIn =
@@ -86,7 +86,7 @@ function Lobby(): VNode | undefined {
       preStartState.lobby_config.big_blind *
       preStartState.lobby_config.max_buy_in_bb;
 
-    const isAdmin = preStartState.admin === networkClient.address;
+    const isAdmin = preStartState.admin === playersUsername;
 
     return { playerInfos, chipBalance, minBuyIn, maxBuyIn, isAdmin };
   }, [preStartState]);
@@ -100,6 +100,9 @@ function Lobby(): VNode | undefined {
       <Box>
         <Typography>Lobby code: {lobbyCode}</Typography>
         <Typography>Lobby admin: {preStartState.admin}</Typography>
+        <Typography>
+          Big blind amount: {preStartState.lobby_config.big_blind}
+        </Typography>
         <Typography>Minimum buy in {data.minBuyIn} SCRT</Typography>
         <Typography>Maximum buy in {data.maxBuyIn} SCRT</Typography>
         {data.chipBalance !== undefined && (
@@ -120,7 +123,10 @@ function Lobby(): VNode | undefined {
             minBuyIn={data.minBuyIn}
             maxBuyIn={data.maxBuyIn}
             networkClient={networkClient}
-            onBuyIn={() => setPreStartState(undefined)}
+            onBuyIn={() => {
+              setPreStartState(undefined);
+              setShouldRerequest(!shouldRerequest);
+            }}
           />
         </>
       )}

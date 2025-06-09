@@ -5,6 +5,7 @@ import type { SecretNetworkClient } from "secretjs";
 import TextInput from "../components/TextInput";
 import useNumberValidation from "../hooks/useNumberValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
+import useStringValidation from "../hooks/useStringValidation";
 
 interface BuyInProps {
   lobbyCode: string;
@@ -26,15 +27,34 @@ function BuyIn({
     maxValue: maxBuyIn,
     minValue: minBuyIn,
   });
+  const [username, setUsername] = useStringValidation({
+    required: true,
+    maxLength: 15,
+    minLength: 3,
+  });
 
   async function handleBuyIn() {
-    await buyIn(Number(buyInAmount.value), lobbyCode, networkClient)
+    await buyIn(
+      username.value,
+      Number(buyInAmount.value),
+      lobbyCode,
+      networkClient,
+    )
+      .onSuccess(() => localStorage.setItem("username", username.value))
       .onSuccess(onBuyIn)
       .onFailure(console.error);
   }
 
   return (
     <Box display="flex" flexDirection="column" rowGap="1em">
+      <TextInput
+        required
+        state={username}
+        setState={setUsername}
+        label="Username"
+        variant="outlined"
+        color="success"
+      />
       <TextInput
         required
         state={buyInAmount}
@@ -44,7 +64,7 @@ function BuyIn({
         color="success"
       />
       <Button
-        disabled={buyInAmount.error !== null}
+        disabled={username.error !== null || buyInAmount.error !== null}
         onClick={handleBuyIn}
         variant="outlined"
         color="success"

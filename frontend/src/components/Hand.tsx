@@ -10,11 +10,10 @@ interface HandProps {
   cards: PlayingCardProps[] | null;
   chipBalance: number;
   ourTurn: boolean;
+  onBet: (_: number) => void;
 }
 
-function placeBet(): void {}
-
-function Hand({ cards, chipBalance, ourTurn }: HandProps) {
+function Hand({ cards, chipBalance, ourTurn, onBet }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
     required: true,
     minValue: 0,
@@ -58,7 +57,7 @@ function Hand({ cards, chipBalance, ourTurn }: HandProps) {
             color="success"
           />
           <Button
-            onClick={placeBet}
+            onClick={() => onBet(Number(betAmount.value))}
             disabled={betAmount.error !== null}
             variant="outlined"
             color="success"

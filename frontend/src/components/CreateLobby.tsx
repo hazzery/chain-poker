@@ -4,6 +4,7 @@ import { useLocation } from "preact-iso";
 import type { SecretNetworkClient } from "secretjs";
 
 import useNumberValidation from "../hooks/useNumberValidation";
+import useStringValidation from "../hooks/useStringValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import TextInput from "./TextInput";
 
@@ -14,25 +15,39 @@ interface CreateLobbyProps {
 
 function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
   const location = useLocation();
+  const [username, setUsername] = useStringValidation({
+    required: true,
+    minLength: 3,
+    maxLength: 15,
+  });
   const [bigBlind, setBigBlind] = useNumberValidation({ required: true });
   const [minBuyInBB, setMinBuyInBB] = useNumberValidation({ required: true });
   const [maxBuyInBB, setMaxBuyInBB] = useNumberValidation({ required: true });
 
   async function handleCreateLobby() {
     await createLobby(
-      {
-        big_blind: Number(bigBlind.value),
-        min_buy_in_bb: Number(minBuyInBB.value),
-        max_buy_in_bb: Number(maxBuyInBB.value),
-      },
+      username.value,
+      Number(bigBlind.value),
+      Number(minBuyInBB.value),
+      Number(maxBuyInBB.value),
       networkClient,
     )
+      .onSuccess(() => localStorage.setItem("username", username.value))
       .onSuccess((lobbyCode) => location.route(`/lobby/${lobbyCode}`))
       .onFailure(console.dir);
   }
 
   return (
     <Box display="flex" flexDirection="column" rowGap="1em" width="20em">
+      <TextInput
+        required
+        fullWidth
+        state={username}
+        setState={setUsername}
+        label="Username"
+        variant="outlined"
+        color="success"
+      />
       <TextInput
         required
         fullWidth
@@ -63,6 +78,7 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
       <Button
         fullWidth
         disabled={
+          username.error !== null ||
           bigBlind.error !== null ||
           minBuyInBB.error !== null ||
           maxBuyInBB.error !== null
