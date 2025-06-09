@@ -18,7 +18,7 @@ import {
 } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
-import BuyIn from "./BuyIn";
+import BuyIn from "../components/BuyIn";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
