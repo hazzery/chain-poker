@@ -20,13 +20,32 @@ fn find_next_player<'a>(
         .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
 }
 
+fn take_bet(
+    bet_amount: u128,
+    players_balance: u128,
+    players_address: &CanonicalAddr,
+    storage: &mut dyn Storage,
+) -> StdResult<()> {
+    let remaining_balance = players_balance - bet_amount;
+
+    if remaining_balance > 0 {
+        BALANCES.insert(storage, players_address, &remaining_balance)?;
+    } else {
+        BALANCES.remove(storage, players_address)?;
+    }
+
+    POT.update(storage, |pot| Ok(pot + bet_amount))?;
+
+    Ok(())
+}
+
 fn take_forced_bet(
     take_amount: u32,
     player_position: u8,
     addresses: &[CanonicalAddr],
     storage: &mut dyn Storage,
 ) -> StdResult<u8> {
-    let (index, address, mut balance) = find_next_player(storage, player_position, addresses)?;
+    let (index, address, balance) = find_next_player(storage, player_position, addresses)?;
 
     let bet_amount = if balance > take_amount as u128 {
         take_amount as u128
@@ -34,14 +53,7 @@ fn take_forced_bet(
         balance
     };
 
-    balance -= bet_amount;
-    if balance > 0 {
-        BALANCES.insert(storage, address, &balance)?;
-    } else {
-        BALANCES.remove(storage, address)?;
-    }
-
-    POT.update(storage, |pot| Ok(pot + bet_amount))?;
+    take_bet(bet_amount, balance, address, storage)?;
 
     Ok(index)
 }
@@ -128,16 +140,45 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
     Ok(Response::default())
 }
 
+fn find_next_player_2(player_position: usize, storage: &mut dyn Storage) -> StdResult<u8> {
+    let balance_finder = |(index, address)| {
+        BALANCES.get(storage, &address)?;
+        Some(index as u8)
+    };
+
+    if let Some(index) = PLAYERS
+        .iter(storage)?
+        .flatten()
+        .enumerate()
+        .skip(player_position)
+        .find_map(balance_finder)
+    {
+        Ok(index)
+    } else {
+        PLAYERS
+            .iter(storage)?
+            .flatten()
+            .enumerate()
+            .take(player_position)
+            .find_map(balance_finder)
+            .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
+    }
+}
+
 pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Response> {
     if !IS_STARTED.load(deps.storage)? {
-        return Err(StdError::generic_err("The has not started yet!"));
+        return Err(StdError::generic_err("The game has not started yet!"));
     }
 
     let sender = deps.api.addr_canonicalize(sender.as_str())?;
-
-    let Some(mut players_balance) = BALANCES.get(deps.storage, &sender) else {
+    let Some(players_balance) = BALANCES.get(deps.storage, &sender) else {
         return Err(StdError::generic_err("You are not bought in!"));
     };
+
+    let current_turn_position = CURRENT_TURN_POSITION.load(deps.storage)?;
+    if PLAYERS.get_at(deps.storage, current_turn_position as u32)? != sender {
+        return Err(StdError::generic_err("It is not your turn to bet"));
+    }
 
     if value > players_balance {
         return Err(StdError::generic_err(
@@ -145,10 +186,12 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
         ));
     }
 
-    players_balance -= value;
-    BALANCES.insert(deps.storage, &sender, &players_balance)?;
+    take_bet(value, players_balance, &sender, deps.storage)?;
 
-    POT.update(deps.storage, |pot| Ok(pot + value))?;
+    let next_player_position =
+        find_next_player_2((current_turn_position + 1) as usize, deps.storage)?;
+
+    CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 
     Ok(Response::default())
 }
