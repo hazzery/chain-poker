@@ -10,7 +10,6 @@ import Landing from "./pages/Landing";
 import Lobby from "./pages/Lobby";
 import NotFound from "./pages/NotFound";
 import Play from "./pages/Play";
-import Reconnect from "./pages/Reconnect";
 import { NetworkClientContextProvider } from "./secretnetwork/SecretNetworkContext";
 
 export function App() {
@@ -35,7 +34,6 @@ export function App() {
             <Route path="/" component={Landing} />
             <Route path="/play/:lobbyCode" component={Play} />
             <Route path="/lobby/:lobbyCode" component={Lobby} />
-            <Route path="/play/:lobbyCode/reconnect" component={Reconnect} />
             <Route default component={NotFound} />
           </Router>
         </NetworkClientContextProvider>
