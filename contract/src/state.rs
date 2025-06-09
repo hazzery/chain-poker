@@ -1,7 +1,7 @@
 mod rank;
 mod suit;
 
-use cosmwasm_std::{Addr, CanonicalAddr, Deps, StdResult};
+use cosmwasm_std::{CanonicalAddr, Deps};
 use secret_toolkit::{
     serialization::Bincode2,
     storage::{AppendStore, Item, Keymap, KeymapBuilder, WithoutIter},
@@ -13,6 +13,8 @@ use suit::Suit;
 
 pub static LOBBY_CONFIG: Item<LobbyConfig> = Item::new(b"lobby_config");
 pub static PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
+pub static USERNAMES: Keymap<CanonicalAddr, String, Bincode2, WithoutIter> =
+    KeymapBuilder::new(b"usernames").without_iter().build();
 pub static HANDS: Keymap<CanonicalAddr, (Card, Card), Bincode2, WithoutIter> =
     KeymapBuilder::new(b"hands").without_iter().build();
 pub static BALANCES: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
@@ -40,20 +42,20 @@ pub struct LobbyConfig {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PreStartState {
-    pub admin: Addr,
+    pub admin: String,
     pub lobby_config: LobbyConfig,
     pub is_started: bool,
-    pub balances: Vec<(Addr, u128)>,
+    pub balances: Vec<(String, u128)>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct GameState {
-    pub balances: Vec<(Addr, u128)>,
+    pub balances: Vec<(String, u128)>,
     pub table: Vec<Card>,
     pub pot: u128,
     pub hand: Option<(Card, Card)>,
-    pub current_turn: Addr,
-    pub big_blind: Addr,
+    pub current_turn: String,
+    pub big_blind: String,
 }
 
 pub fn next_card() -> Card {
@@ -63,14 +65,13 @@ pub fn next_card() -> Card {
     }
 }
 
-pub fn get_balances(addresses: &[CanonicalAddr], deps: Deps) -> StdResult<Vec<(Addr, u128)>> {
+pub fn get_balances(addresses: &[CanonicalAddr], deps: Deps) -> Vec<(String, u128)> {
     addresses
         .iter()
-        .map(|canonical_address| {
-            let address = deps.api.addr_humanize(canonical_address)?;
-            let balance_option = BALANCES.get(deps.storage, canonical_address);
-            Ok(balance_option.map(|balance| (address, balance)))
+        .filter_map(|canonical_address| {
+            let username = USERNAMES.get(deps.storage, canonical_address)?;
+            let balance = BALANCES.get(deps.storage, canonical_address)?;
+            Some((username, balance))
         })
-        .filter_map(|result| result.transpose())
         .collect()
 }

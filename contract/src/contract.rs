@@ -45,7 +45,7 @@ pub fn execute(
 ) -> StdResult<Response> {
     match msg {
         ExecuteMsg::StartGame {} => try_start_game(deps, info.sender),
-        ExecuteMsg::BuyIn {} => try_buy_in(deps, info.sender, info.funds),
+        ExecuteMsg::BuyIn { username } => try_buy_in(username, deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
     }
 }

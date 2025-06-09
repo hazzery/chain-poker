@@ -2,7 +2,7 @@ use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdRe
 
 use crate::state::{
     next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, HANDS, IS_STARTED,
-    LOBBY_CONFIG, PLAYERS, POT, TABLE,
+    LOBBY_CONFIG, PLAYERS, POT, TABLE, USERNAMES,
 };
 
 fn find_next_player<'a>(
@@ -115,10 +115,17 @@ pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
     Ok(Response::default())
 }
 
-pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Response> {
+pub fn try_buy_in(
+    username: String,
+    deps: DepsMut,
+    sender: Addr,
+    funds: Vec<Coin>,
+) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has already started"));
     }
+
+    // TODO: Check if the username is already taken.
 
     let sender = deps.api.addr_canonicalize(sender.as_str())?;
 
@@ -136,6 +143,7 @@ pub fn try_buy_in(deps: DepsMut, sender: Addr, funds: Vec<Coin>) -> StdResult<Re
 
     PLAYERS.push(deps.storage, &sender)?;
     BALANCES.insert(deps.storage, &sender, &funds[0].amount.u128())?;
+    USERNAMES.insert(deps.storage, &sender, &username)?;
 
     Ok(Response::default())
 }
