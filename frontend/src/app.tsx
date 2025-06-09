@@ -4,7 +4,6 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { LocationProvider, Route, Router } from "preact-iso";
 import { useMemo } from "preact/hooks";
 
-import "./app.css";
 import NavBar from "./components/NavBar";
 import Landing from "./pages/Landing";
 import Lobby from "./pages/Lobby";
