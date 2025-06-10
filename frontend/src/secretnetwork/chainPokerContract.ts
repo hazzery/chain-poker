@@ -103,7 +103,7 @@ function placeBet(
     );
   }
   return secretts.tryExecute(
-    { place_bet: { value: amount } },
+    { place_bet: { value: uScrt } },
     40_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
