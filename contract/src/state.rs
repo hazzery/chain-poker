@@ -22,6 +22,9 @@ pub static BALANCES: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
 pub static TABLE: AppendStore<Card> = AppendStore::new(b"table");
 pub static REVEALED_CARDS: Item<u8> = Item::new(b"num_revealed");
 pub static POT: Item<u128> = Item::new(b"pot");
+pub static CURRENT_MIN_BET: Item<u128> = Item::new(b"min_bet");
+pub static BETS: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
+    KeymapBuilder::new(b"bets").without_iter().build();
 pub static IS_STARTED: Item<bool> = Item::new(b"started");
 pub static ADMIN: Item<CanonicalAddr> = Item::new(b"admin");
 pub static CURRENT_TURN_POSITION: Item<u8> = Item::new(b"current_turn");

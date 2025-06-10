@@ -1,8 +1,8 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult, Storage};
 
 use crate::state::{
-    next_card, ADMIN, BALANCES, BIG_BLIND_POSITION, CURRENT_TURN_POSITION, HANDS, IS_STARTED,
-    LOBBY_CONFIG, PLAYERS, POT, TABLE, USERNAMES,
+    next_card, ADMIN, BALANCES, BETS, BIG_BLIND_POSITION, CURRENT_MIN_BET, CURRENT_TURN_POSITION,
+    HANDS, IS_STARTED, LOBBY_CONFIG, PLAYERS, POT, TABLE, USERNAMES,
 };
 
 fn find_next_player<'a>(
@@ -23,6 +23,7 @@ fn find_next_player<'a>(
 fn take_bet(
     bet_amount: u128,
     players_balance: u128,
+    total_bet: u128,
     players_address: &CanonicalAddr,
     storage: &mut dyn Storage,
 ) -> StdResult<()> {
@@ -34,6 +35,7 @@ fn take_bet(
         BALANCES.remove(storage, players_address)?;
     }
 
+    BETS.insert(storage, players_address, &total_bet)?;
     POT.update(storage, |pot| Ok(pot + bet_amount))?;
 
     Ok(())
@@ -53,7 +55,7 @@ fn take_forced_bet(
         balance
     };
 
-    take_bet(bet_amount, balance, address, storage)?;
+    take_bet(bet_amount, balance, bet_amount, address, storage)?;
 
     Ok(index)
 }
@@ -68,6 +70,7 @@ fn new_round(storage: &mut dyn Storage, big_blind_player_position: u8) -> StdRes
     (0..5).try_for_each(|_| TABLE.push(storage, &next_card()))?;
 
     let big_blind_amount = LOBBY_CONFIG.load(storage)?.big_blind;
+    CURRENT_MIN_BET.save(storage, &(big_blind_amount as u128))?;
 
     let big_blind_position = take_forced_bet(
         big_blind_amount,
@@ -194,7 +197,28 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
         ));
     }
 
-    take_bet(value, players_balance, &sender, deps.storage)?;
+    let min_bet = CURRENT_MIN_BET.load(deps.storage)?;
+    let previous_bet_amount = BETS.get(deps.storage, &sender).unwrap_or(0);
+
+    if value == 0 {
+        if previous_bet_amount < min_bet {
+            HANDS.remove(deps.storage, &sender)?;
+        }
+    } else {
+        let total_bet = previous_bet_amount + value;
+
+        if total_bet < min_bet {
+            return Err(StdError::generic_err(
+                "Your total bet for this round does not meet the minimum bet",
+            ));
+        }
+
+        if total_bet > min_bet {
+            CURRENT_MIN_BET.save(deps.storage, &total_bet)?;
+        }
+
+        take_bet(value, players_balance, total_bet, &sender, deps.storage)?;
+    }
 
     let next_player_position =
         find_next_player_2((current_turn_position + 1) as usize, deps.storage)?;
