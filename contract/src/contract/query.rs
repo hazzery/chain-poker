@@ -2,12 +2,12 @@ use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdRes
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
-    get_balances, Card, GameState, PreStartState, ADMIN, BIG_BLIND_POSITION, CURRENT_TURN_POSITION,
-    HANDS, IS_STARTED, LOBBY_CONFIG, PLAYERS, POT, REVEALED_CARDS, TABLE, USERNAMES,
+    get_balances, Card, GameState, PreStartState, ADMIN, BUTTON_POSITION, CURRENT_TURN_POSITION,
+    HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE, USERNAMES,
 };
 
 pub fn query_players(deps: Deps) -> StdResult<Binary> {
-    let players: Vec<CanonicalAddr> = PLAYERS.iter(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = USERNAMES.iter_keys(deps.storage)?.flatten().collect();
     let balances = get_balances(&players, deps);
 
     to_binary(&balances)
@@ -55,7 +55,7 @@ pub fn query_lobby_config(deps: Deps) -> StdResult<Binary> {
 }
 
 pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
-    let players: Vec<CanonicalAddr> = PLAYERS.iter(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = USERNAMES.iter_keys(deps.storage)?.flatten().collect();
 
     let pre_start_state = PreStartState {
         admin: USERNAMES
@@ -88,13 +88,13 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
         return Err(StdError::generic_err("You are not part of this game"));
     }
 
-    let players: Vec<CanonicalAddr> = PLAYERS.iter(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = USERNAMES.iter_keys(deps.storage)?.flatten().collect();
     let balances = get_balances(&players, deps);
 
     let current_turn = balances[CURRENT_TURN_POSITION.load(deps.storage)? as usize]
         .0
         .clone();
-    let big_blind = balances[BIG_BLIND_POSITION.load(deps.storage)? as usize]
+    let button_player = balances[BUTTON_POSITION.load(deps.storage)? as usize]
         .0
         .clone();
 
@@ -108,7 +108,7 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
         pot: POT.load(deps.storage)?,
         hand: HANDS.get(deps.storage, &sender),
         current_turn,
-        big_blind,
+        button_player,
     };
 
     to_binary(&all_state)

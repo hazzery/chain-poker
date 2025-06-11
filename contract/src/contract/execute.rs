@@ -1,24 +1,9 @@
 use cosmwasm_std::{Addr, CanonicalAddr, Coin, DepsMut, Response, StdError, StdResult, Storage};
 
 use crate::state::{
-    next_card, ADMIN, BALANCES, BETS, BIG_BLIND_POSITION, CURRENT_MIN_BET, CURRENT_TURN_POSITION,
-    HANDS, IS_STARTED, LOBBY_CONFIG, PLAYERS, POT, TABLE, USERNAMES,
+    next_card, ADMIN, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET, CURRENT_PLAYERS,
+    CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE, USERNAMES,
 };
-
-fn find_next_player<'a>(
-    storage: &mut dyn Storage,
-    player_position: u8,
-    addresses: &'a [CanonicalAddr],
-) -> StdResult<(u8, &'a CanonicalAddr, u128)> {
-    addresses
-        .iter()
-        .cycle()
-        .enumerate()
-        .skip(player_position as usize)
-        .take(addresses.len())
-        .find_map(|(index, address)| Some((index as u8, address, BALANCES.get(storage, address)?)))
-        .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
-}
 
 fn take_bet(
     bet_amount: u128,
@@ -44,53 +29,57 @@ fn take_bet(
 fn take_forced_bet(
     take_amount: u32,
     player_position: u8,
-    addresses: &[CanonicalAddr],
     storage: &mut dyn Storage,
-) -> StdResult<u8> {
-    let (index, address, balance) = find_next_player(storage, player_position, addresses)?;
+) -> StdResult<()> {
+    let player_address = CURRENT_PLAYERS.get_at(storage, player_position as u32)?;
+    let players_balance = BALANCES
+        .get(storage, &player_address)
+        .ok_or(StdError::generic_err("A current player has no balance"))?;
 
-    let bet_amount = if balance > take_amount as u128 {
+    let bet_amount = if players_balance > take_amount as u128 {
         take_amount as u128
     } else {
-        balance
+        players_balance
     };
 
-    take_bet(bet_amount, balance, bet_amount, address, storage)?;
+    take_bet(
+        bet_amount,
+        players_balance,
+        bet_amount,
+        &player_address,
+        storage,
+    )?;
 
-    Ok(index)
+    Ok(())
 }
 
-fn new_round(storage: &mut dyn Storage, big_blind_player_position: u8) -> StdResult<()> {
-    let addresses: Vec<CanonicalAddr> = PLAYERS.iter(storage)?.flatten().collect();
+fn new_round(storage: &mut dyn Storage, button_position: u8) -> StdResult<()> {
+    let mut addresses: Vec<CanonicalAddr> = USERNAMES.iter_keys(storage)?.flatten().collect();
+    addresses.retain(|address| BALANCES.get(storage, address).is_some());
 
-    addresses
-        .iter()
-        .try_for_each(|address| HANDS.insert(storage, address, &(next_card(), next_card())))?;
+    addresses.iter().try_for_each(|address| {
+        HANDS.insert(storage, address, &(next_card(), next_card()))?;
+        CURRENT_PLAYERS.push(storage, &address)
+    })?;
 
     (0..5).try_for_each(|_| TABLE.push(storage, &next_card()))?;
 
     let big_blind_amount = LOBBY_CONFIG.load(storage)?.big_blind;
     CURRENT_MIN_BET.save(storage, &(big_blind_amount as u128))?;
+    BUTTON_POSITION.save(storage, &button_position)?;
 
-    let big_blind_position = take_forced_bet(
-        big_blind_amount,
-        big_blind_player_position,
-        &addresses,
-        storage,
-    )?;
+    let num_players = addresses.len() as u8;
 
-    BIG_BLIND_POSITION.save(storage, &big_blind_position)?;
+    // Small blind is immediately to the left of the button.
+    let small_blind_player_position = (button_position + 1) % num_players;
+    take_forced_bet(big_blind_amount / 2, small_blind_player_position, storage)?;
 
-    let small_blind_position = take_forced_bet(
-        big_blind_amount / 2,
-        big_blind_position + 1,
-        &addresses,
-        storage,
-    )?;
+    // Big blind is immediately to the left of the small blind
+    let big_blind_player_position = (small_blind_player_position + 1) % num_players;
+    take_forced_bet(big_blind_amount, big_blind_player_position, storage)?;
 
-    let next_player_position = find_next_player(storage, small_blind_position + 1, &addresses)?.0;
-
-    CURRENT_TURN_POSITION.save(storage, &(next_player_position % addresses.len() as u8))?;
+    let next_player_position = (big_blind_player_position + 1) % num_players;
+    CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
 
     Ok(())
 }
@@ -107,7 +96,7 @@ pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
         ));
     }
 
-    if PLAYERS.get_len(deps.storage)? < 2 {
+    if CURRENT_PLAYERS.get_len(deps.storage)? < 2 {
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
@@ -144,36 +133,24 @@ pub fn try_buy_in(
         return Err(StdError::generic_err("Only SCRT is accepted"));
     }
 
-    PLAYERS.push(deps.storage, &sender)?;
+    CURRENT_PLAYERS.push(deps.storage, &sender)?;
     BALANCES.insert(deps.storage, &sender, &funds[0].amount.u128())?;
     USERNAMES.insert(deps.storage, &sender, &username)?;
 
     Ok(Response::default())
 }
 
-fn find_next_player_2(player_position: usize, storage: &mut dyn Storage) -> StdResult<u8> {
-    let balance_finder = |(index, address)| {
-        BALANCES.get(storage, &address)?;
-        Some(index as u8)
-    };
-
-    if let Some(index) = PLAYERS
-        .iter(storage)?
-        .flatten()
-        .enumerate()
-        .skip(player_position)
-        .find_map(balance_finder)
-    {
-        Ok(index)
-    } else {
-        PLAYERS
-            .iter(storage)?
-            .flatten()
-            .enumerate()
-            .take(player_position)
-            .find_map(balance_finder)
-            .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
+fn next_play(storage: &mut dyn Storage) -> StdResult<()> {
+    let current_num_cards = REVEALED_CARDS.load(storage)?;
+    if current_num_cards == 0 {
+        REVEALED_CARDS.save(storage, &3)?;
+    } else if current_num_cards < 5 {
+        REVEALED_CARDS.update(storage, |num_cards| Ok(num_cards + 1))?;
     }
+
+    // TODO: Implement the showdown.
+
+    Ok(())
 }
 
 pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Response> {
@@ -187,7 +164,7 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
     };
 
     let current_turn_position = CURRENT_TURN_POSITION.load(deps.storage)?;
-    if PLAYERS.get_at(deps.storage, current_turn_position as u32)? != sender {
+    if CURRENT_PLAYERS.get_at(deps.storage, current_turn_position as u32)? != sender {
         return Err(StdError::generic_err("It is not your turn to bet"));
     }
 
@@ -197,12 +174,13 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
         ));
     }
 
-    let min_bet = CURRENT_MIN_BET.load(deps.storage)?;
+    let mut min_bet = CURRENT_MIN_BET.load(deps.storage)?;
     let previous_bet_amount = BETS.get(deps.storage, &sender).unwrap_or(0);
 
     if value == 0 {
         if previous_bet_amount < min_bet {
             HANDS.remove(deps.storage, &sender)?;
+            CURRENT_PLAYERS.remove(deps.storage, current_turn_position as u32)?;
         }
     } else {
         let total_bet = previous_bet_amount + value;
@@ -214,15 +192,22 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
         }
 
         if total_bet > min_bet {
-            CURRENT_MIN_BET.save(deps.storage, &total_bet)?;
+            min_bet = total_bet;
+            CURRENT_MIN_BET.save(deps.storage, &min_bet)?;
         }
 
         take_bet(value, players_balance, total_bet, &sender, deps.storage)?;
     }
 
-    let next_player_position =
-        find_next_player_2((current_turn_position + 1) as usize, deps.storage)?;
+    let num_players = CURRENT_PLAYERS.get_len(deps.storage)? as u8;
 
+    let mut next_player_position = (current_turn_position + 1) % num_players;
+    let next_players_address = CURRENT_PLAYERS.get_at(deps.storage, next_player_position as u32)?;
+    let next_players_bet = BETS.get(deps.storage, &next_players_address).unwrap_or(0);
+    if next_players_bet == min_bet {
+        next_play(deps.storage)?;
+        next_player_position = (BUTTON_POSITION.load(deps.storage)? + 1) % num_players;
+    }
     CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 
     Ok(Response::default())

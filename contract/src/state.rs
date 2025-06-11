@@ -12,9 +12,8 @@ use rank::Rank;
 use suit::Suit;
 
 pub static LOBBY_CONFIG: Item<LobbyConfig> = Item::new(b"lobby_config");
-pub static PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
-pub static USERNAMES: Keymap<CanonicalAddr, String, Bincode2, WithoutIter> =
-    KeymapBuilder::new(b"usernames").without_iter().build();
+pub static CURRENT_PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
+pub static USERNAMES: Keymap<CanonicalAddr, String> = Keymap::new(b"usernames");
 pub static HANDS: Keymap<CanonicalAddr, (Card, Card), Bincode2, WithoutIter> =
     KeymapBuilder::new(b"hands").without_iter().build();
 pub static BALANCES: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
@@ -28,7 +27,7 @@ pub static BETS: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
 pub static IS_STARTED: Item<bool> = Item::new(b"started");
 pub static ADMIN: Item<CanonicalAddr> = Item::new(b"admin");
 pub static CURRENT_TURN_POSITION: Item<u8> = Item::new(b"current_turn");
-pub static BIG_BLIND_POSITION: Item<u8> = Item::new(b"current_big_blind");
+pub static BUTTON_POSITION: Item<u8> = Item::new(b"button_position");
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq)]
 pub struct Card {
@@ -58,7 +57,7 @@ pub struct GameState {
     pub pot: u128,
     pub hand: Option<(Card, Card)>,
     pub current_turn: String,
-    pub big_blind: String,
+    pub button_player: String,
 }
 
 pub fn next_card() -> Card {
