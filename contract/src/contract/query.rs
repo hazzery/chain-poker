@@ -22,8 +22,7 @@ pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
 }
 
 pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
-    let is_started = IS_STARTED.load(deps.storage)?;
-    if !is_started {
+    if !IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has not yet started"));
     }
 
@@ -45,16 +44,18 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
 
     let current_turn = balances
         .get(CURRENT_TURN_POSITION.load(deps.storage)? as usize)
-        .ok_or(StdError::generic_err(
-            "CURRENT_TURN_POSITION out of range for balances",
-        ))?
+        .ok_or(StdError::generic_err(format!(
+            "CURRENT_TURN_POSITION ({CURRENT_TURN_POSITION}) out of range for balances (length {})",
+            balances.len()
+        )))?
         .0
         .clone();
     let button_player = balances
         .get(BUTTON_POSITION.load(deps.storage)? as usize)
-        .ok_or(StdError::generic_err(
-            "BUTTON_POSITION out of range for balances",
-        ))?
+        .ok_or(StdError::generic_err(format!(
+            "BUTTON_POSITION ({BUTTON_POSITION}) out of range for balances (length {})",
+            balances.len()
+        )))?
         .0
         .clone();
 
