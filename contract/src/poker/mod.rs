@@ -21,7 +21,7 @@ pub fn find_next_player<'a>(
                 return None;
             }
             let balance = BALANCES.get(storage, address)?;
-            Some((index as u8, address, balance))
+            Some(((index % addresses.len()) as u8, address, balance))
         })
         .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
 }
