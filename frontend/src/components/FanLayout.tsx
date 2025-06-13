@@ -9,6 +9,8 @@ import Player from "./Player";
 interface FanLayoutProps {
   children?: ComponentChildren;
   players: PlayerInfo[];
+  currentTurn: string;
+  buttonPlayer: string;
   radii?: { x: number; y: number };
 }
 
@@ -16,7 +18,13 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
 }
 
-function FanLayout({ children, players, radii }: FanLayoutProps) {
+function FanLayout({
+  children,
+  players,
+  radii,
+  currentTurn,
+  buttonPlayer,
+}: FanLayoutProps) {
   const { width, height } = useWindowSize();
   const count = players.length;
 
@@ -59,6 +67,8 @@ function FanLayout({ children, players, radii }: FanLayoutProps) {
           <Player
             name={player.name}
             chipBalance={player.chipBalance}
+            isCurrentTurn={currentTurn === player.name}
+            hasButton={buttonPlayer === player.name}
             sx={{
               position: "absolute",
               transform: "translate(-50%, -50%)",

@@ -22,7 +22,7 @@ function Game({
   pot,
   hand,
   current_turn,
-  big_blind,
+  button_player,
   networkClient,
   lobbyCode,
 }: GameProps): VNode | undefined {
@@ -42,7 +42,11 @@ function Game({
 
   return (
     <Box display="flex" flexDirection="column" height="100vh">
-      <FanLayout players={playerInfos}>
+      <FanLayout
+        players={playerInfos}
+        currentTurn={current_turn}
+        buttonPlayer={button_player}
+      >
         <CardSet cards={table} maxCards={5} />
         <ChipCount
           numberOfChips={pot}
