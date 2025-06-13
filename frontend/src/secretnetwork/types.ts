@@ -17,7 +17,7 @@ interface GameState {
   pot: number;
   hand: [PlayingCardProps, PlayingCardProps] | null;
   current_turn: string;
-  big_blind: string;
+  button_player: string;
 }
 
 interface PreStartState {
