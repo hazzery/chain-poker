@@ -73,7 +73,7 @@ pub fn get_balances(addresses: &[CanonicalAddr], deps: Deps) -> Vec<(String, u12
         .iter()
         .filter_map(|canonical_address| {
             let username = USERNAMES.get(deps.storage, canonical_address)?;
-            let balance = BALANCES.get(deps.storage, canonical_address)?;
+            let balance = BALANCES.get(deps.storage, canonical_address).unwrap_or(0);
             Some((username, balance))
         })
         .collect()
