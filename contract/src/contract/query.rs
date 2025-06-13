@@ -42,18 +42,21 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
     let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
     let balances = get_balances(&players, deps);
 
+    let current_turn_position = CURRENT_TURN_POSITION.load(deps.storage)? as usize;
     let current_turn = balances
-        .get(CURRENT_TURN_POSITION.load(deps.storage)? as usize)
+        .get(current_turn_position)
         .ok_or(StdError::generic_err(format!(
-            "CURRENT_TURN_POSITION ({CURRENT_TURN_POSITION}) out of range for balances (length {})",
+            "CURRENT_TURN_POSITION ({current_turn_position}) out of range for balances (length {})",
             balances.len()
         )))?
         .0
         .clone();
+
+    let button_player_position = BUTTON_POSITION.load(deps.storage)? as usize;
     let button_player = balances
-        .get(BUTTON_POSITION.load(deps.storage)? as usize)
+        .get(button_player_position)
         .ok_or(StdError::generic_err(format!(
-            "BUTTON_POSITION ({BUTTON_POSITION}) out of range for balances (length {})",
+            "BUTTON_POSITION ({button_player_position}) out of range for balances (length {})",
             balances.len()
         )))?
         .0
