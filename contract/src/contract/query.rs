@@ -2,12 +2,12 @@ use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdRes
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
-    get_balances, GameState, PreStartState, ADMIN, BUTTON_POSITION, CURRENT_PLAYERS,
+    get_balances, GameState, PreStartState, ADMIN, ALL_PLAYERS, BUTTON_POSITION,
     CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE, USERNAMES,
 };
 
 pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
-    let players: Vec<CanonicalAddr> = USERNAMES.iter_keys(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
 
     let pre_start_state = PreStartState {
         admin: USERNAMES
@@ -40,7 +40,7 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
         return Err(StdError::generic_err("You are not part of this game"));
     }
 
-    let players: Vec<CanonicalAddr> = CURRENT_PLAYERS.iter(deps.storage)?.flatten().collect();
+    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
     let balances = get_balances(&players, deps);
 
     let current_turn = balances

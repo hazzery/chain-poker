@@ -12,8 +12,9 @@ use rank::Rank;
 use suit::Suit;
 
 pub static LOBBY_CONFIG: Item<LobbyConfig> = Item::new(b"lobby_config");
-pub static CURRENT_PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
-pub static USERNAMES: Keymap<CanonicalAddr, String> = Keymap::new(b"usernames");
+pub static ALL_PLAYERS: AppendStore<CanonicalAddr> = AppendStore::new(b"players");
+pub static USERNAMES: Keymap<CanonicalAddr, String, Bincode2, WithoutIter> =
+    KeymapBuilder::new(b"usernames").without_iter().build();
 pub static HANDS: Keymap<CanonicalAddr, (Card, Card), Bincode2, WithoutIter> =
     KeymapBuilder::new(b"hands").without_iter().build();
 pub static BALANCES: Keymap<CanonicalAddr, u128, Bincode2, WithoutIter> =
