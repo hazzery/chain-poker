@@ -2,8 +2,7 @@ import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { PlayingCardProps } from "../components/PlayingCard";
-import type { GameState, LobbyConfig, PreStartState } from "./types";
+import type { GameState, PreStartState } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -104,92 +103,7 @@ function placeBet(
   }
   return secretts.tryExecute(
     { place_bet: { value: uScrt } },
-    40_000,
-    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkClient,
-  );
-}
-
-/**
- * View the state of the table (the publicly known cards).
- *
- * @param lobbyCode - The address of the instantiated contract.
- * @param networkClient - A Secret Network client initialised with Keplr.
- *
- * @returns A result containing an object representation of the contract's
- *    response if successful, otherwise an error.
- */
-async function viewTable(
-  lobbyCode: string,
-  networkClient: SecretNetworkClient,
-): Promise<Result<object, Error>> {
-  return secretts.queryContract(
-    { view_table: {} },
-    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkClient,
-  );
-}
-
-/**
- * View the player's hand and chip balance.
- *
- * @param lobbyCode - The address of the instantiated contract.
- * @param networkClient - A Secret Network client initialised with Keplr.
- *
- * @returns A result containing an object representation of the contract's
- *    respose if successful, otherise an error.
- */
-async function viewHand(
-  lobbyCode: string,
-  networkClient: SecretNetworkClient,
-): Promise<Result<[PlayingCardProps, PlayingCardProps], Error>> {
-  return Result.fromAsync(getPermit(lobbyCode, networkClient)).map((permit) =>
-    secretts.queryContract<[PlayingCardProps, PlayingCardProps]>(
-      { view_hand: { permit } },
-      {
-        contractAddress: lobbyCode,
-        contractCodeHash: CONTRACT_CODE_HASH,
-      },
-      networkClient,
-    ),
-  );
-}
-
-/**
- * Query the contract for the balances of all bought-in players.
- *
- * @param lobbyCode - The address of the instantiated contract.
- * @param networkClient - A Secret Network client initialised with Keplr.
- *
- * @returns A result of an array containing two-tuples of a player's address
- *    and their balance.
- */
-async function viewPlayers(
-  lobbyCode: string,
-  networkClient: SecretNetworkClient,
-): Promise<Result<[string, number][], Error>> {
-  return secretts.queryContract(
-    { view_players: {} },
-    { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
-    networkClient,
-  );
-}
-
-/**
- * Query the contract for the configuration of the specified lobby.
- *
- * @param lobbyCode - The address of the instantiated contract.
- * @param networkClient - A Secret Network client initialised with Keplr.
- *
- * @returns A result containing the lobby configuration if successful,
- *    otherwise an Error.
- */
-async function viewLobbyConfig(
-  lobbyCode: string,
-  networkClient: SecretNetworkClient,
-): Promise<Result<LobbyConfig, Error>> {
-  return secretts.queryContract(
-    { view_lobby_config: {} },
+    50_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
   );
@@ -278,9 +192,5 @@ export {
   placeBet,
   startGame,
   viewGameState,
-  viewHand,
-  viewLobbyConfig,
-  viewPlayers,
   viewPreStartState,
-  viewTable,
 };
