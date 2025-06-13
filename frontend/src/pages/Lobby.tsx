@@ -22,53 +22,28 @@ import BuyIn from "../components/BuyIn";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
-  if (networkClient === undefined) {
-    return (
-      <ChainPoker>
-        <CircularProgress color="success" />
-      </ChainPoker>
-    );
-  } else if (networkClient === null) {
-    return (
-      <ChainPoker>
-        <Typography>
-          Keplr Wallet is not installed. Please install the Keplr Wallet browser
-          extension to use Chain Poker
-        </Typography>
-      </ChainPoker>
-    );
-  }
-
   const { lobbyCode } = useRoute().params;
+  const location = useLocation();
   const [preStartState, setPreStartState] = useState<PreStartState>();
   const [shouldRerequest, setShouldRerequest] = useState(false);
-  useEffect(() => {
-    if (preStartState !== undefined) return;
 
-    async function queryPrestartState() {
-      await Result.fromAsync(viewPreStartState(lobbyCode, networkClient!))
-        .onSuccess(setPreStartState)
-        .onFailure(console.error);
+  useEffect(() => {
+    if (
+      preStartState !== undefined ||
+      networkClient === undefined ||
+      networkClient === null
+    ) {
+      return;
     }
 
-    queryPrestartState();
-  }, [lobbyCode, shouldRerequest]);
-  if (preStartState === undefined) {
-    return (
-      <ChainPoker>
-        <CircularProgress color="success" />
-      </ChainPoker>
-    );
-  }
-
-  const location = useLocation();
-  async function start() {
-    await Result.fromAsync(startGame(lobbyCode, networkClient!))
-      .onSuccess(() => location.route(`/play/${lobbyCode}`))
+    Result.fromAsync(viewPreStartState(lobbyCode, networkClient))
+      .onSuccess(setPreStartState)
       .onFailure(console.error);
-  }
+  }, [lobbyCode, networkClient, shouldRerequest]);
 
   const data = useMemo(() => {
+    if (preStartState === undefined) return;
+
     const playersUsername = localStorage.getItem("username");
 
     const playerInfos: PlayerInfo[] = preStartState.balances.map(
@@ -91,8 +66,37 @@ function Lobby(): VNode | undefined {
     return { playerInfos, chipBalance, minBuyIn, maxBuyIn, isAdmin };
   }, [preStartState]);
 
-  function showPlayers(): VNode[] {
-    return data.playerInfos.map((player) => <Player {...player} />);
+  if (networkClient === null) {
+    return (
+      <ChainPoker>
+        <Typography>
+          Keplr Wallet is not installed. Please install the Keplr Wallet browser
+          extension to use Chain Poker
+        </Typography>
+      </ChainPoker>
+    );
+  }
+
+  if (
+    preStartState === undefined ||
+    data === undefined ||
+    networkClient === undefined
+  ) {
+    return (
+      <ChainPoker>
+        <CircularProgress color="success" />
+      </ChainPoker>
+    );
+  }
+
+  function start(): void {
+    Result.fromAsync(startGame(lobbyCode, networkClient!))
+      .onSuccess(() => location.route(`/play/${lobbyCode}`))
+      .onFailure(console.error);
+  }
+
+  function reconnect(): void {
+    location.route(`/play/${lobbyCode}`);
   }
 
   return (
@@ -108,11 +112,14 @@ function Lobby(): VNode | undefined {
         {data.chipBalance !== undefined && (
           <Typography>Your balance: {data.chipBalance}</Typography>
         )}
+        {preStartState.is_started && (
+          <Typography>This game is in session</Typography>
+        )}
       </Box>
-      {data.playerInfos.length === 0 ? (
-        <Typography>There are currently no bought in players</Typography>
+      {data.playerInfos.length > 0 ? (
+        data.playerInfos.map(Player)
       ) : (
-        showPlayers()
+        <Typography>There are currently no bought in players</Typography>
       )}
       {data.chipBalance === undefined && (
         <>
@@ -130,7 +137,7 @@ function Lobby(): VNode | undefined {
           />
         </>
       )}
-      {data.isAdmin && (
+      {data.isAdmin && !preStartState.is_started && (
         <>
           <Divider />
           <Button
@@ -140,6 +147,14 @@ function Lobby(): VNode | undefined {
             color="success"
           >
             Start Game
+          </Button>
+        </>
+      )}
+      {preStartState.is_started && data.chipBalance !== undefined && (
+        <>
+          <Divider />
+          <Button onClick={reconnect} variant="outlined" color="success">
+            Reconnect
           </Button>
         </>
       )}

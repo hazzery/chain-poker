@@ -12,13 +12,23 @@ import type { GameState } from "../secretnetwork/types";
 
 function Play(): VNode {
   const networkClient = useNetworkClient();
-  if (networkClient === undefined) {
-    return (
-      <ChainPoker>
-        <CircularProgress color="success" />
-      </ChainPoker>
-    );
-  } else if (networkClient === null) {
+
+  const { lobbyCode } = useRoute().params;
+  const [gameState, setGameState] = useState<GameState>();
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (networkClient === undefined || networkClient === null) return;
+
+      Result.fromAsync(viewGameState(lobbyCode, networkClient))
+        .onSuccess(console.log)
+        .onSuccess(setGameState)
+        .onFailure(console.error);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [lobbyCode, networkClient]);
+
+  if (networkClient === null) {
     return (
       <ChainPoker>
         <Typography>
@@ -29,21 +39,7 @@ function Play(): VNode {
     );
   }
 
-  const { lobbyCode } = useRoute().params;
-  const [gameState, setGameState] = useState<GameState>();
-
-  useEffect(() => {
-    const interval = setInterval(
-      () =>
-        Result.fromAsync(viewGameState(lobbyCode, networkClient))
-          .onSuccess(setGameState)
-          .onFailure(console.error),
-      333,
-    );
-    return () => clearInterval(interval);
-  }, [lobbyCode]);
-
-  if (gameState === undefined) {
+  if (gameState === undefined || networkClient === undefined) {
     return (
       <ChainPoker>
         <CircularProgress color="success" />
