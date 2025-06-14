@@ -1,19 +1,19 @@
 import { Card, Typography } from "@mui/material";
 import {
-  RiPokerHeartsFill,
-  RiPokerDiamondsFill,
-  RiPokerSpadesFill,
   RiPokerClubsFill,
+  RiPokerDiamondsFill,
+  RiPokerHeartsFill,
+  RiPokerSpadesFill,
 } from "react-icons/ri";
 
-export const enum Suit {
+const enum Suit {
   Hearts,
   Diamonds,
   Clubs,
   Spades,
 }
 
-export const enum Rank {
+const enum Rank {
   Ace = "A",
   Two = "2",
   Three = "3",
@@ -29,7 +29,23 @@ export const enum Rank {
   King = "K",
 }
 
-export interface PlayingCardProps {
+const RANKS = [
+  Rank.Ace,
+  Rank.Two,
+  Rank.Three,
+  Rank.Four,
+  Rank.Five,
+  Rank.Six,
+  Rank.Seven,
+  Rank.Eight,
+  Rank.Nine,
+  Rank.Ten,
+  Rank.Jack,
+  Rank.Queen,
+  Rank.King,
+];
+
+interface PlayingCardProps {
   suit: Suit;
   rank: Rank;
 }
@@ -47,7 +63,7 @@ function suitIcon(suit: Suit) {
   }
 }
 
-export default function PlayingCard({ suit, rank }: PlayingCardProps) {
+function PlayingCard({ suit, rank }: PlayingCardProps) {
   return (
     <Card
       sx={{
@@ -69,3 +85,5 @@ export default function PlayingCard({ suit, rank }: PlayingCardProps) {
     </Card>
   );
 }
+
+export { PlayingCard as default, RANKS, Suit };

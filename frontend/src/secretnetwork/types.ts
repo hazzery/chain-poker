@@ -1,4 +1,3 @@
-import type { PlayingCardProps } from "../components/PlayingCard";
 
 interface LobbyConfig {
   big_blind: number;
@@ -13,9 +12,9 @@ interface PlayerInfo {
 
 interface GameState {
   balances: [string, number][];
-  table: PlayingCardProps[];
+  table: number[];
   pot: number;
-  hand: [PlayingCardProps, PlayingCardProps] | null;
+  hand: [number, number] | null;
   current_turn: string;
   button_player: string;
 }
@@ -27,4 +26,4 @@ interface PreStartState {
   balances: [string, number][];
 }
 
-export type { LobbyConfig, PlayerInfo, GameState, PreStartState };
+export type { GameState, LobbyConfig, PlayerInfo, PreStartState };

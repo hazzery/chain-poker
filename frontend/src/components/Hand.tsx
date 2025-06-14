@@ -3,11 +3,10 @@ import { Box, Button, Card } from "@mui/material";
 import useNumberValidation from "../hooks/useNumberValidation";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
-import { type PlayingCardProps } from "./PlayingCard";
 import ScrtInput from "./ScrtInput";
 
 interface HandProps {
-  cards: PlayingCardProps[] | null;
+  cards: number[] | null;
   chipBalance: number;
   ourTurn: boolean;
   onBet: (_: number) => void;
