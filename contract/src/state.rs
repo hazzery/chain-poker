@@ -1,4 +1,4 @@
-use cosmwasm_std::{CanonicalAddr, Deps};
+use cosmwasm_std::{CanonicalAddr, Deps, StdError, StdResult};
 use secret_toolkit::{
     serialization::Bincode2,
     storage::{AppendStore, Item, Keymap, KeymapBuilder, WithoutIter},
@@ -63,21 +63,32 @@ impl Deck {
         }
     }
 
-    pub fn draw(&mut self, seed: &[u8]) -> u8 {
+    pub fn draw(&mut self, seed: &[u8]) -> StdResult<u8> {
         // Get the next byte from the randomness source.
-        let random_byte: u8 = seed[self.index];
+        let random_byte = *seed.get(self.index).ok_or(StdError::generic_err(format!(
+            "self.index ({}) out of range for seed (length {})",
+            self.index,
+            seed.len(),
+        )))?;
+
+        let deck_size = self.cards.len();
 
         // Force the number to be within the size of the deck, excluding used cards.
-        let random_deck_index = random_byte as usize % (self.cards.len() - self.index);
-        let card = self.cards[random_deck_index];
+        let random_deck_index = random_byte as usize % (deck_size - self.index);
+        let card = *self
+            .cards
+            .get(random_deck_index)
+            .ok_or(StdError::generic_err(format!(
+                "random_deck_index ({random_deck_index}) out of range for self.cards (length {})",
+                deck_size,
+            )))?;
 
         // Move the card we have just picked to the back of the deck, to prevent reselection.
-        let deck_size = self.cards.len();
         self.cards.swap(random_deck_index, deck_size - self.index);
 
         self.index += 1;
 
-        card
+        Ok(card)
     }
 }
 
