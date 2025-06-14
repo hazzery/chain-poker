@@ -91,7 +91,8 @@ impl Deck {
             )))?;
 
         // Move the card we have just picked to the back of the deck, to prevent reselection.
-        self.cards.swap(random_deck_index, deck_size - self.index);
+        self.cards
+            .swap(random_deck_index, deck_size - 1 - self.index);
 
         self.index += 1;
 
