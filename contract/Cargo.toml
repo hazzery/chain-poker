@@ -34,7 +34,6 @@ cosmwasm-schema = "2.2"
 secret-toolkit = { version = "0.10", features = ["permit"] }
 cw-storage-plus = { version = "2.0", default-features = false }
 secret-toolkit-storage = "0.10"
-rand = "0.9"
 
 [[bin]]
 name = "schema"
