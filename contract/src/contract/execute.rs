@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, DepsMut, Response, StdError, StdResult};
+use cosmwasm_std::{Addr, Coin, DepsMut, Env, Response, StdError, StdResult};
 
 use crate::{
     poker::{find_next_player_lazy, new_round, next_play, take_bet},
@@ -8,7 +8,7 @@ use crate::{
     },
 };
 
-pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
+pub fn try_start_game(deps: DepsMut, sender: Addr, env: &Env) -> StdResult<Response> {
     if IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has already started"));
     }
@@ -24,7 +24,7 @@ pub fn try_start_game(deps: DepsMut, sender: Addr) -> StdResult<Response> {
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
-    new_round(deps.storage, 0)?;
+    new_round(0, deps.storage, env)?;
 
     IS_STARTED.save(deps.storage, &true)?;
 

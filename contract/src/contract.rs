@@ -36,14 +36,9 @@ pub fn instantiate(
 }
 
 #[entry_point]
-pub fn execute(
-    deps: DepsMut,
-    _env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::StartGame {} => try_start_game(deps, info.sender),
+        ExecuteMsg::StartGame {} => try_start_game(deps, info.sender, &env),
         ExecuteMsg::BuyIn { username } => try_buy_in(username, deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
     }

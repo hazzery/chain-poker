@@ -1,8 +1,8 @@
-use cosmwasm_std::{CanonicalAddr, StdError, StdResult, Storage};
+use cosmwasm_std::{CanonicalAddr, Env, StdError, StdResult, Storage};
 
 use crate::state::{
-    next_card, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET,
-    CURRENT_TURN_POSITION, HANDS, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE,
+    Deck, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET, CURRENT_TURN_POSITION,
+    HANDS, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE,
 };
 
 pub fn find_next_player<'a>(
@@ -73,15 +73,17 @@ fn take_forced_bet(
     Ok(index)
 }
 
-pub fn new_round(storage: &mut dyn Storage, button_position: u8) -> StdResult<()> {
+pub fn new_round(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<()> {
     let mut addresses: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
     addresses.retain(|address| BALANCES.get(storage, address).is_some());
 
+    let mut deck = Deck::new(env.block.random.clone().unwrap().0)?;
+
     addresses
         .iter()
-        .try_for_each(|address| HANDS.insert(storage, address, &(next_card(), next_card())))?;
+        .try_for_each(|address| HANDS.insert(storage, address, &(deck.draw(), deck.draw())))?;
 
-    (0..5).try_for_each(|_| TABLE.push(storage, &next_card()))?;
+    (0..5).try_for_each(|_| TABLE.push(storage, &deck.draw()))?;
 
     let big_blind_amount = LOBBY_CONFIG.load(storage)?.big_blind;
     CURRENT_MIN_BET.save(storage, &(big_blind_amount as u128))?;
