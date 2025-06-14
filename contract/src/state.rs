@@ -64,14 +64,21 @@ impl Deck {
     }
 
     pub fn draw(&mut self, seed: &[u8]) -> StdResult<u8> {
+        let deck_size = self.cards.len();
+
+        if self.index >= deck_size {
+            return Err(StdError::generic_err(format!(
+                "deck_size: {deck_size}, self.index: {}",
+                self.index,
+            )));
+        }
+
         // Get the next byte from the randomness source.
         let random_byte = *seed.get(self.index).ok_or(StdError::generic_err(format!(
             "self.index ({}) out of range for seed (length {})",
             self.index,
             seed.len(),
         )))?;
-
-        let deck_size = self.cards.len();
 
         // Force the number to be within the size of the deck, excluding used cards.
         let random_deck_index = random_byte as usize % (deck_size - self.index);
