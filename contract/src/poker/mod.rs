@@ -78,13 +78,19 @@ pub fn new_round(button_position: u8, storage: &mut dyn Storage, env: &Env) -> S
     addresses.retain(|address| BALANCES.get(storage, address).is_some());
 
     let mut deck = Deck::new();
-    let random = env.block.random.clone().unwrap().0;
+    let Some(ref random) = env.block.random else {
+        return Err(StdError::generic_err("Random source was unavailable"));
+    };
 
     addresses.iter().try_for_each(|address| {
-        HANDS.insert(storage, address, &(deck.draw(&random), deck.draw(&random)))
+        HANDS.insert(
+            storage,
+            address,
+            &(deck.draw(&random.0), deck.draw(&random.0)),
+        )
     })?;
 
-    (0..5).try_for_each(|_| TABLE.push(storage, &deck.draw(&random)))?;
+    (0..5).try_for_each(|_| TABLE.push(storage, &deck.draw(random)))?;
 
     let big_blind_amount = LOBBY_CONFIG.load(storage)?.big_blind;
     CURRENT_MIN_BET.save(storage, &(big_blind_amount as u128))?;
