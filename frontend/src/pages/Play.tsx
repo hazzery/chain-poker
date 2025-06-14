@@ -1,11 +1,11 @@
-import { CircularProgress, Typography } from "@mui/material";
 import type { VNode } from "preact";
 import { useRoute } from "preact-iso";
 import { useEffect, useState } from "preact/hooks";
 import { Result } from "typescript-result";
 
-import ChainPoker from "../components/ChainPoker";
 import Game from "../components/Game";
+import KeplrNotInstalled from "../components/KeplrNotInstalled";
+import Loading from "../components/Loading";
 import { viewGameState } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { GameState } from "../secretnetwork/types";
@@ -28,24 +28,10 @@ function Play(): VNode {
     return () => clearInterval(interval);
   }, [lobbyCode, networkClient]);
 
-  if (networkClient === null) {
-    return (
-      <ChainPoker>
-        <Typography>
-          Keplr Wallet is not installed. Please install the Keplr Wallet browser
-          extension to use Chain Poker
-        </Typography>
-      </ChainPoker>
-    );
-  }
+  if (networkClient === null) return <KeplrNotInstalled />;
 
-  if (gameState === undefined || networkClient === undefined) {
-    return (
-      <ChainPoker>
-        <CircularProgress color="success" />
-      </ChainPoker>
-    );
-  }
+  if (gameState === undefined || networkClient === undefined)
+    return <Loading />;
 
   return (
     <Game {...gameState} lobbyCode={lobbyCode} networkClient={networkClient} />

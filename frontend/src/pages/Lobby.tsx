@@ -1,16 +1,13 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Divider,
-  Typography,
-} from "@mui/material";
+import { Box, Button, Divider, Typography } from "@mui/material";
 import type { VNode } from "preact";
 import { useLocation, useRoute } from "preact-iso";
 import { useEffect, useMemo, useState } from "preact/hooks";
 import { Result } from "typescript-result";
 
+import BuyIn from "../components/BuyIn";
 import ChainPoker from "../components/ChainPoker";
+import KeplrNotInstalled from "../components/KeplrNotInstalled";
+import Loading from "../components/Loading";
 import Player from "../components/Player";
 import {
   startGame,
@@ -18,7 +15,6 @@ import {
 } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
-import BuyIn from "../components/BuyIn";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
@@ -66,28 +62,14 @@ function Lobby(): VNode | undefined {
     return { playerInfos, chipBalance, minBuyIn, maxBuyIn, isAdmin };
   }, [preStartState]);
 
-  if (networkClient === null) {
-    return (
-      <ChainPoker>
-        <Typography>
-          Keplr Wallet is not installed. Please install the Keplr Wallet browser
-          extension to use Chain Poker
-        </Typography>
-      </ChainPoker>
-    );
-  }
+  if (networkClient === null) return <KeplrNotInstalled />;
 
   if (
     preStartState === undefined ||
     data === undefined ||
     networkClient === undefined
-  ) {
-    return (
-      <ChainPoker>
-        <CircularProgress color="success" />
-      </ChainPoker>
-    );
-  }
+  )
+    return <Loading />;
 
   function start(): void {
     Result.fromAsync(startGame(lobbyCode, networkClient!))
