@@ -116,12 +116,13 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
 
     let next_players_bet = BETS.get(deps.storage, &next_players_address).unwrap_or(0);
     if next_players_bet == min_bet {
-        next_play(deps.storage)?;
-        next_player_position = find_next_player_lazy(
-            (BUTTON_POSITION.load(deps.storage)? + 1) % num_players,
-            deps.storage,
-        )?
-        .0;
+        let left_of_dealer = (BUTTON_POSITION.load(deps.storage)? + 1) % num_players;
+
+        next_player_position = if !next_play(deps.storage)? {
+            find_next_player_lazy(left_of_dealer, deps.storage)?.0
+        } else {
+            left_of_dealer
+        };
     }
     CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 

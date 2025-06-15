@@ -217,7 +217,7 @@ fn end_round(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<
     Ok(())
 }
 
-pub fn next_play(storage: &mut dyn Storage) -> StdResult<()> {
+pub fn next_play(storage: &mut dyn Storage) -> StdResult<bool> {
     let current_num_cards = REVEALED_CARDS.load(storage)?;
     if current_num_cards == 0 {
         REVEALED_CARDS.save(storage, &3)?;
@@ -227,9 +227,10 @@ pub fn next_play(storage: &mut dyn Storage) -> StdResult<()> {
         let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
         showdown(&players, storage)?;
         end_round(&players, storage)?;
+        return Ok(true);
     }
 
-    Ok(())
+    Ok(false)
 }
 
 pub fn find_next_player_lazy(
