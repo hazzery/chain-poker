@@ -39,7 +39,6 @@ secret-toolkit-storage = "0.10"
 package = "poker"
 version = "0.6"
 default-features = false
-features = ["static_lookup"]
 
 [[bin]]
 name = "schema"
