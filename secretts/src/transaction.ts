@@ -15,14 +15,6 @@ function transactionStatusCheck(
   transactionResponse: TxResponse,
 ): Result<TxResponse, Error> {
   if (transactionResponse.code !== TxResultCode.Success) {
-    console.log("tx-------------");
-    console.dir(transactionResponse.tx, {depth: null});
-    console.log("\nevents---------");
-    console.dir(transactionResponse.events, {depth: null});
-    console.log("\narrayLog-------");
-    console.log(transactionResponse.arrayLog);
-    console.log("-----------------");
-
     return Err(
       "Transaction failed.\n\n" +
         `Status code: ${TxResultCode[transactionResponse.code]}\n\n` +
