@@ -23,9 +23,10 @@ pub fn find_next_player<'a>(
                 return None;
             }
             let balance = BALANCES.get(storage, address)?;
-            Some(((index % addresses.len()) as u8, address, balance))
+            let position = (index % addresses.len()) as u8;
+            Some((position, address, balance))
         })
-        .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
+        .ok_or_else(|| StdError::generic_err("find_next_player found no elligible players"))
 }
 
 pub fn take_bet(
@@ -257,6 +258,8 @@ pub fn find_next_player_lazy(
             .enumerate()
             .take(player_position as usize)
             .find_map(eligibility_filter)
-            .ok_or_else(|| StdError::generic_err("No players have remaining balance"))
+            .ok_or_else(|| {
+                StdError::generic_err("find_next_player_lazy found no elligible players")
+            })
     }
 }
