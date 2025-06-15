@@ -47,6 +47,7 @@ pub struct GameState {
     pub hand: Option<(u8, u8)>,
     pub current_turn: String,
     pub button_player: String,
+    pub min_bet: u128,
 }
 
 pub struct Deck {

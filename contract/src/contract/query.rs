@@ -2,8 +2,9 @@ use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdRes
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
-    get_balances, GameState, PreStartState, ADMIN, ALL_PLAYERS, BUTTON_POSITION,
-    CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE, USERNAMES,
+    get_balances, GameState, PreStartState, ADMIN, ALL_PLAYERS, BETS, BUTTON_POSITION,
+    CURRENT_MIN_BET, CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS,
+    TABLE, USERNAMES,
 };
 
 pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
@@ -62,6 +63,9 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
         .0
         .clone();
 
+    let min_bet =
+        CURRENT_MIN_BET.load(deps.storage)? - BETS.get(deps.storage, &sender).unwrap_or(0);
+
     let all_state = GameState {
         balances,
         table: TABLE
@@ -73,6 +77,7 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
         hand: HANDS.get(deps.storage, &sender),
         current_turn,
         button_player,
+        min_bet,
     };
 
     to_binary(&all_state)
