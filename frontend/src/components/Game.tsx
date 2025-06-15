@@ -24,6 +24,7 @@ function Game({
   button_player,
   networkClient,
   lobbyCode,
+  min_bet,
 }: GameProps): VNode | undefined {
   const playersUsername = localStorage.getItem("username");
   const playerInfos = balances.map(([name, chipBalance]) => ({
@@ -58,6 +59,7 @@ function Game({
       <Hand
         cards={hand}
         chipBalance={chipBalance}
+        minBet={min_bet}
         ourTurn={current_turn === playersUsername}
         onBet={sendBet}
       />

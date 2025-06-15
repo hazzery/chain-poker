@@ -8,14 +8,15 @@ import ScrtInput from "./ScrtInput";
 interface HandProps {
   cards: number[] | null;
   chipBalance: number;
+  minBet: number;
   ourTurn: boolean;
   onBet: (_: number) => void;
 }
 
-function Hand({ cards, chipBalance, ourTurn, onBet }: HandProps) {
+function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
   const [betAmount, setBetAmount] = useNumberValidation({
     required: true,
-    minValue: 0,
+    minValue: minBet,
     maxValue: chipBalance,
   });
 

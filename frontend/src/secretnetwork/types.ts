@@ -1,4 +1,3 @@
-
 interface LobbyConfig {
   big_blind: number;
   max_buy_in_bb: number;
@@ -17,6 +16,7 @@ interface GameState {
   hand: [number, number] | null;
   current_turn: string;
   button_player: string;
+  min_bet: number;
 }
 
 interface PreStartState {
