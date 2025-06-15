@@ -1,7 +1,9 @@
 mod execute;
 mod query;
 
-use cosmwasm_std::{entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cosmwasm_std::{
+    entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+};
 use execute::{try_buy_in, try_place_bet, try_start_game};
 use query::{query_game_state, query_pre_start_state};
 
@@ -17,6 +19,12 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
+    if msg.min_buy_in_bb > msg.max_buy_in_bb {
+        return Err(StdError::generic_err(
+            "Min buy in must be less than or equal to the max buy in",
+        ));
+    }
+
     let lobby_config = LobbyConfig {
         big_blind: msg.big_blind,
         max_buy_in_bb: msg.max_buy_in_bb,
