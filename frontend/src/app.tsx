@@ -26,8 +26,8 @@ export function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <NavBar />
       <LocationProvider>
+        <NavBar />
         <NetworkClientContextProvider>
           <Router>
             <Route path="/" component={Landing} />
