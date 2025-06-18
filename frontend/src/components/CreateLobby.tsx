@@ -7,6 +7,8 @@ import useNumberValidation from "../hooks/useNumberValidation";
 import useStringValidation from "../hooks/useStringValidation";
 import { createLobby } from "../secretnetwork/chainPokerContract";
 import TextInput from "./TextInput";
+import ScrtInput from "./ScrtInput";
+import useScrtValidation from "../hooks/useScrtValidation";
 
 interface CreateLobbyProps {
   backAction: () => void;
@@ -20,14 +22,17 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
     minLength: 3,
     maxLength: 15,
   });
-  const [bigBlind, setBigBlind] = useNumberValidation({ required: true });
+  const [bigBlind, setBigBlind] = useScrtValidation({
+    minValueUscrt: 2n,
+    maxValueUscrt: (1n << 128n) - 1n,
+  });
   const [minBuyInBB, setMinBuyInBB] = useNumberValidation({ required: true });
   const [maxBuyInBB, setMaxBuyInBB] = useNumberValidation({ required: true });
 
   async function handleCreateLobby() {
     await createLobby(
       username.value,
-      bigBlind.number,
+      bigBlind.uScrt!,
       minBuyInBB.number,
       maxBuyInBB.number,
       networkClient,
@@ -48,7 +53,7 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
         variant="outlined"
         color="success"
       />
-      <TextInput
+      <ScrtInput
         required
         fullWidth
         state={bigBlind}

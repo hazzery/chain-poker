@@ -1,23 +1,22 @@
 import { Box, Button, Card } from "@mui/material";
 
-import useNumberValidation from "../hooks/useNumberValidation";
+import useScrtValidation from "../hooks/useScrtValidation";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import ScrtInput from "./ScrtInput";
 
 interface HandProps {
   cards: number[] | null;
-  chipBalance: number;
-  minBet: number;
+  chipBalance: bigint;
+  minBet: bigint;
   ourTurn: boolean;
-  onBet: (_: number) => void;
+  onBet: (betAmount: bigint) => void;
 }
 
 function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
-  const [betAmount, setBetAmount] = useNumberValidation({
-    required: true,
-    minValue: minBet,
-    maxValue: chipBalance,
+  const [betAmount, setBetAmount] = useScrtValidation({
+    minValueUscrt: minBet,
+    maxValueUscrt: chipBalance,
   });
 
   return (
@@ -57,7 +56,7 @@ function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
             color="success"
           />
           <Button
-            onClick={() => onBet(betAmount.number)}
+            onClick={() => onBet(betAmount.uScrt!)}
             disabled={betAmount.error !== null}
             variant="outlined"
             color="success"

@@ -5,7 +5,7 @@ import { ChipCount } from "./ChipCount";
 
 interface PlayerProps {
   name: string;
-  chipBalance: number;
+  chipBalance: string;
   isCurrentTurn?: boolean;
   hasButton?: boolean;
   sx?: SxProps;

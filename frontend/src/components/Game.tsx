@@ -35,7 +35,7 @@ function Game({
     ([username]) => username === playersUsername,
   )![1];
 
-  async function sendBet(betAmount: number): Promise<void> {
+  async function sendBet(betAmount: bigint): Promise<void> {
     await Result.fromAsync(
       placeBet(betAmount, lobbyCode, networkClient),
     ).onFailure(console.error);
@@ -58,8 +58,8 @@ function Game({
       </FanLayout>
       <Hand
         cards={hand}
-        chipBalance={chipBalance}
-        minBet={min_bet}
+        chipBalance={BigInt(chipBalance)}
+        minBet={BigInt(min_bet)}
         ourTurn={current_turn === playersUsername}
         onBet={sendBet}
       />

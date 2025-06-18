@@ -1,29 +1,29 @@
 interface LobbyConfig {
-  big_blind: number;
+  big_blind: string;
   max_buy_in_bb: number;
   min_buy_in_bb: number;
 }
 
 interface PlayerInfo {
   name: string;
-  chipBalance: number;
+  chipBalance: string;
 }
 
 interface GameState {
-  balances: [string, number][];
-  table: number[];
-  pot: number;
+  balances: [string, string][]; // [username, balance]
+  table: number[]; // cards are 8 bit integers
+  pot: string;
   hand: [number, number] | null;
   current_turn: string;
   button_player: string;
-  min_bet: number;
+  min_bet: string;
 }
 
 interface PreStartState {
   admin: string;
   lobby_config: LobbyConfig;
   is_started: boolean;
-  balances: [string, number][];
+  balances: [string, string][]; // [username, balance]
 }
 
 export type { GameState, LobbyConfig, PlayerInfo, PreStartState };

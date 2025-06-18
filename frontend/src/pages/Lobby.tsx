@@ -54,11 +54,11 @@ function Lobby(): VNode | undefined {
     )?.[1];
 
     const minBuyIn =
-      preStartState.lobby_config.big_blind *
-      preStartState.lobby_config.min_buy_in_bb;
+      BigInt(preStartState.lobby_config.big_blind) *
+      BigInt(preStartState.lobby_config.min_buy_in_bb);
     const maxBuyIn =
-      preStartState.lobby_config.big_blind *
-      preStartState.lobby_config.max_buy_in_bb;
+      BigInt(preStartState.lobby_config.big_blind) *
+      BigInt(preStartState.lobby_config.max_buy_in_bb);
 
     const isAdmin = preStartState.admin === playersUsername;
 

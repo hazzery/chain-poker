@@ -11,19 +11,25 @@ const CONTRACT_CODE_ID = import.meta.env.VITE_CONTRACT_CODE_ID;
 /**
  * Create a new game lobby.
  *
- * @param gameConfig The game configuration message to instantiate the contract
- *    with.
+ * @param username - Name for the current player to be shown to other players.
+ * @param bigBlind - The big blind amount for the game.
+ * @param min_buy_in_bb - The minimum buy in amount as a multiple of the big
+ *    blind amount.
+ * @param max_buy_in_bb - The maximum buy in amount as a multiple of the big
+ *    blind amount.
  * @param networkClient - A Secret Network client initialised with Keplr.
  *
- * @returns A result of the new lobby's join code if successful, otherwise an error.
+ * @returns A result of the new lobby's join code if successful, otherwise an
+ *    error.
  */
 function createLobby(
   username: string,
-  big_blind: number,
+  bigBlind: bigint,
   min_buy_in_bb: number,
   max_buy_in_bb: number,
   networkClient: SecretNetworkClient,
 ): AsyncResult<string, Error> {
+  const big_blind = bigBlind.toString();
   return secretts
     .instantiateContract(
       { username, big_blind, max_buy_in_bb, min_buy_in_bb },
@@ -46,7 +52,7 @@ function createLobby(
  */
 function buyIn(
   username: string,
-  buyInAmount: number,
+  buyInAmount: bigint,
   lobbyCode: string,
   networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
@@ -91,18 +97,12 @@ function startGame(
  *    successful, otherwise an error.
  */
 function placeBet(
-  amount: number,
+  amount: bigint,
   lobbyCode: string,
   networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
-  const uScrt = String(amount * 1_000_000);
-  if (uScrt.split(".").length > 1) {
-    return secretts.AsyncErr(
-      "amount value too precise. At most 6 places after the decimal point are allowed",
-    );
-  }
   return secretts.tryExecute(
-    { place_bet: { value: uScrt } },
+    { place_bet: { value: amount.toString() } },
     50_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,

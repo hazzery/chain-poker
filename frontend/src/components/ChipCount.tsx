@@ -2,7 +2,7 @@ import { Box, Typography, type SxProps } from "@mui/material";
 import { PiPokerChipDuotone } from "react-icons/pi";
 
 export interface ChipCountProps {
-  numberOfChips: number;
+  numberOfChips: number | bigint | string;
   chipIconSize: string;
   fontSize: string;
   sx?: SxProps;
