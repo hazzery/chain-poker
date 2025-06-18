@@ -24,11 +24,7 @@ function Lobby(): VNode | undefined {
   const [shouldRerequest, setShouldRerequest] = useState(false);
 
   useEffect(() => {
-    if (
-      preStartState !== undefined ||
-      networkClient === undefined ||
-      networkClient === null
-    ) {
+    if (networkClient === undefined || networkClient === null) {
       return;
     }
 
@@ -36,6 +32,13 @@ function Lobby(): VNode | undefined {
       .onSuccess(setPreStartState)
       .onFailure(console.error);
   }, [lobbyCode, networkClient, shouldRerequest]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setShouldRerequest((previous) => !previous);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
 
   const data = useMemo(() => {
     if (preStartState === undefined) return;
