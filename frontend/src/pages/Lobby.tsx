@@ -71,6 +71,11 @@ function Lobby(): VNode | undefined {
   )
     return <Loading />;
 
+  if (preStartState.is_started) {
+    location.route(`/play/${lobbyCode}`);
+    return;
+  }
+
   function start(): void {
     Result.fromAsync(startGame(lobbyCode, networkClient!))
       .onSuccess(() => location.route(`/play/${lobbyCode}`))
