@@ -22,8 +22,12 @@ const enum LandingMode {
 }
 
 function Landing(): VNode {
-  const [mode, setMode] = useState(LandingMode.ConnectWallet);
   const networkContext = useNetworkContext();
+  const [mode, setMode] = useState(
+    networkContext.networkClient === null
+      ? LandingMode.ConnectWallet
+      : LandingMode.Main,
+  );
 
   function goBack(): void {
     setMode(LandingMode.Main);
