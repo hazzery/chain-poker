@@ -57,7 +57,7 @@ function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
             color="success"
           />
           <Button
-            onClick={() => onBet(Number(betAmount.value))}
+            onClick={() => onBet(betAmount.number)}
             disabled={betAmount.error !== null}
             variant="outlined"
             color="success"

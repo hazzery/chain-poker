@@ -4,12 +4,16 @@ import {
   type Dispatch,
   type StateUpdater,
 } from "preact/hooks";
-import type { ValidationState } from "./useNumberValidation";
 
 interface StringValidationRules {
   required?: boolean;
   maxLength?: number;
   minLength?: number;
+}
+
+interface ValidationState {
+  value: string;
+  error: string | null;
 }
 
 function useStringValidation(
@@ -42,4 +46,4 @@ function useStringValidation(
   return [{ value, error }, setValue];
 }
 
-export { useStringValidation as default };
+export { useStringValidation as default, type ValidationState };

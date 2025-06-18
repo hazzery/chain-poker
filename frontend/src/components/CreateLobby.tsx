@@ -27,9 +27,9 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
   async function handleCreateLobby() {
     await createLobby(
       username.value,
-      Number(bigBlind.value),
-      Number(minBuyInBB.value),
-      Number(maxBuyInBB.value),
+      bigBlind.number,
+      minBuyInBB.number,
+      maxBuyInBB.number,
       networkClient,
     )
       .onSuccess(() => localStorage.setItem("username", username.value))

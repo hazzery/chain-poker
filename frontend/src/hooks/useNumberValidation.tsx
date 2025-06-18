@@ -4,6 +4,7 @@ import {
   type Dispatch,
   type StateUpdater,
 } from "preact/hooks";
+import type { ValidationState } from "./useStringValidation";
 
 interface NumberValidationRules {
   required?: boolean;
@@ -12,38 +13,35 @@ interface NumberValidationRules {
   integer?: boolean;
 }
 
-interface ValidationState {
-  value: string;
-  error: string | null;
+interface NumberValidationState extends ValidationState {
+  number: number;
 }
 
 function useNumberValidation(
   rules: NumberValidationRules,
   initialValue: string = "",
-): [ValidationState, Dispatch<StateUpdater<string>>] {
+): [NumberValidationState, Dispatch<StateUpdater<string>>] {
   const [value, setValue] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
+  let numberValue = NaN;
 
   useEffect(() => {
-    let newError = null;
+    numberValue = Number(value);
 
-    const numberValue = Number(value);
     if (rules.required && value.trim() === "") {
-      newError = "This field is required";
+      setError("This field is required");
     } else if (isNaN(numberValue)) {
-      newError = "This field must be numeric";
+      setError("This field must be numeric");
     } else if (rules.integer && numberValue % 1 !== 0) {
-      newError = "This field must be a whole number";
+      setError("This field must be a whole number");
     } else if (rules.maxValue !== undefined && numberValue > rules.maxValue) {
-      newError = `This field cannot exceed ${rules.maxValue}`;
+      setError(`This field cannot exceed ${rules.maxValue}`);
     } else if (rules.minValue !== undefined && numberValue < rules.minValue) {
-      newError = `This field must be at least ${rules.minValue}`;
+      setError(`This field must be at least ${rules.minValue}`);
     }
-
-    setError(newError);
   }, [value, rules]);
 
-  return [{ value, error }, setValue];
+  return [{ value, error, number: numberValue }, setValue];
 }
 
 export { useNumberValidation as default, type ValidationState };

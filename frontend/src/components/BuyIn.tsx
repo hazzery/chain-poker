@@ -34,12 +34,7 @@ function BuyIn({
   });
 
   async function handleBuyIn() {
-    await buyIn(
-      username.value,
-      Number(buyInAmount.value),
-      lobbyCode,
-      networkClient,
-    )
+    await buyIn(username.value, buyInAmount.number, lobbyCode, networkClient)
       .onSuccess(() => localStorage.setItem("username", username.value))
       .onSuccess(onBuyIn)
       .onFailure(console.error);
