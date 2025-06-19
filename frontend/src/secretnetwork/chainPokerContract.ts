@@ -29,7 +29,7 @@ function createLobby(
   max_buy_in_bb: number,
   networkClient: SecretNetworkClient,
 ): AsyncResult<string, Error> {
-  const big_blind = bigBlind.toString();
+  const big_blind = Number(bigBlind);
   return secretts
     .instantiateContract(
       { username, big_blind, max_buy_in_bb, min_buy_in_bb },
