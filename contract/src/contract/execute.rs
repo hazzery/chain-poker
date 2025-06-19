@@ -43,6 +43,12 @@ pub fn try_buy_in(
         return Err(StdError::generic_err("The game has already started"));
     }
 
+    if ALL_PLAYERS.get_len(deps.storage)? >= 9 {
+        return Err(StdError::generic_err(
+            "There are already the maximum number of people in this lobby",
+        ));
+    }
+
     // TODO: Check if the username is already taken.
 
     let sender = deps.api.addr_canonicalize(sender.as_str())?;
