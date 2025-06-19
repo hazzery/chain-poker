@@ -9,6 +9,7 @@ import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import FanLayout from "./FanLayout";
 import Hand from "./Hand";
+import { uScrtToScrt } from "../secretnetwork/utils";
 
 interface GameProps extends GameState {
   lobbyCode: string;
@@ -29,7 +30,7 @@ function Game({
   const playersUsername = localStorage.getItem("username");
   const playerInfos = balances.map(([name, chipBalance]) => ({
     name,
-    chipBalance,
+    chipBalance: uScrtToScrt(BigInt(chipBalance)),
   }));
   const chipBalance = balances.find(
     ([username]) => username === playersUsername,
@@ -50,7 +51,7 @@ function Game({
       >
         <CardSet cards={table} maxCards={5} />
         <ChipCount
-          numberOfChips={pot}
+          numberOfChips={uScrtToScrt(BigInt(pot))}
           chipIconSize="3em"
           fontSize="2em"
           sx={{ justifyContent: "center", display: "flex" }}

@@ -4,6 +4,7 @@ import useScrtValidation from "../hooks/useScrtValidation";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import ScrtInput from "./ScrtInput";
+import { uScrtToScrt } from "../secretnetwork/utils";
 
 interface HandProps {
   cards: number[] | null;
@@ -34,7 +35,7 @@ function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
       }}
     >
       <ChipCount
-        numberOfChips={chipBalance}
+        numberOfChips={uScrtToScrt(chipBalance)}
         chipIconSize="6em"
         fontSize="2em"
         sx={{

@@ -15,18 +15,7 @@ import {
 } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
-
-function uScrtToScrt(uScrt: bigint): string {
-  const wholeScrt = uScrt / 1_000_000n;
-  const fractionalScrt = uScrt % 1_000_000n;
-  const fractionalString = fractionalScrt
-    .toString()
-    .padStart(6, "0")
-    .replace(/0+$/, "");
-  return fractionalString.length > 0
-    ? `${wholeScrt}.${fractionalString}`
-    : wholeScrt.toString();
-}
+import { uScrtToScrt } from "../secretnetwork/utils";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
@@ -58,12 +47,15 @@ function Lobby(): VNode | undefined {
     const playersUsername = localStorage.getItem("username");
 
     const playerInfos: PlayerInfo[] = preStartState.balances.map(
-      ([name, chipBalance]) => ({ name, chipBalance }),
+      ([name, chipBalance]) => ({
+        name,
+        chipBalance: uScrtToScrt(BigInt(chipBalance)),
+      }),
     );
 
-    const chipBalance = preStartState.balances.find(
-      ([username]) => username === playersUsername,
-    )?.[1];
+    const chipBalance = playerInfos.find(
+      ({ name }) => name === playersUsername,
+    )?.chipBalance;
 
     const bigBlindBigInt = BigInt(preStartState.lobby_config.big_blind);
 
@@ -123,7 +115,7 @@ function Lobby(): VNode | undefined {
           Maximum buy in {uScrtToScrt(data.maxBuyIn)} SCRT
         </Typography>
         {data.chipBalance !== undefined && (
-          <Typography>Your balance: {data.chipBalance}</Typography>
+          <Typography>Your balance: {data.chipBalance} SCRT</Typography>
         )}
         {preStartState.is_started && (
           <Typography>This game is in session</Typography>
