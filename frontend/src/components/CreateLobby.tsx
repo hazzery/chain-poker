@@ -24,10 +24,18 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
   });
   const [bigBlind, setBigBlind] = useScrtValidation({
     minValueUscrt: 2n,
-    maxValueUscrt: (1n << 128n) - 1n,
+    maxValueUscrt: (1n << 32n) - 1n, // bigBlind is a u32 in the contract
   });
-  const [minBuyInBB, setMinBuyInBB] = useNumberValidation({ required: true });
-  const [maxBuyInBB, setMaxBuyInBB] = useNumberValidation({ required: true });
+  const [minBuyInBB, setMinBuyInBB] = useNumberValidation({
+    required: true,
+    minValue: 1,
+    maxValue: 255, // stored as a u8 in the contract
+  });
+  const [maxBuyInBB, setMaxBuyInBB] = useNumberValidation({
+    required: true,
+    minValue: Math.max(minBuyInBB.number, 1),
+    maxValue: 255, // stored as a u8 in the contract
+  });
 
   async function handleCreateLobby() {
     await createLobby(
