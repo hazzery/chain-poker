@@ -120,6 +120,9 @@ function Lobby(): VNode | undefined {
         {preStartState.is_started && (
           <Typography>This game is in session</Typography>
         )}
+        {preStartState.balances.length >= 9 && (
+          <Typography>This lobby is full</Typography>
+        )}
       </Box>
       {data.playerInfos.length > 0 ? (
         data.playerInfos.map(Player)
@@ -134,6 +137,7 @@ function Lobby(): VNode | undefined {
             lobbyCode={lobbyCode}
             minBuyIn={data.minBuyIn}
             maxBuyIn={data.maxBuyIn}
+            currentNumPlayers={preStartState.balances.length}
             networkClient={networkClient}
             onBuyIn={() => {
               setPreStartState(undefined);

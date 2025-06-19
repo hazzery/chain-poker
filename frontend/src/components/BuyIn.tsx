@@ -12,6 +12,7 @@ interface BuyInProps {
   lobbyCode: string;
   minBuyIn: bigint;
   maxBuyIn: bigint;
+  currentNumPlayers: number;
   onBuyIn: () => void;
   networkClient: SecretNetworkClient;
 }
@@ -20,6 +21,7 @@ function BuyIn({
   lobbyCode,
   maxBuyIn,
   minBuyIn,
+  currentNumPlayers,
   networkClient,
   onBuyIn,
 }: BuyInProps): VNode | undefined {
@@ -59,7 +61,11 @@ function BuyIn({
         color="success"
       />
       <Button
-        disabled={username.error !== null || buyInAmount.error !== null}
+        disabled={
+          username.error !== null ||
+          buyInAmount.error !== null ||
+          currentNumPlayers >= 9
+        }
         onClick={handleBuyIn}
         variant="outlined"
         color="success"
