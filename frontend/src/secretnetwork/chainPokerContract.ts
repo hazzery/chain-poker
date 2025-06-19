@@ -43,6 +43,7 @@ function createLobby(
 /**
  * Buy in to the game of poker hosted on the connected contract.
  *
+ * @param username - Name for the current player to be shown to other players.
  * @param buyInAmount - The number of uSCRT the player wants to start with.
  * @param lobbyCode - The address of the instantiated contract.
  * @param networkClient - A Secret Network client initialised with Keplr.
