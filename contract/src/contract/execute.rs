@@ -171,12 +171,12 @@ pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {
     let current_player_position = CURRENT_TURN_POSITION.load(deps.storage)?;
     let current_player_address =
         ALL_PLAYERS.get_at(deps.storage, current_player_position as u32)?;
-    let num_players = ALL_PLAYERS.get_len(deps.storage)?;
+    let num_players = ALL_PLAYERS.get_len(deps.storage)? as u8;
 
     if current_player_address == canonical_address {
         let next_player_position =
-            find_next_player_lazy((current_player_position + 1) % num_players, deps.storage);
-        CURRENT_TURN_POSITION.save(deps.storage, next_player_position)?;
+            find_next_player_lazy((current_player_position + 1) % num_players, deps.storage)?.0;
+        CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
     }
 
     let coins_to_send: Vec<Coin> = vec![Coin {
