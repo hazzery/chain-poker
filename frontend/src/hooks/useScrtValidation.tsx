@@ -5,6 +5,7 @@ import {
   type StateUpdater,
 } from "preact/hooks";
 import type { ValidationState } from "./useStringValidation";
+import { uScrtToScrt } from "../secretnetwork/utils";
 
 interface ScrtValidationRules {
   maxValueUscrt: bigint;
@@ -54,9 +55,11 @@ function useScrtValidation(
     } else if (uScrt === null) {
       setError("This field must be a positive number");
     } else if (uScrt > rules.maxValueUscrt) {
-      setError(`This field cannot exceed ${rules.maxValueUscrt / 1_000_000n}`);
+      setError(`This field cannot exceed ${uScrtToScrt(rules.maxValueUscrt)}`);
     } else if (uScrt < rules.minValueUscrt) {
-      setError(`This field must be at least ${rules.minValueUscrt / 1_000_000n}`);
+      setError(
+        `This field must be at least ${uScrtToScrt(rules.minValueUscrt)}`,
+      );
     } else if (error !== null) {
       setError(null);
     }
