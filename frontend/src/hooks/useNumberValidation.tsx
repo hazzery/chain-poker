@@ -23,10 +23,10 @@ function useNumberValidation(
 ): [NumberValidationState, Dispatch<StateUpdater<string>>] {
   const [value, setValue] = useState<string>(initialValue);
   const [error, setError] = useState<string | null>(null);
-  let numberValue = NaN;
+  const [numberValue, setNumberValue] = useState<number>(NaN);
 
   useEffect(() => {
-    numberValue = Number(value);
+    setNumberValue(Number(value));
 
     if (rules.required && value.trim() === "") {
       setError("This field is required");
@@ -38,10 +38,12 @@ function useNumberValidation(
       setError(`This field cannot exceed ${rules.maxValue}`);
     } else if (rules.minValue !== undefined && numberValue < rules.minValue) {
       setError(`This field must be at least ${rules.minValue}`);
+    } else if (error !== null) {
+      setError(null);
     }
   }, [value, rules]);
 
   return [{ value, error, number: numberValue }, setValue];
 }
 
-export { useNumberValidation as default, type ValidationState };
+export { useNumberValidation as default };
