@@ -60,16 +60,16 @@ pub fn try_buy_in(
     let buy_in_amount = funds[0].amount.u128();
 
     let lobby_config = LOBBY_CONFIG.load(deps.storage)?;
-    let min_buy_in = lobby_config.min_buy_in_bb * lobby_config.big_blind;
-    let max_buy_in = lobby_config.max_buy_in_bb * lobby_config.big_blind;
+    let min_buy_in = lobby_config.min_buy_in_bb as u32 * lobby_config.big_blind;
+    let max_buy_in = lobby_config.max_buy_in_bb as u32 * lobby_config.big_blind;
 
-    if buy_in_amount < min_buy_in {
+    if buy_in_amount < min_buy_in as u128 {
         return Err(StdError::generic_err(format!(
             "You must buy in with at least {min_buy_in} uSCRT"
         )));
     }
 
-    if buy_in_amount > max_buy_in {
+    if buy_in_amount > max_buy_in as u128 {
         return Err(StdError::generic_err(format!(
             "You must buy in with at most {max_buy_in} uSCRT"
         )));
