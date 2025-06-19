@@ -18,6 +18,7 @@ function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
   const [betAmount, setBetAmount] = useScrtValidation({
     minValueUscrt: minBet,
     maxValueUscrt: chipBalance,
+    allowZero: true,
   });
 
   return (

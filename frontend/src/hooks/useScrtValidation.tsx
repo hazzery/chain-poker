@@ -10,6 +10,7 @@ import { uScrtToScrt } from "../secretnetwork/utils";
 interface ScrtValidationRules {
   maxValueUscrt: bigint;
   minValueUscrt: bigint;
+  allowZero?: boolean;
 }
 
 interface ScrtValidationState extends ValidationState {
@@ -56,7 +57,10 @@ function useScrtValidation(
       setError("This field must be a positive number");
     } else if (uScrt > rules.maxValueUscrt) {
       setError(`This field cannot exceed ${uScrtToScrt(rules.maxValueUscrt)}`);
-    } else if (uScrt < rules.minValueUscrt) {
+    } else if (
+      uScrt < rules.minValueUscrt &&
+      !(uScrt === 0n && rules.allowZero)
+    ) {
       setError(
         `This field must be at least ${uScrtToScrt(rules.minValueUscrt)}`,
       );
