@@ -111,6 +111,27 @@ function placeBet(
 }
 
 /**
+ * Withdraw from the gamw, cashing out all available balance.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing the transaction result from the contract if
+ *    successful, otherwise an error.
+ */
+async function withdraw(lobbyCode: string, networkClient: SecretNetworkClient) {
+  return await secretts.tryExecute(
+    { withdraw: {} },
+    50_000,
+    {
+      contractAddress: lobbyCode,
+      contractCodeHash: CONTRACT_CODE_HASH,
+    },
+    networkClient,
+  );
+}
+
+/**
  * Query the contract for the variable state of a game.
  *
  * @param lobbyCode - The address of the instantiated contract.
@@ -194,4 +215,5 @@ export {
   startGame,
   viewGameState,
   viewPreStartState,
+  withdraw,
 };

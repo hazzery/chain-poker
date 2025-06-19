@@ -1,15 +1,16 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import type { VNode } from "preact";
+import { useLocation } from "preact-iso";
 import type { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
 
-import { placeBet } from "../secretnetwork/chainPokerContract";
+import { placeBet, withdraw } from "../secretnetwork/chainPokerContract";
 import type { GameState } from "../secretnetwork/types";
+import { uScrtToScrt } from "../secretnetwork/utils";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import FanLayout from "./FanLayout";
 import Hand from "./Hand";
-import { uScrtToScrt } from "../secretnetwork/utils";
 
 interface GameProps extends GameState {
   lobbyCode: string;
@@ -27,6 +28,8 @@ function Game({
   lobbyCode,
   min_bet,
 }: GameProps): VNode | undefined {
+  const location = useLocation();
+
   const playersUsername = localStorage.getItem("username");
   const playerInfos = balances.map(([name, chipBalance]) => ({
     name,
@@ -36,10 +39,16 @@ function Game({
     ([username]) => username === playersUsername,
   )![1];
 
-  async function sendBet(betAmount: bigint): Promise<void> {
-    await Result.fromAsync(
-      placeBet(betAmount, lobbyCode, networkClient),
-    ).onFailure(console.error);
+  function sendBet(betAmount: bigint): void {
+    Result.fromAsync(placeBet(betAmount, lobbyCode, networkClient)).onFailure(
+      console.error,
+    );
+  }
+
+  function cashOut(): void {
+    Result.fromAsync(withdraw(lobbyCode, networkClient))
+      .onSuccess(() => location.route("/"))
+      .onFailure(console.error);
   }
 
   return (
@@ -57,6 +66,14 @@ function Game({
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
+      <Button
+        onClick={cashOut}
+        variant="outlined"
+        color="success"
+        sx={{ width: "18em", marginLeft: "1em" }}
+      >
+        Cash out
+      </Button>
       <Hand
         cards={hand}
         chipBalance={BigInt(chipBalance)}
