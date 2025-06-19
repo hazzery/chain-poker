@@ -156,15 +156,28 @@ pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {
         return Err(StdError::generic_err("You are not part of this game"));
     };
 
-    if BETS.get(deps.storage, &canonical_address).is_some() {
+    if BETS.get(deps.storage, &canonical_address).is_some()
+        && HANDS.get(deps.storage, &canonical_address).is_some()
+    {
         return Err(StdError::generic_err(
-            "You can only withdraw at the start of a new round",
+            "You can only withdraw at the start of a new round, or after folding",
         ));
     }
 
     BALANCES.remove(deps.storage, &canonical_address)?;
     HANDS.remove(deps.storage, &canonical_address)?;
     BETS.remove(deps.storage, &canonical_address)?;
+
+    let current_player_position = CURRENT_TURN_POSITION.load(deps.storage)?;
+    let current_player_address =
+        ALL_PLAYERS.get_at(deps.storage, current_player_position as u32)?;
+    let num_players = ALL_PLAYERS.get_len(deps.storage)?;
+
+    if current_player_address == canonical_address {
+        let next_player_position =
+            find_next_player_lazy((current_player_position + 1) % num_players, deps.storage);
+        CURRENT_TURN_POSITION.save(deps.storage, next_player_position)?;
+    }
 
     let coins_to_send: Vec<Coin> = vec![Coin {
         denom: "uscrt".to_string(),
