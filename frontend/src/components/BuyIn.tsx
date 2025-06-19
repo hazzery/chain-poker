@@ -6,6 +6,7 @@ import TextInput from "../components/TextInput";
 import useScrtValidation from "../hooks/useScrtValidation";
 import useStringValidation from "../hooks/useStringValidation";
 import { buyIn } from "../secretnetwork/chainPokerContract";
+import ScrtInput from "./ScrtInput";
 
 interface BuyInProps {
   lobbyCode: string;
@@ -49,7 +50,7 @@ function BuyIn({
         variant="outlined"
         color="success"
       />
-      <TextInput
+      <ScrtInput
         required
         state={buyInAmount}
         setState={setBuyInAmount}
