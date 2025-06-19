@@ -19,8 +19,13 @@ import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
 function uScrtToScrt(uScrt: bigint): string {
   const wholeScrt = uScrt / 1_000_000n;
   const fractionalScrt = uScrt % 1_000_000n;
-  const fractionalString = fractionalScrt.toString().padStart(6, "0");
-  return `${wholeScrt}.${fractionalString}`;
+  const fractionalString = fractionalScrt
+    .toString()
+    .padStart(6, "0")
+    .replace(/0+$/, "");
+  return fractionalString.length > 0
+    ? `${wholeScrt}.${fractionalString}`
+    : wholeScrt.toString();
 }
 
 function Lobby(): VNode | undefined {
