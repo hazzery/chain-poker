@@ -16,6 +16,13 @@ import {
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
 
+function uScrtToScrt(uScrt: bigint): string {
+  const wholeScrt = uScrt / 1_000_000n;
+  const fractionalScrt = uScrt % 1_000_000n;
+  const fractionalString = fractionalScrt.toString().padStart(6, "0");
+  return `${wholeScrt}.${fractionalString}`;
+}
+
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
   const { lobbyCode } = useRoute().params;
@@ -53,16 +60,23 @@ function Lobby(): VNode | undefined {
       ([username]) => username === playersUsername,
     )?.[1];
 
+    const bigBlindBigInt = BigInt(preStartState.lobby_config.big_blind);
+
     const minBuyIn =
-      BigInt(preStartState.lobby_config.big_blind) *
-      BigInt(preStartState.lobby_config.min_buy_in_bb);
+      bigBlindBigInt * BigInt(preStartState.lobby_config.min_buy_in_bb);
     const maxBuyIn =
-      BigInt(preStartState.lobby_config.big_blind) *
-      BigInt(preStartState.lobby_config.max_buy_in_bb);
+      bigBlindBigInt * BigInt(preStartState.lobby_config.max_buy_in_bb);
 
     const isAdmin = preStartState.admin === playersUsername;
 
-    return { playerInfos, chipBalance, minBuyIn, maxBuyIn, isAdmin };
+    return {
+      playerInfos,
+      chipBalance,
+      minBuyIn,
+      maxBuyIn,
+      isAdmin,
+      bigBlindBigInt,
+    };
   }, [preStartState]);
 
   if (networkClient === null) return <KeplrNotInstalled />;
@@ -95,10 +109,14 @@ function Lobby(): VNode | undefined {
         <Typography>Lobby code: {lobbyCode}</Typography>
         <Typography>Lobby admin: {preStartState.admin}</Typography>
         <Typography>
-          Big blind amount: {preStartState.lobby_config.big_blind}
+          Big blind amount: {uScrtToScrt(data.bigBlindBigInt)}
         </Typography>
-        <Typography>Minimum buy in {data.minBuyIn} SCRT</Typography>
-        <Typography>Maximum buy in {data.maxBuyIn} SCRT</Typography>
+        <Typography>
+          Minimum buy in {uScrtToScrt(data.minBuyIn)} SCRT
+        </Typography>
+        <Typography>
+          Maximum buy in {uScrtToScrt(data.maxBuyIn)} SCRT
+        </Typography>
         {data.chipBalance !== undefined && (
           <Typography>Your balance: {data.chipBalance}</Typography>
         )}
