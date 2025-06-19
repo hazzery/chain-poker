@@ -1,4 +1,6 @@
-use cosmwasm_std::{Addr, Coin, DepsMut, Env, Response, StdError, StdResult};
+use cosmwasm_std::{
+    Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, Response, StdError, StdResult, Uint128,
+};
 
 use crate::{
     poker::{find_next_player_lazy, new_round, next_play, take_bet},
@@ -146,4 +148,33 @@ pub fn try_place_bet(sender: Addr, value: u128, deps: DepsMut, env: &Env) -> Std
     CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 
     Ok(Response::default())
+}
+
+pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {
+    let canonical_address = deps.api.addr_canonicalize(sender.as_str())?;
+    let Some(balance) = BALANCES.get(deps.storage, &canonical_address) else {
+        return Err(StdError::generic_err("You are not part of this game"));
+    };
+
+    if BETS.get(deps.storage, &canonical_address).is_some() {
+        return Err(StdError::generic_err(
+            "You can only withdraw at the start of a new round",
+        ));
+    }
+
+    BALANCES.remove(deps.storage, &canonical_address)?;
+    HANDS.remove(deps.storage, &canonical_address)?;
+    BETS.remove(deps.storage, &canonical_address)?;
+
+    let coins_to_send: Vec<Coin> = vec![Coin {
+        denom: "uscrt".to_string(),
+        amount: Uint128::from(balance),
+    }];
+
+    let message = CosmosMsg::Bank(BankMsg::Send {
+        to_address: sender.clone().into_string(),
+        amount: coins_to_send,
+    });
+
+    Ok(Response::new().add_message(message))
 }

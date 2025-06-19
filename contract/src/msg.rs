@@ -17,6 +17,7 @@ pub enum ExecuteMsg {
     StartGame {},
     BuyIn { username: String },
     PlaceBet { value: Uint128 },
+    Withdraw {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, Eq, PartialEq, JsonSchema)]

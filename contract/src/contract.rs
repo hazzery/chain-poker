@@ -4,7 +4,7 @@ mod query;
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
-use execute::{try_buy_in, try_place_bet, try_start_game};
+use execute::{try_buy_in, try_place_bet, try_start_game, try_withdraw_chips};
 use query::{query_game_state, query_pre_start_state};
 
 use crate::{
@@ -49,6 +49,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::StartGame {} => try_start_game(deps, info.sender, &env),
         ExecuteMsg::BuyIn { username } => try_buy_in(username, deps, info.sender, info.funds),
         ExecuteMsg::PlaceBet { value } => try_place_bet(info.sender, value.into(), deps, &env),
+        ExecuteMsg::Withdraw {} => try_withdraw_chips(info.sender, deps),
     }
 }
 
