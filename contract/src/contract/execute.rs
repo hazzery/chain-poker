@@ -4,7 +4,7 @@ use crate::{
     poker::{find_next_player_lazy, new_round, next_play, take_bet},
     state::{
         ADMIN, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET,
-        CURRENT_TURN_POSITION, HANDS, IS_STARTED, USERNAMES,
+        CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, USERNAMES,
     },
 };
 
@@ -57,8 +57,26 @@ pub fn try_buy_in(
         return Err(StdError::generic_err("Only SCRT is accepted"));
     }
 
+    let buy_in_amount = funds[0].amount.u128();
+
+    let lobby_config = LOBBY_CONFIG.load(deps.storage)?;
+    let min_buy_in = lobby_config.min_buy_in_bb * lobby_config.big_blind;
+    let max_buy_in = lobby_config.max_buy_in_bb * lobby_config.big_blind;
+
+    if buy_in_amount < min_buy_in {
+        return Err(StdError::generic_err(format!(
+            "You must buy in with at least {min_buy_in} uSCRT"
+        )));
+    }
+
+    if buy_in_amount > max_buy_in {
+        return Err(StdError::generic_err(format!(
+            "You must buy in with at most {max_buy_in} uSCRT"
+        )));
+    }
+
     ALL_PLAYERS.push(deps.storage, &sender)?;
-    BALANCES.insert(deps.storage, &sender, &funds[0].amount.u128())?;
+    BALANCES.insert(deps.storage, &sender, &buy_in_amount)?;
     USERNAMES.insert(deps.storage, &sender, &username)?;
 
     Ok(Response::default())
