@@ -48,7 +48,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     match msg {
         ExecuteMsg::StartGame {} => try_start_game(deps, info.sender, &env),
         ExecuteMsg::BuyIn { username } => try_buy_in(username, deps, info.sender, info.funds),
-        ExecuteMsg::PlaceBet { value } => try_place_bet(deps, info.sender, value.into()),
+        ExecuteMsg::PlaceBet { value } => try_place_bet(info.sender, value.into(), deps, &env),
     }
 }
 

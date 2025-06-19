@@ -64,7 +64,7 @@ pub fn try_buy_in(
     Ok(Response::default())
 }
 
-pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Response> {
+pub fn try_place_bet(sender: Addr, value: u128, deps: DepsMut, env: &Env) -> StdResult<Response> {
     if !IS_STARTED.load(deps.storage)? {
         return Err(StdError::generic_err("The game has not started yet!"));
     }
@@ -116,13 +116,14 @@ pub fn try_place_bet(deps: DepsMut, sender: Addr, value: u128) -> StdResult<Resp
 
     let next_players_bet = BETS.get(deps.storage, &next_players_address).unwrap_or(0);
     if next_players_bet == min_bet {
-        let left_of_dealer = (BUTTON_POSITION.load(deps.storage)? + 1) % num_players;
+        let mut left_of_dealer = (BUTTON_POSITION.load(deps.storage)? + 1) % num_players;
 
-        next_player_position = if !next_play(deps.storage)? {
-            find_next_player_lazy(left_of_dealer, deps.storage)?.0
-        } else {
-            left_of_dealer
+        if next_play(deps.storage)? {
+            new_round(left_of_dealer, deps.storage, env)?;
+            left_of_dealer = (left_of_dealer + 1) % num_players;
         };
+
+        next_player_position = find_next_player_lazy(left_of_dealer, deps.storage)?.0;
     }
     CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 
