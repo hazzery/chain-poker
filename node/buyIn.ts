@@ -43,7 +43,7 @@ async function main(): Promise<Result<void, Error>> {
     400_000,
     instantiateData,
     johnsClient,
-    4,
+    1_000_000n,
   );
 
   if (johnsResult.isError()) {
@@ -55,7 +55,7 @@ async function main(): Promise<Result<void, Error>> {
     400_000,
     instantiateData,
     joshsClient,
-    4,
+    1_000_000n,
   ).map(() => {});
 }
 

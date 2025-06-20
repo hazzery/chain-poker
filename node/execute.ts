@@ -13,31 +13,24 @@ import { readInstantiateData } from "./src/io";
 async function main(): Promise<Result<void, Error>> {
   dotenv.config();
 
-  if (process.env.MNEMONIC === undefined) {
+  if (process.env.MNEMONIC2 === undefined) {
     return Err("Wallet mnemonic was not found in environment");
   }
 
   const networkClient = initialiseNetworkClient(
     Network.Testnet,
-    process.env.MNEMONIC,
+    process.env.MNEMONIC2,
   );
 
   const executeMessage = {
-    buy_in: {},
+    place_bet: { value: "0" },
   };
   const gasLimit = 400_000;
 
   return await Result.fromAsync(readInstantiateData())
     .map((instantiateData) =>
-      tryExecute(
-        executeMessage,
-        gasLimit,
-        instantiateData,
-        networkClient,
-        50_000_000,
-      ),
+      tryExecute(executeMessage, gasLimit, instantiateData, networkClient),
     )
-    .onSuccess(console.log)
     .map(() => {});
 }
 

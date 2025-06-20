@@ -28,9 +28,10 @@ async function main(): Promise<Result<void, Error>> {
   );
 
   const instantiationMessage = {
-    big_blind: 1_000_000,
-    max_buy_in_bb: 100,
-    min_buy_in_bb: 50,
+    username: "Hazza",
+    big_blind: 500000,
+    max_buy_in_bb: 50,
+    min_buy_in_bb: 1,
   };
   const gasLimit = 400_000;
 
