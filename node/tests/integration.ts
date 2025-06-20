@@ -10,6 +10,7 @@ import {
 import { Result } from "typescript-result";
 
 import { fillUpFromFaucet } from "../src/utils";
+import { test_buy_in } from "./suite";
 
 interface ContractClient {
   networkClient: SecretNetworkClient;
@@ -49,32 +50,26 @@ async function initializeAndUploadContract(): Promise<
     .map((instantiateData) => ({ networkClient, instantiateData }));
 }
 
-function test_gas_limits(): void {
-  // There is no accurate way to measue gas limits but it is actually highly recommended
-  // to make sure that the gas that is used by a specific tx makes sense
-}
-
-function runTestFunction(
-  tester: (contractClient: ContractClient) => void,
+async function runTestFunction(
+  tester: (contractClient: ContractClient) => Promise<boolean>,
   contractClient: ContractClient,
-): void {
+): Promise<void> {
   console.log(`Testing ${tester.name}`);
-  tester(contractClient);
-  console.log(`[SUCCESS] ${tester.name}`);
+  if (!(await tester(contractClient))) {
+    console.error(`[FAIL] ${tester.name}`);
+  } else {
+    console.log(`[SUCCESS] ${tester.name}`);
+  }
 }
 
 async function executeAllTests(): Promise<Result<void, Error>> {
   return Result.fromAsync(initializeAndUploadContract())
-    .onSuccess((contractClient) => {
-      runTestFunction(test_gas_limits, contractClient);
-    })
-    .onSuccess((contractClient) => {
-      runTestFunction(test_gas_limits, contractClient);
-    })
-    .onSuccess((contractClient) => {
-      runTestFunction(test_gas_limits, contractClient);
+    .onSuccess(async (contractClient) => {
+      await runTestFunction(test_buy_in, contractClient);
     })
     .map(() => {});
 }
 
 await Result.fromAsync(executeAllTests()).onFailure(console.error);
+
+export type { ContractClient };
