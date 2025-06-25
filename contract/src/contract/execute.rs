@@ -1,17 +1,18 @@
 use cosmwasm_std::{
-    Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, Response, StdError, StdResult, Uint128,
+    Addr, BankMsg, CanonicalAddr, Coin, CosmosMsg, DepsMut, Env, Response, StdError, StdResult,
+    Storage, Uint128,
 };
 
 use crate::{
-    poker::{find_next_player_lazy, new_round, next_play, take_bet},
+    poker::{betting_turn, find_next_player_lazy, new_hand, take_bet},
     state::{
-        ADMIN, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET,
-        CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, USERNAMES,
+        game_state::GameState, ADMIN, ALL_PLAYERS, BALANCES, BETS, CURRENT_MIN_BET, CURRENT_STATE,
+        CURRENT_TURN_POSITION, HANDS, LAST_RAISER, LOBBY_CONFIG, USERNAMES,
     },
 };
 
 pub fn try_start_game(deps: DepsMut, sender: Addr, env: &Env) -> StdResult<Response> {
-    if IS_STARTED.load(deps.storage)? {
+    if CURRENT_STATE.load(deps.storage)? != GameState::NotStarted {
         return Err(StdError::generic_err("The game has already started"));
     }
 
@@ -26,9 +27,7 @@ pub fn try_start_game(deps: DepsMut, sender: Addr, env: &Env) -> StdResult<Respo
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
-    new_round(0, deps.storage, env)?;
-
-    IS_STARTED.save(deps.storage, &true)?;
+    new_hand(0, deps.storage, env)?;
 
     Ok(Response::default())
 }
@@ -39,7 +38,7 @@ pub fn try_buy_in(
     sender: Addr,
     funds: Vec<Coin>,
 ) -> StdResult<Response> {
-    if IS_STARTED.load(deps.storage)? {
+    if CURRENT_STATE.load(deps.storage)? != GameState::NotStarted {
         return Err(StdError::generic_err("The game has already started"));
     }
 
@@ -90,70 +89,71 @@ pub fn try_buy_in(
     Ok(Response::default())
 }
 
-pub fn try_place_bet(sender: Addr, value: u128, deps: DepsMut, env: &Env) -> StdResult<Response> {
-    if !IS_STARTED.load(deps.storage)? {
-        return Err(StdError::generic_err("The game has not started yet!"));
-    }
+pub fn try_fold(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> {
+    let fold_action =
+        |address: &CanonicalAddr, _, storage: &mut dyn Storage| HANDS.remove(storage, address);
+    betting_turn(sender, fold_action, deps, env)
+}
 
-    let sender = deps.api.addr_canonicalize(sender.as_str())?;
-    let Some(players_balance) = BALANCES.get(deps.storage, &sender) else {
-        return Err(StdError::generic_err("You are not bought in!"));
-    };
-
-    let current_turn_position = CURRENT_TURN_POSITION.load(deps.storage)?;
-    if ALL_PLAYERS.get_at(deps.storage, current_turn_position as u32)? != sender {
-        return Err(StdError::generic_err("It is not your turn to bet"));
-    }
-
-    if value > players_balance {
-        return Err(StdError::generic_err(
-            "You do not have that many chips to bet with",
-        ));
-    }
-
-    let mut min_bet = CURRENT_MIN_BET.load(deps.storage)?;
-    let previous_bet_amount = BETS.get(deps.storage, &sender).unwrap_or(0);
-
-    if value == 0 {
-        if previous_bet_amount < min_bet {
-            HANDS.remove(deps.storage, &sender)?;
+pub fn try_check(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> {
+    let check_action = |address: &CanonicalAddr, _, storage: &mut dyn Storage| {
+        let senders_current_bet = BETS.get(storage, address).unwrap_or(0);
+        let current_min_bet = CURRENT_MIN_BET.load(storage)?;
+        if senders_current_bet < current_min_bet {
+            return Err(StdError::generic_err("You are not currently able to check"));
         }
-    } else {
-        let total_bet = previous_bet_amount + value;
 
-        if total_bet < min_bet {
+        Ok(())
+    };
+    betting_turn(sender, check_action, deps, env)
+}
+
+pub fn try_call(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> {
+    let call_action = |address: &CanonicalAddr, _, storage: &mut dyn Storage| {
+        let call_amount = CURRENT_MIN_BET.load(storage)?;
+        let players_balance = BALANCES.get(storage, address).unwrap();
+        let players_current_bet = BETS.get(storage, address).unwrap_or(0);
+        let bet_amount = call_amount - players_current_bet;
+
+        if bet_amount > players_balance {
             return Err(StdError::generic_err(
-                "Your total bet for this round does not meet the minimum bet",
+                "You do not have enough chips to call",
             ));
         }
 
-        if total_bet > min_bet {
-            min_bet = total_bet;
-            CURRENT_MIN_BET.save(deps.storage, &min_bet)?;
-        }
+        take_bet(bet_amount, players_balance, call_amount, address, storage)?;
 
-        take_bet(value, players_balance, total_bet, &sender, deps.storage)?;
-    }
+        Ok(())
+    };
+    betting_turn(sender, call_action, deps, env)
+}
 
-    let num_players = ALL_PLAYERS.get_len(deps.storage)? as u8;
+pub fn try_raise(
+    sender: Addr,
+    raise_amount: u128,
+    deps: DepsMut,
+    env: &Env,
+) -> StdResult<Response> {
+    let raise_action =
+        |address: &CanonicalAddr, current_position: u8, storage: &mut dyn Storage| {
+            let players_balance = BALANCES.get(storage, address).unwrap();
+            let current_bet = BETS.get(storage, address).unwrap_or(0);
+            let total_bet = current_bet + raise_amount;
 
-    let (mut next_player_position, next_players_address) =
-        find_next_player_lazy((current_turn_position + 1) % num_players, deps.storage)?;
+            if raise_amount > players_balance {
+                return Err(StdError::generic_err(
+                    "You do not have that many chips to bet with",
+                ));
+            }
 
-    let next_players_bet = BETS.get(deps.storage, &next_players_address).unwrap_or(0);
-    if next_players_bet == min_bet {
-        let mut left_of_dealer = (BUTTON_POSITION.load(deps.storage)? + 1) % num_players;
+            LAST_RAISER.save(storage, &current_position)?;
+            CURRENT_MIN_BET.save(storage, &total_bet)?;
 
-        if next_play(deps.storage)? {
-            new_round(left_of_dealer, deps.storage, env)?;
-            left_of_dealer = (left_of_dealer + 1) % num_players;
+            take_bet(raise_amount, players_balance, total_bet, address, storage)?;
+
+            Ok(())
         };
-
-        next_player_position = find_next_player_lazy(left_of_dealer, deps.storage)?.0;
-    }
-    CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
-
-    Ok(Response::default())
+    betting_turn(sender, raise_action, deps, env)
 }
 
 pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {

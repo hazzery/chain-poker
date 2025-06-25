@@ -4,12 +4,16 @@ mod query;
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
-use execute::{try_buy_in, try_place_bet, try_start_game, try_withdraw_chips};
+use execute::{
+    try_buy_in, try_call, try_check, try_fold, try_raise, try_start_game, try_withdraw_chips,
+};
 use query::{query_game_state, query_pre_start_state};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    state::{LobbyConfig, ADMIN, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS, USERNAMES},
+    state::{
+        game_state::GameState, LobbyConfig, ADMIN, CURRENT_STATE, LOBBY_CONFIG, POT, USERNAMES,
+    },
 };
 
 #[entry_point]
@@ -34,10 +38,8 @@ pub fn instantiate(
 
     ADMIN.save(deps.storage, &admin_canonical_address)?;
     USERNAMES.insert(deps.storage, &admin_canonical_address, &msg.username)?;
-
+    CURRENT_STATE.save(deps.storage, &GameState::NotStarted)?;
     LOBBY_CONFIG.save(deps.storage, &lobby_config)?;
-    REVEALED_CARDS.save(deps.storage, &0)?;
-    IS_STARTED.save(deps.storage, &false)?;
     POT.save(deps.storage, &0)?;
 
     Ok(Response::default())
@@ -48,7 +50,12 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     match msg {
         ExecuteMsg::StartGame {} => try_start_game(deps, info.sender, &env),
         ExecuteMsg::BuyIn { username } => try_buy_in(username, deps, info.sender, info.funds),
-        ExecuteMsg::PlaceBet { value } => try_place_bet(info.sender, value.into(), deps, &env),
+        ExecuteMsg::Fold {} => try_fold(info.sender, deps, &env),
+        ExecuteMsg::Check {} => try_check(info.sender, deps, &env),
+        ExecuteMsg::Call {} => try_call(info.sender, deps, &env),
+        ExecuteMsg::Raise { raise_amount } => {
+            try_raise(info.sender, raise_amount.into(), deps, &env)
+        }
         ExecuteMsg::Withdraw {} => try_withdraw_chips(info.sender, deps),
     }
 }

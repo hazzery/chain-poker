@@ -16,7 +16,10 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     StartGame {},
     BuyIn { username: String },
-    PlaceBet { value: Uint128 },
+    Fold {},
+    Check {},
+    Call {},
+    Raise { raise_amount: Uint128 },
     Withdraw {},
 }
 

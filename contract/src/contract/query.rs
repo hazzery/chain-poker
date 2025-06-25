@@ -2,20 +2,20 @@ use cosmwasm_std::{to_binary, Binary, CanonicalAddr, Deps, Env, StdError, StdRes
 use secret_toolkit::permit::Permit;
 
 use crate::state::{
-    get_balances, GameState, PreStartState, ADMIN, ALL_PLAYERS, BETS, BUTTON_POSITION,
-    CURRENT_MIN_BET, CURRENT_TURN_POSITION, HANDS, IS_STARTED, LOBBY_CONFIG, POT, REVEALED_CARDS,
-    TABLE, USERNAMES,
+    game_state::GameState, get_balances, InGameStatus, LobbyStatus, ADMIN, ALL_PLAYERS, BETS,
+    BUTTON_POSITION, CURRENT_MIN_BET, CURRENT_STATE, CURRENT_TURN_POSITION, HANDS, LOBBY_CONFIG,
+    POT, TABLE, USERNAMES,
 };
 
 pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
     let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
 
-    let pre_start_state = PreStartState {
+    let pre_start_state = LobbyStatus {
         admin: USERNAMES
             .get(deps.storage, &ADMIN.load(deps.storage)?)
             .unwrap(),
         lobby_config: LOBBY_CONFIG.load(deps.storage)?,
-        is_started: IS_STARTED.load(deps.storage)?,
+        is_started: CURRENT_STATE.load(deps.storage)? != GameState::NotStarted,
         balances: get_balances(&players, deps),
     };
 
@@ -23,7 +23,8 @@ pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
 }
 
 pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
-    if !IS_STARTED.load(deps.storage)? {
+    let current_game_state = CURRENT_STATE.load(deps.storage)?;
+    if current_game_state == GameState::NotStarted {
         return Err(StdError::generic_err("The game has not yet started"));
     }
 
@@ -66,11 +67,19 @@ pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binar
     let min_bet =
         CURRENT_MIN_BET.load(deps.storage)? - BETS.get(deps.storage, &sender).unwrap_or(0);
 
-    let all_state = GameState {
+    let num_revealed_cards = match current_game_state {
+        GameState::NotStarted => unreachable!(),
+        GameState::PreFlop => 0,
+        GameState::Flop => 3,
+        GameState::Turn => 4,
+        GameState::River => 5,
+    };
+
+    let all_state = InGameStatus {
         balances,
         table: TABLE
             .iter(deps.storage)?
-            .take(REVEALED_CARDS.load(deps.storage)? as usize)
+            .take(num_revealed_cards)
             .flatten()
             .collect(),
         pot: POT.load(deps.storage)?,

@@ -1,11 +1,69 @@
-use cosmwasm_std::{CanonicalAddr, Env, StdError, StdResult, Storage};
+use cosmwasm_std::{Addr, CanonicalAddr, DepsMut, Env, Response, StdError, StdResult, Storage};
 
 use poker_eval::{box_cards, Card, EvalClass, Rank, Suit};
 
 use crate::state::{
-    Deck, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET, CURRENT_TURN_POSITION,
-    HANDS, LOBBY_CONFIG, POT, REVEALED_CARDS, TABLE,
+    game_state::GameState, Deck, ALL_PLAYERS, BALANCES, BETS, BUTTON_POSITION, CURRENT_MIN_BET,
+    CURRENT_STATE, CURRENT_TURN_POSITION, HANDS, LAST_RAISER, LOBBY_CONFIG, POT, TABLE,
 };
+
+pub fn betting_turn(
+    sender: Addr,
+    function: impl FnOnce(&CanonicalAddr, u8, &mut dyn Storage) -> StdResult<()>,
+    deps: DepsMut,
+    env: &Env,
+) -> StdResult<Response> {
+    if CURRENT_STATE.load(deps.storage)? == GameState::NotStarted {
+        return Err(StdError::generic_err("The game has not started yet!"));
+    }
+
+    let sender = deps.api.addr_canonicalize(sender.as_str())?;
+    if !HANDS.contains(deps.storage, &sender) {
+        return Err(StdError::generic_err(
+            "You do not have a hand is this round",
+        ));
+    };
+
+    let current_turn_position = CURRENT_TURN_POSITION.load(deps.storage)?;
+    if ALL_PLAYERS.get_at(deps.storage, current_turn_position as u32)? != sender {
+        return Err(StdError::generic_err("It is not your turn to bet"));
+    }
+
+    function(&sender, current_turn_position, deps.storage)?;
+
+    move_turn_position(current_turn_position, deps.storage, env)?;
+
+    Ok(Response::default())
+}
+
+pub fn move_turn_position(
+    current_turn_position: u8,
+    storage: &mut dyn Storage,
+    env: &Env,
+) -> StdResult<()> {
+    let num_players = ALL_PLAYERS.get_len(storage)? as u8;
+    let last_raiser_position = LAST_RAISER.load(storage)?;
+
+    let mut next_player_position =
+        find_next_player_lazy((current_turn_position + 1) % num_players, storage)?.0;
+
+    if next_player_position == last_raiser_position {
+        let button_position = BUTTON_POSITION.load(storage)?;
+        let mut left_of_button = (button_position + 1) % num_players;
+
+        let is_end_of_hand = next_betting_round(storage)?;
+
+        if is_end_of_hand {
+            new_hand(left_of_button, storage, env)?;
+            left_of_button = (left_of_button + 1) % num_players;
+        };
+
+        next_player_position = find_next_player_lazy(left_of_button, storage)?.0;
+    }
+    CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
+
+    return Ok(());
+}
 
 pub fn find_next_player<'a>(
     storage: &mut dyn Storage,
@@ -76,7 +134,7 @@ fn take_forced_bet(
     Ok(index)
 }
 
-pub fn new_round(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<()> {
+pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<()> {
     let mut addresses: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
     addresses.retain(|address| BALANCES.get(storage, address).is_some());
 
@@ -212,18 +270,16 @@ fn end_round(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<
     })?;
 
     TABLE.clear(storage);
-    REVEALED_CARDS.save(storage, &0)?;
+    CURRENT_STATE.save(storage, &GameState::PreFlop)?;
     POT.save(storage, &0)?;
     Ok(())
 }
 
-pub fn next_play(storage: &mut dyn Storage) -> StdResult<bool> {
-    let current_num_cards = REVEALED_CARDS.load(storage)?;
-    if current_num_cards == 0 {
-        REVEALED_CARDS.save(storage, &3)?;
-    } else if current_num_cards < 5 {
-        REVEALED_CARDS.update(storage, |num_cards| Ok(num_cards + 1))?;
-    } else {
+pub fn next_betting_round(storage: &mut dyn Storage) -> StdResult<bool> {
+    let current_game_state = CURRENT_STATE.load(storage)?;
+    CURRENT_STATE.save(storage, &current_game_state.next())?;
+
+    if current_game_state == GameState::River {
         let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
         showdown(&players, storage)?;
         end_round(&players, storage)?;
