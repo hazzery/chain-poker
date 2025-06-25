@@ -1,3 +1,0 @@
-[alias]
-unit-test = "test --lib"
-schema = "run --bin schema --features schema"

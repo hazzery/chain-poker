@@ -16,7 +16,7 @@ use crate::{
     },
 };
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
     _env: Env,
@@ -45,7 +45,7 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
         ExecuteMsg::StartGame {} => try_start_game(deps, info.sender, &env),
@@ -60,10 +60,10 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     }
 }
 
-#[entry_point]
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ViewPreStartState {} => query_pre_start_state(deps),
-        QueryMsg::ViewGameState { permit } => query_game_state(deps, env, permit),
+        QueryMsg::ViewLobbyStatus {} => query_pre_start_state(deps),
+        QueryMsg::ViewGameStatus { permit } => query_game_state(deps, env, permit),
     }
 }

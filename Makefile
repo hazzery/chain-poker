@@ -7,7 +7,7 @@ test:
 
 # This does not work on Apple Silicon Macs, use build-docker instead
 build:
-	cd contract; RUSTFLAGS='-C link-arg=-s' cargo build --release --target wasm32-unknown-unknown
+	cd contract; RUSTFLAGS='-C link-arg=-s' cargo build --release --target wasm32-unknown-unknown --lib
 	mkdir -p $(OPTIMISED_WASM_DIR)
 	wasm-opt -Oz ./contract/target/wasm32-unknown-unknown/release/chain_poker.wasm -o $(OPTIMISED_WASM_DIR)/chain_poker.wasm --enable-bulk-memory
 	cd $(OPTIMISED_WASM_DIR); gzip -n -9 -f *

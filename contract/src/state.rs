@@ -1,11 +1,11 @@
 pub mod game_state;
 
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{CanonicalAddr, Deps, StdError, StdResult};
 use secret_toolkit::{
     serialization::Bincode2,
     storage::{AppendStore, Item, Keymap, KeymapBuilder, WithoutIter},
 };
-use serde::{Deserialize, Serialize};
 
 use game_state::GameState;
 
@@ -29,30 +29,11 @@ pub static CURRENT_TURN_POSITION: Item<u8> = Item::new(b"current_turn");
 pub static BUTTON_POSITION: Item<u8> = Item::new(b"button_position");
 pub static LAST_RAISER: Item<u8> = Item::new(b"last_raise");
 
-#[derive(Serialize, Deserialize, Debug)]
+#[cw_serde]
 pub struct LobbyConfig {
     pub big_blind: u32,
     pub max_buy_in_bb: u8,
     pub min_buy_in_bb: u8,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct LobbyStatus {
-    pub admin: String,
-    pub lobby_config: LobbyConfig,
-    pub is_started: bool,
-    pub balances: Vec<(String, u128)>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub struct InGameStatus {
-    pub balances: Vec<(String, u128)>,
-    pub table: Vec<u8>,
-    pub pot: u128,
-    pub hand: Option<(u8, u8)>,
-    pub current_turn: String,
-    pub button_player: String,
-    pub min_bet: u128,
 }
 
 pub struct Deck {
