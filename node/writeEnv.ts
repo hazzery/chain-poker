@@ -7,7 +7,7 @@ import { readUploadData } from "./src/io";
  *  Updates the contents of the frontend's environment variables to use the
  *  newly uploaded contract.
  *
- * @returns A result of nothing if execution is sucessfull, otherwise an Error.
+ * @returns A result of nothing if execution is successful, otherwise an Error.
  */
 async function main(): Promise<Result<void, Error>> {
   const envFilePath = "../frontend/.env";
