@@ -1,4 +1,4 @@
-.PHONY: test build build-docker compress-wasm schema start-server store-contract-local clean
+.PHONY: start-server store-contract-local clean
 
 OPTIMISED_WASM_DIR := ./contract/optimized-wasm
 OPTIMISED_WASM_FILE := $(OPTIMISED_WASM_DIR)/chain_poker.wasm.gz
