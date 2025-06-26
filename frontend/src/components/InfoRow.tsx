@@ -8,7 +8,7 @@ interface InfoRowProps {
 
 function InfoRow({ label, value }: InfoRowProps) {
   return (
-    <Stack direction="row" justifyContent="space-between">
+    <Stack direction="row" justifyContent="space-between" alignItems="center">
       <Typography color="text.secondary">{label}</Typography>
       <Typography paddingLeft="1em">{value}</Typography>
     </Stack>
