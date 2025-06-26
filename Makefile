@@ -13,12 +13,12 @@ $(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE)
 	cd node && npx tsx upload.ts && npx tsx writeEnv.ts
 	cp "$(shell ls -1 ./node/output/upload-*.json | head -n 1)" $(UPLOAD_DATA_FILE)
 
-# This does not work on Apple Silicon Macs, use build-docker instead
 $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/src/*/*.rs)
 	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
 	--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 	ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
+	cd contract && cargo run --bin schema
 
 # Initialised npm environments
 init:
