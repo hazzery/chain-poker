@@ -15,7 +15,6 @@ import type { InstantiateData } from "./types.ts";
  *    address of the contract on the network and contractCodeHash: the hash
  *    of the contract's compiled binary Web Assembly, to verify we're querying
  *    the correct contract.
- * @param walletAddress - The Secret Network wallet address of the user.
  * @param networkClient - A Secret Network client, initialised with `wallet`.
  * @param funds - A bigint representing the number of uSCRT to attach to the
  *    execution message. Must be a positive integer!

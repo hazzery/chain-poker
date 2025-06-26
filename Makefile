@@ -1,25 +1,29 @@
-.PHONY: test _build build build-docker compress-wasm schema start-server store-contract-local clean
+.PHONY: init start-server store-contract-local clean
 
 OPTIMISED_WASM_DIR := ./contract/optimized-wasm
+OPTIMISED_WASM_FILE := $(OPTIMISED_WASM_DIR)/chain_poker.wasm.gz
+UPLOAD_DATA_FILE := ./node/output/upload.json
+INSTANTIATE_DATA_FILE := ./node/output/instantiation.json
 
-test:
-	cargo unit-test
+$(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
+	cd node; npx tsx instantiate.ts
+	cp "$(shell ls -1 ./node/output/instantiation-*.json | head -n 1)" $(INSTANTIATE_DATA_FILE)
 
-# This does not work on Apple Silicon Macs, use build-docker instead
-build:
-	cd contract; RUSTFLAGS='-C link-arg=-s' cargo build --release --target wasm32-unknown-unknown --lib
-	mkdir -p $(OPTIMISED_WASM_DIR)
-	wasm-opt -Oz ./contract/target/wasm32-unknown-unknown/release/chain_poker.wasm -o $(OPTIMISED_WASM_DIR)/chain_poker.wasm --enable-bulk-memory
-	cd $(OPTIMISED_WASM_DIR); gzip -n -9 -f *
+$(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE)
+	cd node && npx tsx upload.ts && npx tsx writeEnv.ts
+	cp "$(shell ls -1 ./node/output/upload-*.json | head -n 1)" $(UPLOAD_DATA_FILE)
 
-build-docker:
+$(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/src/*/*.rs)
 	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
-		--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
-		--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-		ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
+	--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
+	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
+	ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
+	cd contract && cargo run --bin schema
 
-schema:
-	cd contract; cargo run --example schema
+# Initialised npm environments
+init:
+	cd secretts && npm i && npx tsc
+	cd frontend && npm i
 
 # Run local development chain with four funded accounts (named a, b, c, and d)
 start-server: # CTRL+C to stop
