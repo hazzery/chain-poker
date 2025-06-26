@@ -4,7 +4,7 @@ use cosmwasm_std::{
 };
 
 use crate::{
-    poker::{betting_turn, find_next_player_lazy, new_hand, take_bet},
+    poker::{betting_turn, move_turn_position, new_hand, take_bet},
     state::{
         game_state::GameState, ADMIN, ALL_PLAYERS, BALANCES, BETS, CURRENT_MIN_BET, CURRENT_STATE,
         CURRENT_TURN_POSITION, HANDS, LAST_RAISER, LOBBY_CONFIG, USERNAMES,
@@ -158,7 +158,7 @@ pub fn try_raise(
     betting_turn(sender, raise_action, deps, env)
 }
 
-pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {
+pub fn try_withdraw_chips(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> {
     let canonical_address = deps.api.addr_canonicalize(sender.as_str())?;
     let Some(balance) = BALANCES.get(deps.storage, &canonical_address) else {
         return Err(StdError::generic_err("You are not part of this game"));
@@ -179,12 +179,9 @@ pub fn try_withdraw_chips(sender: Addr, deps: DepsMut) -> StdResult<Response> {
     let current_player_position = CURRENT_TURN_POSITION.load(deps.storage)?;
     let current_player_address =
         ALL_PLAYERS.get_at(deps.storage, current_player_position as u32)?;
-    let num_players = ALL_PLAYERS.get_len(deps.storage)? as u8;
 
     if current_player_address == canonical_address {
-        let next_player_position =
-            find_next_player_lazy((current_player_position + 1) % num_players, deps.storage)?.0;
-        CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
+        move_turn_position(current_player_position, deps.storage, env)?;
     }
 
     let coins_to_send: Vec<Coin> = vec![Coin {

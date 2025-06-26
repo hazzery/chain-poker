@@ -45,9 +45,9 @@ pub fn move_turn_position(
     let last_raiser_position = LAST_RAISER.load(storage)?;
 
     let mut next_player_position =
-        find_next_player_lazy((current_turn_position + 1) % num_players, storage)?.0;
+        find_next_player_lazy((current_turn_position + 1) % num_players, storage)?;
 
-    if next_player_position == last_raiser_position {
+    if next_player_position < 0 || next_player_position as u8 == last_raiser_position {
         let button_position = BUTTON_POSITION.load(storage)?;
         let mut left_of_button = (button_position + 1) % num_players;
 
@@ -58,10 +58,10 @@ pub fn move_turn_position(
             left_of_button = (left_of_button + 1) % num_players;
         };
 
-        next_player_position = find_next_player_lazy(left_of_button, storage)?.0;
-        LAST_RAISER.save(storage, &next_player_position)?;
+        next_player_position = find_next_player_lazy(left_of_button, storage)?;
+        LAST_RAISER.save(storage, &(next_player_position as u8))?;
     }
-    CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
+    CURRENT_TURN_POSITION.save(storage, &(next_player_position as u8))?;
 
     return Ok(());
 }
@@ -265,7 +265,10 @@ fn showdown(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<(
     Ok(())
 }
 
-fn end_round(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<()> {
+fn end_hand(storage: &mut dyn Storage) -> StdResult<()> {
+    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
+    showdown(&players, storage)?;
+
     players.iter().try_for_each(|address| {
         HANDS.remove(storage, &address)?;
         BETS.remove(storage, &address)
@@ -282,43 +285,36 @@ pub fn next_betting_round(storage: &mut dyn Storage) -> StdResult<bool> {
     CURRENT_STATE.save(storage, &current_game_state.next())?;
 
     if current_game_state == GameState::River {
-        let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
-        showdown(&players, storage)?;
-        end_round(&players, storage)?;
+        end_hand(storage)?;
         return Ok(true);
     }
 
     Ok(false)
 }
 
-pub fn find_next_player_lazy(
-    player_position: u8,
-    storage: &mut dyn Storage,
-) -> StdResult<(u8, CanonicalAddr)> {
+pub fn find_next_player_lazy(player_position: u8, storage: &mut dyn Storage) -> StdResult<i8> {
     let eligibility_filter = |(index, address)| {
         if !HANDS.contains(storage, &address) || !BALANCES.contains(storage, &address) {
             return None;
         }
-        Some((index as u8, address))
+        Some(index as i8)
     };
 
-    if let Some(user) = ALL_PLAYERS
+    if let Some(position) = ALL_PLAYERS
         .iter(storage)?
         .flatten()
         .enumerate()
         .skip(player_position as usize)
         .find_map(eligibility_filter)
     {
-        Ok(user)
+        Ok(position)
     } else {
-        ALL_PLAYERS
+        Ok(ALL_PLAYERS
             .iter(storage)?
             .flatten()
             .enumerate()
             .take(player_position as usize)
             .find_map(eligibility_filter)
-            .ok_or_else(|| {
-                StdError::generic_err("find_next_player_lazy found no elligible players")
-            })
+            .unwrap_or(-1))
     }
 }

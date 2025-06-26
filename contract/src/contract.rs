@@ -56,7 +56,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::Raise { raise_amount } => {
             try_raise(info.sender, raise_amount.into(), deps, &env)
         }
-        ExecuteMsg::Withdraw {} => try_withdraw_chips(info.sender, deps),
+        ExecuteMsg::Withdraw {} => try_withdraw_chips(info.sender, deps, &env),
     }
 }
 
