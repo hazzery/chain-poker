@@ -6,23 +6,23 @@ import { Result } from "typescript-result";
 import Game from "../components/Game";
 import KeplrNotInstalled from "../components/KeplrNotInstalled";
 import Loading from "../components/Loading";
-import { viewGameState } from "../secretnetwork/chainPokerContract";
+import { viewGameStatus } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
-import type { GameState } from "../secretnetwork/types";
+import type { GameStatus } from "../secretnetwork/types";
 
 function Play(): VNode {
   const networkClient = useNetworkClient();
 
   const { lobbyCode } = useRoute().params;
-  const [gameState, setGameState] = useState<GameState>();
+  const [gameStatus, setGameStatus] = useState<GameStatus>();
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (networkClient === undefined || networkClient === null) return;
 
-      Result.fromAsync(viewGameState(lobbyCode, networkClient))
+      Result.fromAsync(viewGameStatus(lobbyCode, networkClient))
         .onSuccess(console.log)
-        .onSuccess(setGameState)
+        .onSuccess(setGameStatus)
         .onFailure(console.error);
     }, 1000);
     return () => clearInterval(interval);
@@ -30,11 +30,11 @@ function Play(): VNode {
 
   if (networkClient === null) return <KeplrNotInstalled />;
 
-  if (gameState === undefined || networkClient === undefined)
+  if (gameStatus === undefined || networkClient === undefined)
     return <Loading />;
 
   return (
-    <Game {...gameState} lobbyCode={lobbyCode} networkClient={networkClient} />
+    <Game {...gameStatus} lobbyCode={lobbyCode} networkClient={networkClient} />
   );
 }
 

@@ -2,7 +2,7 @@ import type { Permit, SecretNetworkClient, TxResponse } from "secretjs";
 import * as secretts from "secretts";
 import { type AsyncResult, Result } from "typescript-result";
 
-import type { GameState, PreStartState } from "./types";
+import type { GameStatus, LobbyStatus } from "./types";
 
 const SECRET_CHAIN_ID = import.meta.env.VITE_SECRET_CHAIN_ID;
 const CONTRACT_CODE_HASH = import.meta.env.VITE_CONTRACT_CODE_HASH;
@@ -217,14 +217,14 @@ async function withdraw(lobbyCode: string, networkClient: SecretNetworkClient) {
  * @returns A result containing an object with the variable state of a game if
  *    successful, otherwise an error.
  */
-async function viewGameState(
+async function viewGameStatus(
   lobbyCode: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<GameState, Error>> {
+): Promise<Result<GameStatus, Error>> {
   return await Result.fromAsync(getPermit(lobbyCode, networkClient)).map(
     (permit) =>
-      secretts.queryContract<GameState>(
-        { view_game_state: { permit } },
+      secretts.queryContract<GameStatus>(
+        { view_game_status: { permit } },
         { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
         networkClient,
       ),
@@ -240,12 +240,12 @@ async function viewGameState(
  * @returns A result containing an object with the pre-start state of the
  *    lobby if successful, otherwise and error.
  */
-async function viewPreStartState(
+async function viewLobbyStatus(
   lobbyCode: string,
   networkClient: SecretNetworkClient,
-): Promise<Result<PreStartState, Error>> {
-  return await secretts.queryContract<PreStartState>(
-    { view_pre_start_state: {} },
+): Promise<Result<LobbyStatus, Error>> {
+  return await secretts.queryContract<LobbyStatus>(
+    { view_lobby_status: {} },
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
   );
@@ -293,7 +293,7 @@ export {
   fold,
   raise,
   startGame,
-  viewGameState,
-  viewPreStartState,
+  viewGameStatus,
+  viewLobbyStatus,
   withdraw,
 };

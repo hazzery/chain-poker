@@ -9,7 +9,7 @@ interface PlayerInfo {
   chipBalance: string;
 }
 
-interface GameState {
+interface GameStatus {
   balances: [string, string][]; // [username, balance]
   table: number[]; // cards are 8 bit integers
   pot: string;
@@ -19,11 +19,11 @@ interface GameState {
   min_bet: string;
 }
 
-interface PreStartState {
+interface LobbyStatus {
   admin: string;
   lobby_config: LobbyConfig;
   is_started: boolean;
   balances: [string, string][]; // [username, balance]
 }
 
-export type { GameState, LobbyConfig, PlayerInfo, PreStartState };
+export type { GameStatus, LobbyConfig, PlayerInfo, LobbyStatus };

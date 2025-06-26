@@ -12,7 +12,7 @@ import {
   raise,
   withdraw,
 } from "../secretnetwork/chainPokerContract";
-import type { GameState } from "../secretnetwork/types";
+import type { GameStatus } from "../secretnetwork/types";
 import { uScrtToScrt } from "../secretnetwork/utils";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
@@ -20,7 +20,7 @@ import FanLayout from "./FanLayout";
 import Hand from "./Hand";
 import ScrtInput from "./ScrtInput";
 
-interface GameProps extends GameState {
+interface GameProps extends GameStatus {
   lobbyCode: string;
   networkClient: SecretNetworkClient;
 }

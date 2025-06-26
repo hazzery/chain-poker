@@ -14,23 +14,23 @@ import Player from "../components/Player";
 import InfoRow from "../components/InfoRow";
 import {
   startGame,
-  viewPreStartState,
+  viewLobbyStatus,
 } from "../secretnetwork/chainPokerContract";
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
-import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
+import type { PlayerInfo, LobbyStatus } from "../secretnetwork/types";
 import { uScrtToScrt } from "../secretnetwork/utils";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
   const { lobbyCode } = useRoute().params;
   const location = useLocation();
-  const [preStartState, setPreStartState] = useState<PreStartState>();
+  const [lobbyStatus, setLobbyStatus] = useState<LobbyStatus>();
   const [shouldRerequest, setShouldRerequest] = useState(false);
 
   useEffect(() => {
     if (!networkClient) return;
-    Result.fromAsync(viewPreStartState(lobbyCode, networkClient))
-      .onSuccess(setPreStartState)
+    Result.fromAsync(viewLobbyStatus(lobbyCode, networkClient))
+      .onSuccess(setLobbyStatus)
       .onFailure(console.error);
   }, [lobbyCode, networkClient, shouldRerequest]);
 
@@ -43,29 +43,29 @@ function Lobby(): VNode | undefined {
   }, []);
 
   const data = useMemo(() => {
-    if (!preStartState) return;
+    if (!lobbyStatus) return;
     const username = localStorage.getItem("username");
-    const players: PlayerInfo[] = preStartState.balances.map(
+    const players: PlayerInfo[] = lobbyStatus.balances.map(
       ([name, chipBalance]) => ({
         name,
         chipBalance: uScrtToScrt(BigInt(chipBalance)),
       }),
     );
     const myBalance = players.find((p) => p.name === username)?.chipBalance;
-    const bigBlind = BigInt(preStartState.lobby_config.big_blind);
+    const bigBlind = BigInt(lobbyStatus.lobby_config.big_blind);
     const minBuyIn =
-      bigBlind * BigInt(preStartState.lobby_config.min_buy_in_bb);
+      bigBlind * BigInt(lobbyStatus.lobby_config.min_buy_in_bb);
     const maxBuyIn =
-      bigBlind * BigInt(preStartState.lobby_config.max_buy_in_bb);
-    const isAdmin = preStartState.admin === username;
+      bigBlind * BigInt(lobbyStatus.lobby_config.max_buy_in_bb);
+    const isAdmin = lobbyStatus.admin === username;
     return { players, myBalance, bigBlind, minBuyIn, maxBuyIn, isAdmin };
-  }, [preStartState]);
+  }, [lobbyStatus]);
 
   if (networkClient === null) return <KeplrNotInstalled />;
 
-  if (!networkClient || !preStartState || !data) return <Loading />;
+  if (!networkClient || !lobbyStatus || !data) return <Loading />;
 
-  if (preStartState.is_started) {
+  if (lobbyStatus.is_started) {
     location.route(`/play/${lobbyCode}`);
     return;
   }
@@ -116,7 +116,7 @@ function Lobby(): VNode | undefined {
               }
             />
 
-            <InfoRow label="Admin" value={preStartState.admin} />
+            <InfoRow label="Admin" value={lobbyStatus.admin} />
             <InfoRow
               label="Big Blind"
               value={`${uScrtToScrt(data.bigBlind)} SCRT`}
@@ -143,17 +143,17 @@ function Lobby(): VNode | undefined {
                     lobbyCode={lobbyCode}
                     minBuyIn={data.minBuyIn}
                     maxBuyIn={data.maxBuyIn}
-                    currentNumPlayers={preStartState.balances.length}
+                    currentNumPlayers={lobbyStatus.balances.length}
                     networkClient={networkClient}
                     onBuyIn={() => {
-                      setPreStartState(undefined);
+                      setLobbyStatus(undefined);
                       setShouldRerequest((previous) => !previous);
                     }}
                   />
                 </>
               )}
 
-              {data.isAdmin && !preStartState.is_started && (
+              {data.isAdmin && !lobbyStatus.is_started && (
                 <Button
                   variant="outlined"
                   color="success"
@@ -164,7 +164,7 @@ function Lobby(): VNode | undefined {
                 </Button>
               )}
 
-              {preStartState.is_started && data.myBalance !== undefined && (
+              {lobbyStatus.is_started && data.myBalance !== undefined && (
                 <Button
                   variant="outlined"
                   color="primary"
