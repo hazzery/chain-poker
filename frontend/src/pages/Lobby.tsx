@@ -80,6 +80,8 @@ function Lobby(): VNode | undefined {
   function copyCode() {
     navigator.clipboard.writeText(lobbyCode).catch(console.error);
   }
+  const canStart = data.isAdmin && !lobbyStatus.is_started;
+  const canReconnect = lobbyStatus.is_started && data.myBalance;
 
   return (
     <ChainPoker>
@@ -136,42 +138,40 @@ function Lobby(): VNode | undefined {
           {data.myBalance === undefined && (
             <Paper elevation={1} sx={{ p: 2 }}>
               <Stack spacing={2}>
-                {data.myBalance === undefined && (
-                  <>
-                    <Typography variant="subtitle1">Buy-In</Typography>
-                    <BuyIn
-                      lobbyCode={lobbyCode}
-                      minBuyIn={data.minBuyIn}
-                      maxBuyIn={data.maxBuyIn}
-                      currentNumPlayers={lobbyStatus.balances.length}
-                      networkClient={networkClient}
-                      onBuyIn={() => {
-                        setLobbyStatus(undefined);
-                        setShouldRerequest((previous) => !previous);
-                      }}
-                    />
-                  </>
-                )}
+                <Typography variant="subtitle1">Buy-In</Typography>
+                <BuyIn
+                  lobbyCode={lobbyCode}
+                  minBuyIn={data.minBuyIn}
+                  maxBuyIn={data.maxBuyIn}
+                  currentNumPlayers={lobbyStatus.balances.length}
+                  networkClient={networkClient}
+                  onBuyIn={() => {
+                    setLobbyStatus(undefined);
+                    setShouldRerequest((previous) => !previous);
+                  }}
+                />
               </Stack>
             </Paper>
           )}
 
-          <Paper sx={{ padding: "1em" }}>
-            <Stack>
-              {data.isAdmin && !lobbyStatus.is_started && (
-                <Button
-                  onClick={handleStart}
-                  disabled={data.players.length < 2}
-                >
-                  Start Game
-                </Button>
-              )}
+          {(canStart || canReconnect) && (
+            <Paper sx={{ padding: "1em" }}>
+              <Stack>
+                {canStart && (
+                  <Button
+                    onClick={handleStart}
+                    disabled={data.players.length < 2}
+                  >
+                    Start Game
+                  </Button>
+                )}
 
-              {lobbyStatus.is_started && data.myBalance !== undefined && (
-                <Button onClick={handleReconnect}>Reconnect</Button>
-              )}
-            </Stack>
-          </Paper>
+                {canReconnect && (
+                  <Button onClick={handleReconnect}>Reconnect</Button>
+                )}
+              </Stack>
+            </Paper>
+          )}
         </Stack>
 
         {/* RIGHT COLUMN (players) */}
