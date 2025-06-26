@@ -59,6 +59,7 @@ pub fn move_turn_position(
         };
 
         next_player_position = find_next_player_lazy(left_of_button, storage)?.0;
+        LAST_RAISER.save(storage, &next_player_position)?;
     }
     CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
 
