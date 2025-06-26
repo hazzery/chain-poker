@@ -106,10 +106,10 @@ function Game({
           >
             {minBet > 0n && <Button onClick={handleFold}>Fold</Button>}
             {minBet === 0n && <Button onClick={handleCheck}>Check</Button>}
-            {chipBalance >= minBet && (
+            {minBet > 0n && chipBalance >= minBet && (
               <Button onClick={handleCall}>Call</Button>
             )}
-            {
+            {chipBalance > minBet && (
               <>
                 <ScrtInput state={raiseAmount} setState={setRaiseAmount} />
                 <Button
@@ -119,7 +119,7 @@ function Game({
                   Raise
                 </Button>
               </>
-            }
+            )}
           </Box>
         )}
       </Hand>
