@@ -74,9 +74,14 @@ async function writeUploadData(
   const timestamp = new Date().toISOString();
   const json = JSON.stringify(uploadData);
 
-  return await Result.fromAsyncCatching(
-    fs.promises.writeFile(`${OUTPUT_DIRECTORY}/upload-${timestamp}.json`, json),
-  );
+  return await Result.fromAsyncCatching(fs.promises.access(OUTPUT_DIRECTORY))
+    .recoverCatching(() => fs.promises.mkdir(OUTPUT_DIRECTORY))
+    .mapCatching(() =>
+      fs.promises.writeFile(
+        `${OUTPUT_DIRECTORY}/upload-${timestamp}.json`,
+        json,
+      ),
+    );
 }
 
 /**
