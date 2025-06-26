@@ -28,6 +28,10 @@ function Lobby(): VNode | undefined {
   const [shouldRerequest, setShouldRerequest] = useState(false);
 
   useEffect(() => {
+    document.title = "View Lobby - Chain Poker";
+  }, []);
+
+  useEffect(() => {
     if (!networkClient) return;
     Result.fromAsync(viewLobbyStatus(lobbyCode, networkClient))
       .onSuccess(setLobbyStatus)

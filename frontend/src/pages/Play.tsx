@@ -17,6 +17,10 @@ function Play(): VNode {
   const [gameStatus, setGameStatus] = useState<GameStatus>();
 
   useEffect(() => {
+    document.title = "Play - Chain Poker";
+  }, []);
+
+  useEffect(() => {
     const interval = setInterval(() => {
       if (networkClient === undefined || networkClient === null) return;
 
