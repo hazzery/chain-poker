@@ -44,24 +44,34 @@ pub fn move_turn_position(
     let num_players = ALL_PLAYERS.get_len(storage)? as u8;
     let last_raiser_position = LAST_RAISER.load(storage)?;
 
-    let mut next_player_position =
-        find_next_player_lazy((current_turn_position + 1) % num_players, storage)?;
+    let next_player_position = if let Ok(mut next_position) = u8::try_from(find_next_player_lazy(
+        (current_turn_position + 1) % num_players,
+        storage,
+    )?) {
+        if next_position == last_raiser_position {
+            let next_betting_round = CURRENT_STATE.load(storage)?.next();
+            CURRENT_STATE.save(storage, &next_betting_round)?;
 
-    if next_player_position < 0 || next_player_position as u8 == last_raiser_position {
+            let button_position = BUTTON_POSITION.load(storage)?;
+            let left_of_button = (button_position + 1) % num_players;
+            next_position = if next_betting_round == GameState::PreFlop {
+                end_hand(storage)?;
+                new_hand(left_of_button, storage, env)?
+            } else {
+                find_next_player_lazy(left_of_button, storage)? as u8
+            };
+
+            LAST_RAISER.save(storage, &next_position)?;
+        }
+
+        next_position
+    } else {
+        end_hand(storage)?;
         let button_position = BUTTON_POSITION.load(storage)?;
-        let mut left_of_button = (button_position + 1) % num_players;
+        new_hand((button_position + 1) % num_players, storage, env)?
+    };
 
-        let is_end_of_hand = next_betting_round(storage)?;
-
-        if is_end_of_hand {
-            new_hand(left_of_button, storage, env)?;
-            left_of_button = (left_of_button + 1) % num_players;
-        };
-
-        next_player_position = find_next_player_lazy(left_of_button, storage)?;
-        LAST_RAISER.save(storage, &(next_player_position as u8))?;
-    }
-    CURRENT_TURN_POSITION.save(storage, &(next_player_position as u8))?;
+    CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
 
     return Ok(());
 }
@@ -135,7 +145,7 @@ fn take_forced_bet(
     Ok(index)
 }
 
-pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<()> {
+pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<u8> {
     let mut addresses: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
     addresses.retain(|address| BALANCES.get(storage, address).is_some());
 
@@ -177,9 +187,8 @@ pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> St
 
     let next_player_position =
         find_next_player(storage, big_blind_player_position + 1, &addresses)?.0;
-    CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
 
-    Ok(())
+    Ok(next_player_position)
 }
 
 fn u8_to_card(card: u8) -> Card {
@@ -275,21 +284,8 @@ fn end_hand(storage: &mut dyn Storage) -> StdResult<()> {
     })?;
 
     TABLE.clear(storage);
-    CURRENT_STATE.save(storage, &GameState::PreFlop)?;
     POT.save(storage, &0)?;
     Ok(())
-}
-
-pub fn next_betting_round(storage: &mut dyn Storage) -> StdResult<bool> {
-    let current_game_state = CURRENT_STATE.load(storage)?;
-    CURRENT_STATE.save(storage, &current_game_state.next())?;
-
-    if current_game_state == GameState::River {
-        end_hand(storage)?;
-        return Ok(true);
-    }
-
-    Ok(false)
 }
 
 pub fn find_next_player_lazy(player_position: u8, storage: &mut dyn Storage) -> StdResult<i8> {
