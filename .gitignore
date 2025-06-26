@@ -21,9 +21,7 @@ node/output/
 contract/target/
 
 # MacOS finder metadata
-.DS_Store
-**/.DS_Store
+**.DS_Store
 
 # Environment variables
-.env
-**/.env
+**.env
