@@ -1,4 +1,4 @@
-import { Card } from "@mui/material";
+import { Card, useTheme } from "@mui/material";
 
 import type { ComponentChildren } from "preact";
 import { uScrtToScrt } from "../secretnetwork/utils";
@@ -12,10 +12,11 @@ interface HandProps {
 }
 
 function Hand({ cards, chipBalance, children }: HandProps) {
+  const theme = useTheme();
   return (
     <Card
       sx={{
-        backgroundColor: "gainsboro",
+        backgroundColor: theme.palette.mode === "dark" ? "black" : "gainsboro",
         display: "flex",
         flexGrow: 0,
         flexShrink: 0,

@@ -1,4 +1,4 @@
-import { Box, Card, Typography, type SxProps } from "@mui/material";
+import { Box, Card, Typography, useTheme, type SxProps } from "@mui/material";
 import { IoIosRadioButtonOn } from "react-icons/io";
 
 import { ChipCount } from "./ChipCount";
@@ -18,12 +18,20 @@ function Player({
   hasButton,
   sx,
 }: PlayerProps) {
+  const theme = useTheme();
+  const backgroundColour = isCurrentTurn
+    ? theme.palette.mode === "dark"
+      ? theme.palette.primary.dark
+      : theme.palette.primary.light
+    : theme.palette.mode === "dark"
+      ? "black"
+      : "gainsboro";
   return (
     <Card
       sx={{
         display: "inline-flex",
         flexDirection: "column",
-        backgroundColor: isCurrentTurn ? "lightgreen" : "gainsboro",
+        backgroundColor: backgroundColour,
         padding: "0.7em",
         alignItems: "center",
         overflow: "visible",
