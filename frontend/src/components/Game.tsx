@@ -4,13 +4,21 @@ import { useLocation } from "preact-iso";
 import type { SecretNetworkClient } from "secretjs";
 import { Result } from "typescript-result";
 
-import { placeBet, withdraw } from "../secretnetwork/chainPokerContract";
+import useScrtValidation from "../hooks/useScrtValidation";
+import {
+  call,
+  check,
+  fold,
+  raise,
+  withdraw,
+} from "../secretnetwork/chainPokerContract";
 import type { GameState } from "../secretnetwork/types";
 import { uScrtToScrt } from "../secretnetwork/utils";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
 import FanLayout from "./FanLayout";
 import Hand from "./Hand";
+import ScrtInput from "./ScrtInput";
 
 interface GameProps extends GameState {
   lobbyCode: string;
@@ -29,20 +37,39 @@ function Game({
   min_bet,
 }: GameProps): VNode | undefined {
   const location = useLocation();
+  const minBet = BigInt(min_bet);
 
-  const playersUsername = localStorage.getItem("username");
   const playerInfos = balances.map(([name, chipBalance]) => ({
     name,
     chipBalance: uScrtToScrt(BigInt(chipBalance)),
   }));
-  const chipBalance = balances.find(
-    ([username]) => username === playersUsername,
-  )![1];
+  const playersUsername = localStorage.getItem("username");
+  const chipBalance = BigInt(
+    balances.find(([username]) => username === playersUsername)![1],
+  );
 
-  function sendBet(betAmount: bigint): void {
-    Result.fromAsync(placeBet(betAmount, lobbyCode, networkClient)).onFailure(
-      console.error,
-    );
+  const [raiseAmount, setRaiseAmount] = useScrtValidation({
+    minValueUscrt: minBet,
+    maxValueUscrt: chipBalance,
+    allowZero: true,
+  });
+
+  function handleRaise(): void {
+    Result.fromAsync(
+      raise(raiseAmount.uScrt!, lobbyCode, networkClient),
+    ).onFailure(console.error);
+  }
+
+  function handleCheck(): void {
+    Result.fromAsync(check(lobbyCode, networkClient)).onFailure(console.error);
+  }
+
+  function handleFold(): void {
+    Result.fromAsync(fold(lobbyCode, networkClient)).onFailure(console.error);
+  }
+
+  function handleCall(): void {
+    Result.fromAsync(call(lobbyCode, networkClient)).onFailure(console.error);
   }
 
   function cashOut(): void {
@@ -74,13 +101,49 @@ function Game({
       >
         Cash out
       </Button>
-      <Hand
-        cards={hand}
-        chipBalance={BigInt(chipBalance)}
-        minBet={BigInt(min_bet)}
-        ourTurn={current_turn === playersUsername}
-        onBet={sendBet}
-      />
+      <Hand cards={hand} chipBalance={chipBalance}>
+        {current_turn === playersUsername && (
+          <Box
+            sx={{ position: "fixed", right: "2em" }}
+            display="flex"
+            columnGap="1em"
+            justifyContent="center"
+          >
+            {minBet > 0n && (
+              <Button onClick={handleFold} variant="outlined" color="success">
+                Fold
+              </Button>
+            )}
+            {minBet === 0n && (
+              <Button onClick={handleCheck} variant="outlined" color="success">
+                Check
+              </Button>
+            )}
+            {chipBalance >= minBet && (
+              <Button onClick={handleCall} variant="outlined" color="success">
+                Call
+              </Button>
+            )}
+            {
+              <>
+                <ScrtInput
+                  state={raiseAmount}
+                  setState={setRaiseAmount}
+                  color="success"
+                />
+                <Button
+                  onClick={handleRaise}
+                  disabled={raiseAmount.error !== null}
+                  variant="outlined"
+                  color="success"
+                >
+                  Raise
+                </Button>
+              </>
+            }
+          </Box>
+        )}
+      </Hand>
     </Box>
   );
 }

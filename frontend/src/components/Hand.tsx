@@ -1,26 +1,17 @@
-import { Box, Button, Card } from "@mui/material";
+import { Card } from "@mui/material";
 
-import useScrtValidation from "../hooks/useScrtValidation";
+import type { ComponentChildren } from "preact";
+import { uScrtToScrt } from "../secretnetwork/utils";
 import CardSet from "./CardSet";
 import { ChipCount } from "./ChipCount";
-import ScrtInput from "./ScrtInput";
-import { uScrtToScrt } from "../secretnetwork/utils";
 
 interface HandProps {
   cards: number[] | null;
   chipBalance: bigint;
-  minBet: bigint;
-  ourTurn: boolean;
-  onBet: (betAmount: bigint) => void;
+  children?: ComponentChildren;
 }
 
-function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
-  const [betAmount, setBetAmount] = useScrtValidation({
-    minValueUscrt: minBet,
-    maxValueUscrt: chipBalance,
-    allowZero: true,
-  });
-
+function Hand({ cards, chipBalance, children }: HandProps) {
   return (
     <Card
       sx={{
@@ -45,28 +36,7 @@ function Hand({ cards, chipBalance, minBet, ourTurn, onBet }: HandProps) {
         }}
       />
       <CardSet cards={cards} maxCards={2} />
-      {ourTurn && (
-        <Box
-          sx={{ position: "fixed", right: "2em" }}
-          display="flex"
-          columnGap="1em"
-          justifyContent="center"
-        >
-          <ScrtInput
-            state={betAmount}
-            setState={setBetAmount}
-            color="success"
-          />
-          <Button
-            onClick={() => onBet(betAmount.uScrt!)}
-            disabled={betAmount.error !== null}
-            variant="outlined"
-            color="success"
-          >
-            Place Bet
-          </Button>
-        </Box>
-      )}
+      {children}
     </Card>
   );
 }

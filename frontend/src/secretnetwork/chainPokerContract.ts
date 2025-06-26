@@ -88,24 +88,101 @@ function startGame(
 }
 
 /**
- * Place a bet on the current hand.
+ * Raising increases the minimum bet required for other players to remain in
+ * the current hand.
  *
- * @param amount - The number of uSCRT to bet, 0 for check/fold.
+ * @param amount - The number of uSCRT to raise the bet by.
  * @param lobbyCode - The address of the instantiated contract.
  * @param networkClient - A Secret Network client initialised with Keplr.
  *
  * @returns A result containing the transaction result from the contract if
  *    successful, otherwise an error.
  */
-function placeBet(
+function raise(
   amount: bigint,
   lobbyCode: string,
   networkClient: SecretNetworkClient,
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
-    { place_bet: { value: amount.toString() } },
+    { raise: { raise_amount: amount.toString() } },
     50_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
+    networkClient,
+  );
+}
+
+/**
+ * Calling places the minimum allowed bet into the pot, keeping the player's
+ * hand for further betting.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing the transaction result from the contract if
+ *    successful, otherwise an error.
+ */
+function call(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): AsyncResult<TxResponse, Error> {
+  return secretts.tryExecute(
+    { call: {} },
+    50_000,
+    {
+      contractAddress: lobbyCode,
+      contractCodeHash: CONTRACT_CODE_HASH,
+    },
+    networkClient,
+  );
+}
+
+/**
+ * Checking keeps the player in the game without placing any additional chips
+ * into the pot. Can only be performed if all previous players also checked
+ * this betting round.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing the transaction result from the contract if
+ *    successful, otherwise an error.
+ */
+function check(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): AsyncResult<TxResponse, Error> {
+  return secretts.tryExecute(
+    { check: {} },
+    50_000,
+    {
+      contractAddress: lobbyCode,
+      contractCodeHash: CONTRACT_CODE_HASH,
+    },
+    networkClient,
+  );
+}
+
+/**
+ * Folding removes the user's hand from game, leaving them unable to place any
+ * further bets until the next hand is drawn.
+ *
+ * @param lobbyCode - The address of the instantiated contract.
+ * @param networkClient - A Secret Network client initialised with Keplr.
+ *
+ * @returns A result containing the transaction result from the contract if
+ *    successful, otherwise an error.
+ */
+function fold(
+  lobbyCode: string,
+  networkClient: SecretNetworkClient,
+): AsyncResult<TxResponse, Error> {
+  return secretts.tryExecute(
+    { fold: {} },
+    50_000,
+    {
+      contractAddress: lobbyCode,
+      contractCodeHash: CONTRACT_CODE_HASH,
+    },
     networkClient,
   );
 }
@@ -210,8 +287,11 @@ async function getPermit(
 
 export {
   buyIn,
+  call,
+  check,
   createLobby,
-  placeBet,
+  fold,
+  raise,
   startGame,
   viewGameState,
   viewPreStartState,
