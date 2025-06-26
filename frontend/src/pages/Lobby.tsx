@@ -2,6 +2,7 @@ import { Button, Paper, Stack, Typography } from "@mui/material";
 import type { VNode } from "preact";
 import { useLocation, useRoute } from "preact-iso";
 import { useEffect, useMemo, useState } from "preact/hooks";
+import { MdContentCopy } from "react-icons/md";
 import { Result } from "typescript-result";
 
 import BuyIn from "../components/BuyIn";
@@ -10,6 +11,7 @@ import KeplrNotInstalled from "../components/KeplrNotInstalled";
 import Loading from "../components/Loading";
 import Player from "../components/Player";
 
+import InfoRow from "../components/InfoRow";
 import {
   startGame,
   viewPreStartState,
@@ -17,7 +19,6 @@ import {
 import { useNetworkClient } from "../secretnetwork/SecretNetworkContext";
 import type { PlayerInfo, PreStartState } from "../secretnetwork/types";
 import { uScrtToScrt } from "../secretnetwork/utils";
-import InfoRow from "../components/InfoRow";
 
 function Lobby(): VNode | undefined {
   const networkClient = useNetworkClient();
@@ -78,15 +79,43 @@ function Lobby(): VNode | undefined {
     location.route(`/play/${lobbyCode}`);
   }
 
+  function copyCode() {
+    navigator.clipboard.writeText(lobbyCode).catch(console.error);
+  }
+
   return (
     <ChainPoker>
-      <Stack spacing={3} sx={{ width: "100%", maxWidth: 600, mx: "auto" }}>
-        <Paper elevation={2} sx={{ p: 3 }}>
-          <Typography variant="h6" gutterBottom>
-            Lobby Details
-          </Typography>
-          <Stack spacing={1}>
-            <InfoRow label="Code" value={lobbyCode} />
+      <Stack
+        direction={{ xs: "column", lg: "row" }}
+        spacing={3}
+        sx={{
+          width: "100%",
+          minWidth: "25em",
+          mx: "auto",
+          alignItems: "stretch",
+        }}
+      >
+        {/* LEFT COLUMN (details, buy-in form, start game, reconect) */}
+        <Stack spacing={3} flex={1}>
+          <Paper elevation={2} sx={{ p: 3 }}>
+            <Typography variant="h6" gutterBottom>
+              Lobby Details
+            </Typography>
+
+            <InfoRow
+              label="Code"
+              value={
+                <Button
+                  color="inherit"
+                  onClick={copyCode}
+                  endIcon={<MdContentCopy />}
+                  style={{ textTransform: "none" }}
+                >
+                  {lobbyCode}
+                </Button>
+              }
+            />
+
             <InfoRow label="Admin" value={preStartState.admin} />
             <InfoRow
               label="Big Blind"
@@ -103,68 +132,72 @@ function Lobby(): VNode | undefined {
             {data.myBalance !== undefined && (
               <InfoRow label="Your Balance" value={`${data.myBalance} SCRT`} />
             )}
-            {preStartState.is_started && (
-              <Typography color="warning.main">Game in session</Typography>
-            )}
-            {preStartState.balances.length >= 9 && (
-              <Typography color="error.main">Lobby is full</Typography>
-            )}
-          </Stack>
-        </Paper>
+          </Paper>
 
-        <Paper elevation={1} sx={{ p: 2 }}>
+          <Paper elevation={1} sx={{ p: 2 }}>
+            <Stack spacing={2}>
+              {data.myBalance === undefined && (
+                <>
+                  <Typography variant="subtitle2">Buy-In</Typography>
+                  <BuyIn
+                    lobbyCode={lobbyCode}
+                    minBuyIn={data.minBuyIn}
+                    maxBuyIn={data.maxBuyIn}
+                    currentNumPlayers={preStartState.balances.length}
+                    networkClient={networkClient}
+                    onBuyIn={() => {
+                      setPreStartState(undefined);
+                      setShouldRerequest((previous) => !previous);
+                    }}
+                  />
+                </>
+              )}
+
+              {data.isAdmin && !preStartState.is_started && (
+                <Button
+                  variant="outlined"
+                  color="success"
+                  disabled={data.players.length < 2}
+                  onClick={handleStart}
+                >
+                  Start Game
+                </Button>
+              )}
+
+              {preStartState.is_started && data.myBalance !== undefined && (
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={handleReconnect}
+                >
+                  Reconnect
+                </Button>
+              )}
+            </Stack>
+          </Paper>
+        </Stack>
+
+        {/* RIGHT COLUMN (players) */}
+        <Paper
+          elevation={1}
+          sx={{
+            p: 2,
+            width: { xs: "100%", lg: 300 },
+            flexShrink: 0,
+          }}
+        >
           <Typography variant="subtitle1" gutterBottom>
             Players ({data.players.length})
           </Typography>
           <Stack spacing={1}>
             {data.players.length > 0 ? (
-              data.players.map((p) => <Player {...p} key={p.name} />)
+              data.players.map((player) => (
+                <Player {...player} key={player.name} />
+              ))
             ) : (
               <Typography color="text.secondary">
                 No one has bought in yet
               </Typography>
-            )}
-          </Stack>
-        </Paper>
-
-        <Paper elevation={1} sx={{ p: 2 }}>
-          <Stack spacing={2}>
-            {data.myBalance === undefined && (
-              <>
-                <Typography variant="subtitle2">Buy In</Typography>
-                <BuyIn
-                  lobbyCode={lobbyCode}
-                  minBuyIn={data.minBuyIn}
-                  maxBuyIn={data.maxBuyIn}
-                  currentNumPlayers={preStartState.balances.length}
-                  networkClient={networkClient}
-                  onBuyIn={() => {
-                    setPreStartState(undefined);
-                    setShouldRerequest((b) => !b);
-                  }}
-                />
-              </>
-            )}
-
-            {data.isAdmin && !preStartState.is_started && (
-              <Button
-                variant="contained"
-                color="success"
-                disabled={data.players.length < 2}
-                onClick={handleStart}
-              >
-                Start Game
-              </Button>
-            )}
-
-            {preStartState.is_started && data.myBalance !== undefined && (
-              <Button
-                variant="outlined"
-                color="primary"
-                onClick={handleReconnect}
-              >
-                Reconnect
-              </Button>
             )}
           </Stack>
         </Paper>
