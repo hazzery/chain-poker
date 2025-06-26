@@ -8,6 +8,7 @@ INSTANTIATE_DATA_FILE := ./node/output/instantiation.json
 $(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
 	cd node; npx tsx instantiate.ts
 	cp "$(shell ls -1 ./node/output/instantiation-*.json | tail -n 1)" $(INSTANTIATE_DATA_FILE)
+	jq < $(INSTANTIATE_DATA_FILE) .contractAddress
 
 $(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE)
 	cd node && npx tsx upload.ts && npx tsx writeEnv.ts
