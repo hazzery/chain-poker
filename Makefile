@@ -1,4 +1,4 @@
-.PHONY: start-server store-contract-local clean
+.PHONY: init start-server store-contract-local clean
 
 OPTIMISED_WASM_DIR := ./contract/optimized-wasm
 OPTIMISED_WASM_FILE := $(OPTIMISED_WASM_DIR)/chain_poker.wasm.gz
@@ -19,6 +19,11 @@ $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/sr
 	--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 	ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
+
+# Initialised npm environments
+init:
+	cd secretts && npm i && npx tsc
+	cd frontend && npm i
 
 # Run local development chain with four funded accounts (named a, b, c, and d)
 start-server: # CTRL+C to stop
