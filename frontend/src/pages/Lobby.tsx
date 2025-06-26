@@ -138,7 +138,7 @@ function Lobby(): VNode | undefined {
               <Stack spacing={2}>
                 {data.myBalance === undefined && (
                   <>
-                    <Typography variant="subtitle2">Buy-In</Typography>
+                    <Typography variant="subtitle1">Buy-In</Typography>
                     <BuyIn
                       lobbyCode={lobbyCode}
                       minBuyIn={data.minBuyIn}
