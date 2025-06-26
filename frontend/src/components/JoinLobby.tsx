@@ -30,20 +30,12 @@ function JoinLobby({ backAction }: JoinLobbyProps): VNode {
         state={lobbyCode}
         setState={setLobbyCode}
         label={"Lobby code"}
-        variant="outlined"
-        color="success"
       />
-      <Button
-        onClick={handleJoin}
-        disabled={lobbyCode.error !== null}
-        variant="outlined"
-        color="success"
-      >
+      <Button onClick={handleJoin} disabled={lobbyCode.error !== null}>
         Join
       </Button>
       <Button
         onClick={backAction}
-        variant="outlined"
         color="inherit"
         sx={{ width: "6em" }}
       >

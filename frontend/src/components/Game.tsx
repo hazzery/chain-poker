@@ -93,12 +93,7 @@ function Game({
           sx={{ justifyContent: "center", display: "flex" }}
         />
       </FanLayout>
-      <Button
-        onClick={cashOut}
-        variant="outlined"
-        color="success"
-        sx={{ width: "18em", marginLeft: "1em" }}
-      >
+      <Button onClick={cashOut} sx={{ width: "18em", marginLeft: "1em" }}>
         Cash out
       </Button>
       <Hand cards={hand} chipBalance={chipBalance}>
@@ -109,33 +104,17 @@ function Game({
             columnGap="1em"
             justifyContent="center"
           >
-            {minBet > 0n && (
-              <Button onClick={handleFold} variant="outlined" color="success">
-                Fold
-              </Button>
-            )}
-            {minBet === 0n && (
-              <Button onClick={handleCheck} variant="outlined" color="success">
-                Check
-              </Button>
-            )}
+            {minBet > 0n && <Button onClick={handleFold}>Fold</Button>}
+            {minBet === 0n && <Button onClick={handleCheck}>Check</Button>}
             {chipBalance >= minBet && (
-              <Button onClick={handleCall} variant="outlined" color="success">
-                Call
-              </Button>
+              <Button onClick={handleCall}>Call</Button>
             )}
             {
               <>
-                <ScrtInput
-                  state={raiseAmount}
-                  setState={setRaiseAmount}
-                  color="success"
-                />
+                <ScrtInput state={raiseAmount} setState={setRaiseAmount} />
                 <Button
                   onClick={handleRaise}
                   disabled={raiseAmount.error !== null}
-                  variant="outlined"
-                  color="success"
                 >
                   Raise
                 </Button>

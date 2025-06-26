@@ -49,27 +49,15 @@ function Landing(): VNode {
   function showContent(): VNode | undefined {
     switch (mode) {
       case LandingMode.ConnectWallet:
-        return (
-          <Button variant="outlined" color="success" onClick={connectWallet}>
-            Connect Wallet
-          </Button>
-        );
+        return <Button onClick={connectWallet}>Connect Wallet</Button>;
 
       case LandingMode.Main:
         return (
           <>
-            <Button
-              variant="outlined"
-              color="success"
-              onClick={() => setMode(LandingMode.Create)}
-            >
+            <Button onClick={() => setMode(LandingMode.Create)}>
               Create lobby
             </Button>
-            <Button
-              variant="outlined"
-              color="success"
-              onClick={() => setMode(LandingMode.Join)}
-            >
+            <Button onClick={() => setMode(LandingMode.Join)}>
               Join existing loby
             </Button>
           </>

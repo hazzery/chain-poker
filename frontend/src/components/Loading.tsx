@@ -4,7 +4,7 @@ import ChainPoker from "./ChainPoker";
 function Loading() {
   return (
     <ChainPoker>
-      <CircularProgress color="success" />
+      <CircularProgress />
     </ChainPoker>
   );
 }

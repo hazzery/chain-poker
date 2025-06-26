@@ -58,8 +58,6 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
         state={username}
         setState={setUsername}
         label="Username"
-        variant="outlined"
-        color="success"
       />
       <ScrtInput
         required
@@ -67,8 +65,6 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
         state={bigBlind}
         setState={setBigBlind}
         label="Big blind value (SCRT)"
-        variant="outlined"
-        color="success"
       />
       <TextInput
         required
@@ -76,8 +72,6 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
         state={maxBuyInBB}
         setState={setMaxBuyInBB}
         label="Maximum buy in (number of big blinds)"
-        variant="outlined"
-        color="success"
       />
       <TextInput
         required
@@ -85,8 +79,6 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
         state={minBuyInBB}
         setState={setMinBuyInBB}
         label="Minimum buy in (number of big blinds)"
-        variant="outlined"
-        color="success"
       />
       <Button
         fullWidth
@@ -97,17 +89,10 @@ function CreateLobby({ backAction, networkClient }: CreateLobbyProps): VNode {
           maxBuyInBB.error !== null
         }
         onClick={handleCreateLobby}
-        variant="outlined"
-        color="success"
       >
         Create
       </Button>
-      <Button
-        onClick={backAction}
-        variant="outlined"
-        color="inherit"
-        sx={{ width: "6em" }}
-      >
+      <Button onClick={backAction} color="inherit" sx={{ width: "6em" }}>
         Back
       </Button>
     </Box>

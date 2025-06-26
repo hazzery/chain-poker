@@ -18,6 +18,19 @@ export function App() {
       createTheme({
         palette: {
           mode: prefersDarkMode ? "dark" : "light",
+          primary: {
+            main: "#228B22",
+            light: "#90EE90",
+            dark: "#006400",
+            contrastText: "#ffffff",
+          },
+        },
+        components: {
+          MuiButton: {
+            defaultProps: {
+              variant: "outlined",
+            },
+          },
         },
       }),
     [prefersDarkMode],

@@ -105,6 +105,7 @@ function Lobby(): VNode | undefined {
               value={
                 <Button
                   color="inherit"
+                  variant="text"
                   onClick={copyCode}
                   endIcon={<MdContentCopy />}
                   style={{ textTransform: "none" }}
@@ -159,23 +160,15 @@ function Lobby(): VNode | undefined {
             <Stack>
               {data.isAdmin && !lobbyStatus.is_started && (
                 <Button
-                  variant="outlined"
-                  color="success"
-                  disabled={data.players.length < 2}
                   onClick={handleStart}
+                  disabled={data.players.length < 2}
                 >
                   Start Game
                 </Button>
               )}
 
               {lobbyStatus.is_started && data.myBalance !== undefined && (
-                <Button
-                  variant="outlined"
-                  color="primary"
-                  onClick={handleReconnect}
-                >
-                  Reconnect
-                </Button>
+                <Button onClick={handleReconnect}>Reconnect</Button>
               )}
             </Stack>
           </Paper>

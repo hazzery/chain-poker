@@ -49,16 +49,12 @@ function BuyIn({
         state={username}
         setState={setUsername}
         label="Username"
-        variant="outlined"
-        color="success"
       />
       <ScrtInput
         required
         state={buyInAmount}
         setState={setBuyInAmount}
         label="Buy in amount (SCRT)"
-        variant="outlined"
-        color="success"
       />
       <Button
         disabled={
@@ -67,8 +63,6 @@ function BuyIn({
           currentNumPlayers >= 9
         }
         onClick={handleBuyIn}
-        variant="outlined"
-        color="success"
       >
         Buy in
       </Button>

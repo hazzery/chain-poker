@@ -10,9 +10,13 @@ function NavBar(): VNode {
   const location = useLocation();
 
   return (
-    <AppBar color="success">
+    <AppBar>
       <Toolbar>
-        <Button color="inherit" onClick={() => location.route("/")}>
+        <Button
+          variant="text"
+          color="inherit"
+          onClick={() => location.route("/")}
+        >
           <GiPokerHand size="2.5em" />
           <Typography
             variant="h6"
