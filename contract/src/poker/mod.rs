@@ -172,11 +172,11 @@ pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> St
         &addresses,
         storage,
     )?;
+    LAST_RAISER.save(storage, &big_blind_player_position)?;
 
     let next_player_position =
         find_next_player(storage, big_blind_player_position + 1, &addresses)?.0;
     CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
-    LAST_RAISER.save(storage, &next_player_position)?;
 
     Ok(())
 }
