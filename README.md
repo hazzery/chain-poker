@@ -15,77 +15,64 @@ follows:
   the `typescript-result` npm package. This is used in both the Node.js scripts
   and the web application.
 
-## Building the smart contract
+## Setting up the development environment
 
-To build Chain Poker's contract, execute the following command in the top level
-directory:
+For the Node.js scripts in the `/node` directory and the Preact front-end to
+work, we need to install the npm dependencies. The project make file will
+prepare this all for you with a single command
 
 ```bash
-make build-docker
+make init
 ```
 
-This will spin up a docker container to compile the Rust crate into Web
-Assembly. The image will optimse the output binary using `wasm-opt`, compress
-it into a gzip file (so the file upload costs less gas), placing the final
-output in the `/contract/optimized-wasm/` directory.
-
-## Uploading the contract to the network
-
-Once the contract has been compiled, we can upload the gzipped Web Assembly to
-the Secret Network using the Node.js scripts. The network needs a wallet
-address that it can charge the gas fees to. To tell the upload script the
-address that should be used, create an environment variable file in the top of
-the `/node` directory named exactly `.env`. Paste your wallet's private key
+When we go to upload the compiled contract, we need to provide the network with
+a wallet address that it can charge the gas fees to. To tell the upload script
+the address that should be used, create an environment variable file in the top
+of the `/node` directory named exactly `.env`. Paste your wallet's private key
 inside this file with the name shown below.
 
 ```bash
 MNEMONIC=  # Enter your wallet's mnemonic here
 ```
 
-Once your environment variables are set, we can execute the following inside
-the `/node` directory:
+## Building the smart contract
+
+With the set-up all done, we are now able to build and upload the Chain Poker
+contract. Execute the following command in the top level directory:
 
 ```bash
-npm i
-npx tsx upload.ts
+make
 ```
 
-This will write the new contract code ID and code hash to a JSON file in
-`/node/output`, named with a time stamp to differentiate uploads.
+This will spin up a docker container to compile the Rust crate into Web
+Assembly. The image will optimise the output binary using `wasm-opt`, compress
+it into a gzip file (so the file upload costs less gas), placing the final
+output in the `/contract/optimized-wasm/` directory.
 
-> **_NOTE:_** There is currently a bug (I believe in the `typescript-result`
-> package) which causes the wrapper result of the data to be written, rather
-> than just the data itself. If you need to run further scripts using this code
-> ID and hash, you must manually edit the output JSON file, removing the outer
-> object, leaving just a single object with `contractCodeHash` and `codeId` as
-> its properties.
+Once the contract has been compiled, the gzipped Web Assembly is automatically
+uploaded to the Secret Network using the Node.js upload script. This will write
+the new contract code ID and code hash to both a JSON file in `/node/output`
+and to the front-end's `.env` file so it knows which uploaded code instance to
+talk to.
 
 ## Starting the front-end
 
-With the contract built and uploaded to the contract, we are almost ready to
-run the web app! To do this, we first need to create a file to store some more
-environment variables. At the top of the `/frontend` directory, create a file
-named exactly `.env`. Copy and paste the following variable definitions and
-paste in the values for the contract code hash and code ID that were written to
-the JSON file during the uploading step.
+With the contract built and uploaded to the network, we are ready to run the
+web app! To boot up the development server, execute the following inside the
+`/frontend` directory.
 
 ```bash
-VITE_SECRET_CHAIN_ID=pulsar-3
-VITE_SECRET_LCD=https://pulsar.lcd.secretnodes.com
-VITE_CONTRACT_CODE_HASH=
-VITE_CONTRACT_CODE_ID=
-```
-
-We can now install the necessary npm packages, and boot up the development
-server by executing the following inside the `/frontend` directory.
-
-```bash
-npm i
 npm run dev
 ```
 
 Open a web browser to `http://localhost:5173` (press `o` and then `Enter` in
 the terminal) and you're away!
+
+> **_Note:_** The build/upload script also instantiates the contract, creating
+> a lobby with some predefined lobby configuration. The script will have
+> printed the address of this instantiation to the terminal. Copy and paste
+> this into the "Join Existing Lobby" form in the front-end to jump straight
+> into a game
 
 ## Keplr Wallet
 
