@@ -11,7 +11,7 @@ $(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
 
 $(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE)
 	cd node && npx tsx upload.ts && npx tsx writeEnv.ts
-	cp "$(shell ls -1 ./node/output/upload-*.json | head -n 1)" $(UPLOAD_DATA_FILE)
+	cp $$(ls -1 ./node/output/upload-*.json | head -n 1) $(UPLOAD_DATA_FILE)
 
 $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/src/*/*.rs)
 	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
