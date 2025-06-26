@@ -69,7 +69,6 @@ function BuyIn({
         onClick={handleBuyIn}
         variant="outlined"
         color="success"
-        sx={{ marginX: "1em" }}
       >
         Buy in
       </Button>

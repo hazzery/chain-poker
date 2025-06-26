@@ -53,10 +53,8 @@ function Lobby(): VNode | undefined {
     );
     const myBalance = players.find((p) => p.name === username)?.chipBalance;
     const bigBlind = BigInt(lobbyStatus.lobby_config.big_blind);
-    const minBuyIn =
-      bigBlind * BigInt(lobbyStatus.lobby_config.min_buy_in_bb);
-    const maxBuyIn =
-      bigBlind * BigInt(lobbyStatus.lobby_config.max_buy_in_bb);
+    const minBuyIn = bigBlind * BigInt(lobbyStatus.lobby_config.min_buy_in_bb);
+    const maxBuyIn = bigBlind * BigInt(lobbyStatus.lobby_config.max_buy_in_bb);
     const isAdmin = lobbyStatus.admin === username;
     return { players, myBalance, bigBlind, minBuyIn, maxBuyIn, isAdmin };
   }, [lobbyStatus]);
@@ -134,25 +132,31 @@ function Lobby(): VNode | undefined {
             )}
           </Paper>
 
-          <Paper elevation={1} sx={{ p: 2 }}>
-            <Stack spacing={2}>
-              {data.myBalance === undefined && (
-                <>
-                  <Typography variant="subtitle2">Buy-In</Typography>
-                  <BuyIn
-                    lobbyCode={lobbyCode}
-                    minBuyIn={data.minBuyIn}
-                    maxBuyIn={data.maxBuyIn}
-                    currentNumPlayers={lobbyStatus.balances.length}
-                    networkClient={networkClient}
-                    onBuyIn={() => {
-                      setLobbyStatus(undefined);
-                      setShouldRerequest((previous) => !previous);
-                    }}
-                  />
-                </>
-              )}
+          {data.myBalance === undefined && (
+            <Paper elevation={1} sx={{ p: 2 }}>
+              <Stack spacing={2}>
+                {data.myBalance === undefined && (
+                  <>
+                    <Typography variant="subtitle2">Buy-In</Typography>
+                    <BuyIn
+                      lobbyCode={lobbyCode}
+                      minBuyIn={data.minBuyIn}
+                      maxBuyIn={data.maxBuyIn}
+                      currentNumPlayers={lobbyStatus.balances.length}
+                      networkClient={networkClient}
+                      onBuyIn={() => {
+                        setLobbyStatus(undefined);
+                        setShouldRerequest((previous) => !previous);
+                      }}
+                    />
+                  </>
+                )}
+              </Stack>
+            </Paper>
+          )}
 
+          <Paper sx={{ padding: "1em" }}>
+            <Stack>
               {data.isAdmin && !lobbyStatus.is_started && (
                 <Button
                   variant="outlined"
