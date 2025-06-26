@@ -27,6 +27,8 @@ pub fn try_start_game(deps: DepsMut, sender: Addr, env: &Env) -> StdResult<Respo
         return Err(StdError::generic_err("Insufficient number of players"));
     }
 
+    CURRENT_STATE.save(deps.storage, &GameState::PreFlop)?;
+
     new_hand(0, deps.storage, env)?;
 
     Ok(Response::default())
