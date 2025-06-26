@@ -8,7 +8,7 @@ use crate::state::{
     USERNAMES,
 };
 
-pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
+pub fn query_lobby_status(deps: Deps) -> StdResult<Binary> {
     let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
 
     let pre_start_state = LobbyStatus {
@@ -23,7 +23,7 @@ pub fn query_pre_start_state(deps: Deps) -> StdResult<Binary> {
     to_binary(&pre_start_state)
 }
 
-pub fn query_game_state(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
+pub fn query_game_status(deps: Deps, env: Env, permit: Permit) -> StdResult<Binary> {
     let current_game_state = CURRENT_STATE.load(deps.storage)?;
     if current_game_state == GameState::NotStarted {
         return Err(StdError::generic_err("The game has not yet started"));

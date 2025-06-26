@@ -7,7 +7,7 @@ use cosmwasm_std::{
 use execute::{
     try_buy_in, try_call, try_check, try_fold, try_raise, try_start_game, try_withdraw_chips,
 };
-use query::{query_game_state, query_pre_start_state};
+use query::{query_game_status, query_lobby_status};
 
 use crate::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
@@ -63,7 +63,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ViewLobbyStatus {} => query_pre_start_state(deps),
-        QueryMsg::ViewGameStatus { permit } => query_game_state(deps, env, permit),
+        QueryMsg::ViewLobbyStatus {} => query_lobby_status(deps),
+        QueryMsg::ViewGameStatus { permit } => query_game_status(deps, env, permit),
     }
 }
