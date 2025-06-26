@@ -25,6 +25,7 @@ $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/sr
 init:
 	cd secretts && npm i && npx tsc
 	cd frontend && npm i
+	cd node && npm i
 
 # Run local development chain with four funded accounts (named a, b, c, and d)
 start-server: # CTRL+C to stop
