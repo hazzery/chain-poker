@@ -29,7 +29,8 @@ pub fn try_start_game(deps: DepsMut, sender: Addr, env: &Env) -> StdResult<Respo
 
     CURRENT_STATE.save(deps.storage, &GameState::PreFlop)?;
 
-    let next_player_position = new_hand(0, deps.storage, env)?;
+    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(deps.storage)?.flatten().collect();
+    let next_player_position = new_hand(&players, 0, deps.storage, env)?;
     CURRENT_TURN_POSITION.save(deps.storage, &next_player_position)?;
 
     Ok(Response::default())

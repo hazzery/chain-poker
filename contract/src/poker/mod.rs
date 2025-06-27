@@ -36,6 +36,14 @@ pub fn betting_turn(
     Ok(Response::default())
 }
 
+fn change_hand(num_players: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<u8> {
+    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
+    end_hand(&players, storage)?;
+    let new_button_position = (BUTTON_POSITION.load(storage)? + 1) % num_players;
+
+    new_hand(&players, new_button_position, storage, env)
+}
+
 pub fn move_turn_position(
     current_turn_position: u8,
     storage: &mut dyn Storage,
@@ -44,31 +52,30 @@ pub fn move_turn_position(
     let num_players = ALL_PLAYERS.get_len(storage)? as u8;
     let last_raiser_position = LAST_RAISER.load(storage)?;
 
-    let next_player_position = if let Ok(mut next_position) = u8::try_from(find_next_player_lazy(
+    let next_player_position = match u8::try_from(find_next_player_lazy(
         (current_turn_position + 1) % num_players,
         storage,
     )?) {
-        if next_position == last_raiser_position {
+        Ok(next_position) if next_position == current_turn_position => {
+            change_hand(num_players, storage, env)?
+        }
+
+        Ok(next_position) if next_position == last_raiser_position => {
             let next_betting_round = CURRENT_STATE.load(storage)?.next();
             CURRENT_STATE.save(storage, &next_betting_round)?;
 
-            let button_position = BUTTON_POSITION.load(storage)?;
-            let left_of_button = (button_position + 1) % num_players;
-            next_position = if next_betting_round == GameState::PreFlop {
-                end_hand(storage)?;
-                new_hand(left_of_button, storage, env)?
+            if next_betting_round == GameState::PreFlop {
+                change_hand(num_players, storage, env)?
             } else {
-                find_next_player_lazy(left_of_button, storage)? as u8
-            };
-
-            LAST_RAISER.save(storage, &next_position)?;
+                let left_of_button = (BUTTON_POSITION.load(storage)? + 1) % num_players;
+                // The cast on the next line could cause the value to wrap around to 255.
+                let next_position = find_next_player_lazy(left_of_button, storage)? as u8;
+                LAST_RAISER.save(storage, &next_position)?;
+                next_position
+            }
         }
-
-        next_position
-    } else {
-        end_hand(storage)?;
-        let button_position = BUTTON_POSITION.load(storage)?;
-        new_hand((button_position + 1) % num_players, storage, env)?
+        Ok(next_position) => next_position,
+        Err(_) => change_hand(num_players, storage, env)?,
     };
 
     CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
@@ -79,7 +86,7 @@ pub fn move_turn_position(
 pub fn find_next_player<'a>(
     storage: &mut dyn Storage,
     player_position: u8,
-    addresses: &'a [CanonicalAddr],
+    addresses: &'a [&CanonicalAddr],
 ) -> StdResult<(u8, &'a CanonicalAddr, u128)> {
     addresses
         .iter()
@@ -88,12 +95,12 @@ pub fn find_next_player<'a>(
         .skip(player_position as usize)
         .take(addresses.len())
         .find_map(|(index, address)| {
-            if !HANDS.contains(storage, address) {
+            if !HANDS.contains(storage, *address) {
                 return None;
             }
-            let balance = BALANCES.get(storage, address)?;
+            let balance = BALANCES.get(storage, *address)?;
             let position = (index % addresses.len()) as u8;
-            Some((position, address, balance))
+            Some((position, *address, balance))
         })
         .ok_or_else(|| StdError::generic_err("find_next_player found no elligible players"))
 }
@@ -122,7 +129,7 @@ pub fn take_bet(
 fn take_forced_bet(
     take_amount: u32,
     player_position: u8,
-    addresses: &[CanonicalAddr],
+    addresses: &[&CanonicalAddr],
     storage: &mut dyn Storage,
 ) -> StdResult<u8> {
     let (index, player_address, players_balance) =
@@ -145,9 +152,16 @@ fn take_forced_bet(
     Ok(index)
 }
 
-pub fn new_hand(button_position: u8, storage: &mut dyn Storage, env: &Env) -> StdResult<u8> {
-    let mut addresses: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
-    addresses.retain(|address| BALANCES.get(storage, address).is_some());
+pub fn new_hand(
+    players: &[CanonicalAddr],
+    button_position: u8,
+    storage: &mut dyn Storage,
+    env: &Env,
+) -> StdResult<u8> {
+    let addresses: Vec<&CanonicalAddr> = players
+        .iter()
+        .filter(|address| BALANCES.get(storage, address).is_some())
+        .collect();
 
     let mut deck = Deck::new();
     let Some(ref random) = env.block.random else {
@@ -274,8 +288,7 @@ fn showdown(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<(
     Ok(())
 }
 
-fn end_hand(storage: &mut dyn Storage) -> StdResult<()> {
-    let players: Vec<CanonicalAddr> = ALL_PLAYERS.iter(storage)?.flatten().collect();
+fn end_hand(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<()> {
     showdown(&players, storage)?;
 
     players.iter().try_for_each(|address| {
