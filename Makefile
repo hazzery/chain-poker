@@ -15,16 +15,18 @@ $(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
 	cp $$(ls -1 ./node/output/instantiation-*.json | tail -n 1) $(INSTANTIATE_DATA_FILE)
 	jq < $(INSTANTIATE_DATA_FILE) .contractAddress
 
-$(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE)
+$(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE) ./schema/
 	cd node && npx tsx upload.ts && npx tsx writeEnv.ts
 	cp $$(ls -1 ./node/output/upload-*.json | tail -n 1) $(UPLOAD_DATA_FILE)
+
+./schema/: ./contract/src/bin/schema.rs ./contract/src/msg.rs
+	cd contract && cargo run --bin schema
 
 $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/src/*/*.rs)
 	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
 	--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 	ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
-	cd contract && cargo run --bin schema
 
 # Initialised npm environments
 init:
