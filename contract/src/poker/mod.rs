@@ -80,7 +80,7 @@ pub fn move_turn_position(
 
     CURRENT_TURN_POSITION.save(storage, &next_player_position)?;
 
-    return Ok(());
+    Ok(())
 }
 
 pub fn find_next_player<'a>(
@@ -145,7 +145,7 @@ fn take_forced_bet(
         bet_amount,
         players_balance,
         bet_amount,
-        &player_address,
+        player_address,
         storage,
     )?;
 
@@ -247,8 +247,8 @@ fn distribute_pot(winners: &[&CanonicalAddr], storage: &mut dyn Storage) -> StdR
 
     let remaining_chips = pot_value % winners.len() as u128;
     if remaining_chips > 0 {
-        let balance = BALANCES.get(storage, &winners[0]).unwrap();
-        BALANCES.insert(storage, &winners[0], &(balance + remaining_chips))?;
+        let balance = BALANCES.get(storage, winners[0]).unwrap();
+        BALANCES.insert(storage, winners[0], &(balance + remaining_chips))?;
     }
 
     Ok(())
@@ -261,7 +261,7 @@ fn showdown(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<(
     let results: Vec<(&CanonicalAddr, EvalClass)> = players
         .iter()
         .filter_map(|address| {
-            let hand: [Card; 2] = u8s_to_cards(HANDS.get(storage, &address)?).into();
+            let hand: [Card; 2] = u8s_to_cards(HANDS.get(storage, address)?).into();
             let cards = box_cards!(hand, table);
             let result = evaluator.evaluate(cards).ok()?.class();
 
@@ -289,11 +289,11 @@ fn showdown(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<(
 }
 
 fn end_hand(players: &[CanonicalAddr], storage: &mut dyn Storage) -> StdResult<()> {
-    showdown(&players, storage)?;
+    showdown(players, storage)?;
 
     players.iter().try_for_each(|address| {
-        HANDS.remove(storage, &address)?;
-        BETS.remove(storage, &address)
+        HANDS.remove(storage, address)?;
+        BETS.remove(storage, address)
     })?;
 
     TABLE.clear(storage);
