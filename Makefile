@@ -4,6 +4,11 @@ OPTIMISED_WASM_DIR := ./contract/optimized-wasm
 OPTIMISED_WASM_FILE := $(OPTIMISED_WASM_DIR)/chain_poker.wasm.gz
 UPLOAD_DATA_FILE := ./node/output/upload.json
 INSTANTIATE_DATA_FILE := ./node/output/instantiation.json
+BUY_IN_STAMP_FILE := ./node/output/buyin
+
+$(BUY_IN_STAMP_FILE): $(INSTANTIATE_DATA_FILE)
+	cd node && npx tsx buyIn.ts
+	touch $(BUY_IN_STAMP_FILE)
 
 $(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
 	cd node; npx tsx instantiate.ts
