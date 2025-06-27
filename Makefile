@@ -11,7 +11,7 @@ $(BUY_IN_STAMP_FILE): $(INSTANTIATE_DATA_FILE)
 	touch $(BUY_IN_STAMP_FILE)
 
 $(INSTANTIATE_DATA_FILE): $(UPLOAD_DATA_FILE)
-	cd node; npx tsx instantiate.ts
+	cd node && npx tsx instantiate.ts
 	cp $$(ls -1 ./node/output/instantiation-*.json | tail -n 1) $(INSTANTIATE_DATA_FILE)
 	jq < $(INSTANTIATE_DATA_FILE) .contractAddress
 
@@ -23,7 +23,7 @@ $(UPLOAD_DATA_FILE): $(OPTIMISED_WASM_FILE) ./schema/
 	cd contract && cargo run --bin schema
 
 $(OPTIMISED_WASM_FILE): $(wildcard ./contract/src/*.rs) $(wildcard ./contract/src/*/*.rs)
-	cd contract; sudo docker run --rm -v "$$(pwd)":/contract \
+	cd contract && sudo docker run --rm -v "$$(pwd)":/contract \
 	--mount type=volume,source="$$(basename "$$(pwd)")_cache",target=/code/target \
 	--mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
 	ghcr.io/scrtlabs/secret-contract-optimizer:1.0.13
