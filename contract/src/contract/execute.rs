@@ -113,23 +113,7 @@ pub fn try_check(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> 
 }
 
 pub fn try_call(sender: Addr, deps: DepsMut, env: &Env) -> StdResult<Response> {
-    let call_action = |address: &CanonicalAddr, _, storage: &mut dyn Storage| {
-        let call_amount = CURRENT_MIN_BET.load(storage)?;
-        let players_balance = BALANCES.get(storage, address).unwrap();
-        let players_current_bet = BETS.get(storage, address).unwrap_or(0);
-        let bet_amount = call_amount - players_current_bet;
-
-        if bet_amount > players_balance {
-            return Err(StdError::generic_err(
-                "You do not have enough chips to call",
-            ));
-        }
-
-        take_bet(bet_amount, players_balance, call_amount, address, storage)?;
-
-        Ok(())
-    };
-    betting_turn(sender, call_action, deps, env)
+    try_raise(sender, 0, deps, env)
 }
 
 pub fn try_raise(
@@ -141,19 +125,24 @@ pub fn try_raise(
     let raise_action =
         |address: &CanonicalAddr, current_position: u8, storage: &mut dyn Storage| {
             let players_balance = BALANCES.get(storage, address).unwrap();
-            let current_bet = BETS.get(storage, address).unwrap_or(0);
-            let total_bet = current_bet + raise_amount;
+            let current_min_bet = CURRENT_MIN_BET.load(storage)?;
 
-            if raise_amount > players_balance {
+            let players_current_bet = BETS.get(storage, address).unwrap_or(0);
+            let total_bet = current_min_bet + raise_amount;
+            let bet_amount = total_bet - players_current_bet;
+
+            if bet_amount > players_balance {
                 return Err(StdError::generic_err(
                     "You do not have that many chips to bet with",
                 ));
             }
 
-            LAST_RAISER.save(storage, &current_position)?;
-            CURRENT_MIN_BET.save(storage, &total_bet)?;
+            if raise_amount > 0 {
+                LAST_RAISER.save(storage, &current_position)?;
+                CURRENT_MIN_BET.save(storage, &total_bet)?;
+            }
 
-            take_bet(raise_amount, players_balance, total_bet, address, storage)?;
+            take_bet(bet_amount, players_balance, total_bet, address, storage)?;
 
             Ok(())
         };
