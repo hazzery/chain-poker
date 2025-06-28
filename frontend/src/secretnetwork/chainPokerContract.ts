@@ -105,7 +105,7 @@ function raise(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { raise: { raise_amount: amount.toString() } },
-    50_000,
+    70_000,
     { contractAddress: lobbyCode, contractCodeHash: CONTRACT_CODE_HASH },
     networkClient,
   );
@@ -127,7 +127,7 @@ function call(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { call: {} },
-    50_000,
+    70_000,
     {
       contractAddress: lobbyCode,
       contractCodeHash: CONTRACT_CODE_HASH,
@@ -153,7 +153,7 @@ function check(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { check: {} },
-    50_000,
+    70_000,
     {
       contractAddress: lobbyCode,
       contractCodeHash: CONTRACT_CODE_HASH,
@@ -178,7 +178,7 @@ function fold(
 ): AsyncResult<TxResponse, Error> {
   return secretts.tryExecute(
     { fold: {} },
-    50_000,
+    70_000,
     {
       contractAddress: lobbyCode,
       contractCodeHash: CONTRACT_CODE_HASH,
