@@ -25,7 +25,7 @@ fn test_buy_in_with_max_buy_in() {
     let mut deps = mock_dependencies();
 
     valid_instantiation(deps.as_mut());
-    buy_in(VALID_MAX_BUY_IN, deps.as_mut());
+    buy_in("anyone", VALID_MAX_BUY_IN, deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
     assert_eq!(1, lobby_status.balances.len());
@@ -40,7 +40,7 @@ fn test_buy_in_with_min_buy_in() {
     let mut deps = mock_dependencies();
 
     valid_instantiation(deps.as_mut());
-    buy_in(VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in("anyone", VALID_MIN_BUY_IN, deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
     assert_eq!(1, lobby_status.balances.len());
@@ -54,15 +54,18 @@ fn test_buy_in_with_min_buy_in() {
 fn test_start_game_as_admin() {
     let mut deps = mock_dependencies();
 
+    let first_buyer = "first_user";
+    let second_buyer = "second_user";
+
     valid_instantiation(deps.as_mut());
-    let first_buyer = buy_in(VALID_MIN_BUY_IN, deps.as_mut());
-    let second_buyer = buy_in(VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(first_buyer, VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(second_buyer, VALID_MIN_BUY_IN, deps.as_mut());
     start_game(deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
     assert_eq!(true, lobby_status.is_started);
 
-    let game_status = query_game_status(deps.as_ref());
+    let game_status = query_game_status(first_buyer, deps.as_ref());
     let first_buyers_balance = find_balance(first_buyer, &game_status.balances);
     let second_buyers_balance = find_balance(second_buyer, &game_status.balances);
     assert_eq!(
@@ -79,12 +82,15 @@ fn test_start_game_as_admin() {
 fn test_call_sufficient_balance() {
     let mut deps = mock_dependencies();
 
+    let first_buyer = "first_user";
+    let second_buyer = "second_user";
+
     valid_instantiation(deps.as_mut());
-    let first_buyer = buy_in(VALID_MIN_BUY_IN, deps.as_mut());
-    let second_buyer = buy_in(VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(first_buyer, VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(second_buyer, VALID_MIN_BUY_IN, deps.as_mut());
     start_game(deps.as_mut());
     call(&first_buyer, deps.as_mut());
 
-    let game_status = query_game_status(deps.as_ref());
+    let game_status = query_game_status(first_buyer, deps.as_ref());
     // assert_eq!(game_status.)
 }

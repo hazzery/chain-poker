@@ -1,13 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-
 use cosmwasm_std::{
     coins, from_binary,
     testing::{mock_env, mock_info},
-    Deps, DepsMut, Response,
-};
-use secret_toolkit::{
-    permit::{self, Permit},
-    snip20::query,
+    Deps, DepsMut,
 };
 
 use crate::{
@@ -39,19 +33,13 @@ pub fn valid_instantiation(deps: DepsMut) {
     instantiate(deps, mock_env(), info, msg).unwrap();
 }
 
-pub fn buy_in(amount: u128, deps: DepsMut) -> String {
-    static COUNTER: AtomicUsize = AtomicUsize::new(0);
-    let counter = COUNTER.fetch_add(1, Ordering::Relaxed);
-
-    let sender_address = format!("anyone{counter}");
-    let info = mock_info(&sender_address, &coins(amount, "uscrt"));
+pub fn buy_in(sender: &str, amount: u128, deps: DepsMut) {
+    let info = mock_info(sender, &coins(amount, "uscrt"));
     let msg = ExecuteMsg::BuyIn {
-        username: sender_address.clone(),
+        username: sender.to_string(),
     };
 
     execute(deps, mock_env(), info, msg).unwrap();
-
-    sender_address
 }
 
 pub fn start_game(deps: DepsMut) {
@@ -75,10 +63,10 @@ pub fn query_lobby_status(deps: Deps) -> LobbyStatus {
     from_binary(&query_response).unwrap()
 }
 
-pub fn query_game_status(deps: Deps) -> InGameStatus {
-    let permit = (/*Either create of mock permit*/);
+pub fn query_game_status(sender: &str, deps: Deps) -> InGameStatus {
+    let permit = sender; // Either create of mock permit
     let msg = QueryMsg::ViewGameStatus { permit };
-    let query_response = query(deps, mock_env(), msg);
+    let query_response = query(deps, mock_env(), msg).unwrap();
 
     from_binary(&query_response).unwrap()
 }
