@@ -4,7 +4,7 @@ use cosmwasm_std::testing::mock_dependencies;
 
 use util::{
     buy_in, call, find_balance, query_game_status, query_lobby_status, start_game,
-    valid_instantiation, VALID_LOBBY_CONFIG, VALID_MAX_BUY_IN, VALID_MIN_BUY_IN, VALID_USERNAME,
+    valid_instantiation, MAX_BUY_IN, MIN_BUY_IN, VALID_LOBBY_CONFIG, VALID_USERNAME,
 };
 
 #[test]
@@ -25,12 +25,12 @@ fn test_buy_in_with_max_buy_in() {
     let mut deps = mock_dependencies();
 
     valid_instantiation(deps.as_mut());
-    buy_in("anyone", VALID_MAX_BUY_IN, deps.as_mut());
+    buy_in("anyone", MAX_BUY_IN, deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
     assert_eq!(1, lobby_status.balances.len());
     assert_eq!(
-        (VALID_USERNAME.to_string(), VALID_MAX_BUY_IN),
+        (VALID_USERNAME.to_string(), MAX_BUY_IN),
         lobby_status.balances[0]
     );
 }
@@ -40,12 +40,12 @@ fn test_buy_in_with_min_buy_in() {
     let mut deps = mock_dependencies();
 
     valid_instantiation(deps.as_mut());
-    buy_in("anyone", VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in("anyone", MIN_BUY_IN, deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
     assert_eq!(1, lobby_status.balances.len());
     assert_eq!(
-        (VALID_USERNAME.to_string(), VALID_MIN_BUY_IN),
+        (VALID_USERNAME.to_string(), MIN_BUY_IN),
         lobby_status.balances[0]
     );
 }
@@ -58,8 +58,8 @@ fn test_start_game_as_admin() {
     let second_buyer = "second_user";
 
     valid_instantiation(deps.as_mut());
-    buy_in(first_buyer, VALID_MIN_BUY_IN, deps.as_mut());
-    buy_in(second_buyer, VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(first_buyer, MIN_BUY_IN, deps.as_mut());
+    buy_in(second_buyer, MIN_BUY_IN, deps.as_mut());
     start_game(deps.as_mut());
 
     let lobby_status = query_lobby_status(deps.as_ref());
@@ -69,11 +69,11 @@ fn test_start_game_as_admin() {
     let first_buyers_balance = find_balance(first_buyer, &game_status.balances).unwrap();
     let second_buyers_balance = find_balance(second_buyer, &game_status.balances).unwrap();
     assert_eq!(
-        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128,
+        MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128,
         first_buyers_balance
     );
     assert_eq!(
-        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128 / 2u128,
+        MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128 / 2u128,
         second_buyers_balance
     );
 }
@@ -86,8 +86,8 @@ fn test_call_sufficient_balance() {
     let second_buyer = "second_user";
 
     valid_instantiation(deps.as_mut());
-    buy_in(first_buyer, VALID_MIN_BUY_IN, deps.as_mut());
-    buy_in(second_buyer, VALID_MIN_BUY_IN, deps.as_mut());
+    buy_in(first_buyer, MIN_BUY_IN, deps.as_mut());
+    buy_in(second_buyer, MIN_BUY_IN, deps.as_mut());
     start_game(deps.as_mut());
     call(&first_buyer, deps.as_mut());
 

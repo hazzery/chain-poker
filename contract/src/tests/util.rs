@@ -16,9 +16,9 @@ pub const VALID_LOBBY_CONFIG: LobbyConfig = LobbyConfig {
     max_buy_in_bb: 100,
     min_buy_in_bb: 50,
 };
-pub const VALID_MAX_BUY_IN: u128 =
+pub const MAX_BUY_IN: u128 =
     VALID_LOBBY_CONFIG.big_blind as u128 * VALID_LOBBY_CONFIG.max_buy_in_bb as u128;
-pub const VALID_MIN_BUY_IN: u128 =
+pub const MIN_BUY_IN: u128 =
     VALID_LOBBY_CONFIG.big_blind as u128 * VALID_LOBBY_CONFIG.min_buy_in_bb as u128;
 
 pub fn valid_instantiation(deps: DepsMut) {
