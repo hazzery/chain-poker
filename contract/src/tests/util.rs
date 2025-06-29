@@ -71,12 +71,15 @@ pub fn query_game_status(sender: &str, deps: Deps) -> InGameStatus {
     from_binary(&query_response).unwrap()
 }
 
-pub fn find_balance(username: String, balances: &[(String, u128)]) {
-    balances.iter().find_map(|(username_, balance)| {
-        if username_ == username {
-            Some(balance)
-        } else {
-            None
-        }
-    })
+pub fn find_balance(username: &str, balances: &[(String, u128)]) -> Option<u128> {
+    balances
+        .iter()
+        .find_map(|(username_, balance)| {
+            if username_ == username {
+                Some(balance)
+            } else {
+                None
+            }
+        })
+        .copied()
 }

@@ -66,14 +66,14 @@ fn test_start_game_as_admin() {
     assert_eq!(true, lobby_status.is_started);
 
     let game_status = query_game_status(first_buyer, deps.as_ref());
-    let first_buyers_balance = find_balance(first_buyer, &game_status.balances);
-    let second_buyers_balance = find_balance(second_buyer, &game_status.balances);
+    let first_buyers_balance = find_balance(first_buyer, &game_status.balances).unwrap();
+    let second_buyers_balance = find_balance(second_buyer, &game_status.balances).unwrap();
     assert_eq!(
-        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind,
+        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128,
         first_buyers_balance
     );
     assert_eq!(
-        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind / 2,
+        VALID_MIN_BUY_IN - VALID_LOBBY_CONFIG.big_blind as u128 / 2u128,
         second_buyers_balance
     );
 }
